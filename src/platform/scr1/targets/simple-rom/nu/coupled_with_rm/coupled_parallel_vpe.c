@@ -8,6 +8,7 @@
 
 #include <platform/devices/nu_lib.h> 
 #include <platform/devices/nu_test_lib.h> 
+#include <platform/devices/nu_test_macro.h> 
 
 #include "platform/devices/nu_vpe_file_tags.h"
 
@@ -106,6 +107,10 @@ int main() {
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
   rumboot_printf("Number of iterations %d\n",iterations);
   
+#if DUT_IS_NPE
+  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
+#endif
+  
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);
     
@@ -143,7 +148,7 @@ int main() {
       lut2_metrics = nu_load_vec_metrics(heap_id,metrics_lut2_file_tag[i]);
       lut1 = nu_load_vec(heap_id,lut1_file_tag[i],lut1_metrics);
       lut2 = nu_load_vec(heap_id,lut2_file_tag[i],lut2_metrics);
-      nu_vpe_load_lut(NU_VPE_STANDALONE_BASE,lut1,lut2);
+      nu_vpe_load_lut(MY_VPE_REGS_BASE,lut1,lut2);
     }
     
     etalon[i] = nu_load_cube(heap_id,etalon_file_tag[i],res_metrics[i]);
@@ -151,8 +156,21 @@ int main() {
     
     //print_in_data(in_data,in_size);
 
-    cfg.trace_mode = TraceMode_MPE;
+    cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
+#ifdef FORCE_VPE_WDMA_EN
+    cfg.dst_flying = Enable_NotEn;
+#else
+    cfg.dst_flying = cfg.out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
+#endif
 
+#ifdef VPE_TraceMode_PPE
+    cfg.trace_mode = TraceMode_PPE;
+#else
+    cfg.trace_mode = TraceMode_MPE;
+#endif
+    cfg.mark       = Enable_NotEn;
+    cfg.cube_size = (in_metrics[i]->C/16 + ((in_metrics[i]->C%16) != 0 ? 1 : 0)) * in_metrics[i]->W * in_metrics[i]->H - 1;
+    
     //nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics[i],in_data[i],op0[i],op1[i],op2[i],res_metrics[i],res_data[i],&cfg_dma);
     //nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
@@ -163,7 +181,7 @@ int main() {
     
     start[i] = rumboot_platform_get_uptime();
     
-    nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg);
+    nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);
     
       // Setup Main Channel DMAs if Required
     //if(cfg.src_rdma_config.dma_op_en == Enable_NotEn)
@@ -179,15 +197,15 @@ int main() {
     //if(cfg.wdma_config.dma_op_en == Enable_NotEn)
     //  nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
     
-    nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
-    nu_vpe_wait_cntx_appl(NU_VPE_STANDALONE_BASE, &cfg);
+    nu_vpe_run(MY_VPE_REGS_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
+    nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, &cfg);
     
       // Finalize Required DMA Channels
     //if(cfg.src_rdma_config.dma_op_en == Enable_NotEn)
     //  nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
     //if(cfg.wdma_config.dma_op_en == Enable_NotEn)
     //  nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
-    //nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
+    //nu_vpe_wait(MY_VPE_REGS_BASE, &cfg);
     
     
     //num_cycles = delta * 1000 / 650; // delta in microseconds, 1 DUT cycle is 650 nanoseconds
@@ -206,7 +224,7 @@ int main() {
   }
   
   for(i=0;i<iterations;i++) {
-    nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg); //it's better to put cfg[i] here. but it will work good too
+    nu_vpe_wait(MY_VPE_REGS_BASE, &cfg); //it's better to put cfg[i] here. but it will work good too
     end[i] = rumboot_platform_get_uptime();
     delta[i] = end[i] - start[0];
     if(nu_bitwise_compare(res_data[i],etalon[i],res_metrics[i]->s) == 0)

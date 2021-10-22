@@ -692,6 +692,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       ############### VPE_TESTS adapted for NPE assembly ################
       ###################################################################
       if(DUT STREQUAL "VPE" OR DUT STREQUAL "NPE")
+        
+        # Tests on VPE DMA
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_1   main_vpe_2_dma_int8 1  )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_3  main_vpe_2_dma_int16 3 )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
+        
         # Tests on VPE::Formater
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
@@ -775,9 +782,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
-
-        # Tests on VPE ???
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_dma  main_vpe_26_autonom )
       
         # Tests on VPE channel mode
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
@@ -802,25 +806,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
 
-        # Tests on VPE ???
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_1   main_vpe_2_dma_int8 1  )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_3  main_vpe_2_dma_int16 3 )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
-
         # Test on VPE block's together work 
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
-
+        
         # Test on VPE ???
-        ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(vpe_27_0_control_cons_dma    main_vpe_27_0_control_cons_dma ) # VPE_27
-        ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(vpe_27_1_control_par_dma main_vpe_27_1_control_par_dma  ) # VPE_27
+        ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
+        ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
         
-        
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_nowdma_dma main_vpe_26_autonom        ) # VPE_26  ?????????????
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_28_perf_dma           main_28_perf               ) # VPE_28  ?????????????
+        # Tests on VPE ???
+        #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_dma  main_vpe_26_autonom )
+        #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_nowdma_dma main_vpe_26_autonom        ) # VPE_26  ?????????????
+        #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_28_perf_dma           main_28_perf               ) # VPE_28  ?????????????
 
 
         # Какие-то переименования ???

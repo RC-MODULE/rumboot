@@ -400,20 +400,22 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
 void nu_vpe_print_config(ConfigVPE* cfg){
 #ifndef NU_NO_PRINT
   rumboot_printf("ConfigVPE:\n");
+  //nu_vpe_print_Enable(cfg->src_flying,"src_flying(data from MPE)");
+  //nu_vpe_print_Enable(cfg->dst_flying,"dst_flying(data to PPE)");
   nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
   nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
+  //nu_vpe_print_Enable(cfg->mark,"mark");
+  //rumboot_printf("  cube_size = %d\n" , cfg->cube_size);
+  nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
-  nu_vpe_print_Enable(cfg->op2_en,"op2_en");
   rumboot_printf("  c3_offset = %d\n" , cfg->c3_offset);
   rumboot_printf("  c3_scale = %d\n" , cfg->c3_scale);
   rumboot_printf("  c3_trunc = %d\n" , cfg->c3_trunc);
   rumboot_printf("  c3_satur_en = %d\n" , cfg->c3_satur_en  );
   nu_vpe_print_RoundMode( cfg->c3_round_mode, "c3_round_mode");
-  
   nu_vpe_print_Enable(cfg->nan_to_zero_input,"nan_to_zero_input");
   nu_vpe_print_Enable(cfg->nan_to_zero_output,"nan_to_zero_output");
-  
   nu_vpe_print_TraceMode(cfg->trace_mode,"trace_mode");
 
   rumboot_printf("ConfigOp01 (0):\n");
@@ -464,7 +466,6 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  mux_value = %d\n" , cfg->op2_config.mux_value);
   nu_vpe_print_RoundMode(cfg->op2_config.norm_round_mode,"norm_round_mode");
   nu_vpe_print_Enable(cfg->op2_config.norm_saturation_en,"norm_saturation_en");
-
   rumboot_printf("  norm_round_size = %d \n" , cfg->op2_config.norm_round_size);
   rumboot_printf("  c1_offset = %d \n" , cfg->op2_config.c1_offset);
   rumboot_printf("  c1_scale = %d \n" , cfg->op2_config.c1_scale);
@@ -519,6 +520,9 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   nu_vpe_print_DmaDUseType(cfg_dma->dma_data_use,"dma_data_use");
   rumboot_printf("  dma_baddr = 0x%x\n",cfg_dma->dma_baddr);
   nu_vpe_print_DmaXYZDirectionType(cfg_dma->dma_xyz_drct,"dma_xyz_drct");
+  rumboot_printf("  dma_border_x = %d\n",cfg_dma->dma_border_x);
+  rumboot_printf("  dma_border_y = %d\n",cfg_dma->dma_border_y);
+  rumboot_printf("  dma_border_z = %d\n",cfg_dma->dma_border_z);
   rumboot_printf("  dma_stride_y = %d\n",cfg_dma->dma_stride_y);
   rumboot_printf("  dma_stride_x = %d\n",cfg_dma->dma_stride_x);
   rumboot_printf("  dma_stride_z = %d\n",cfg_dma->dma_stride_z);
@@ -531,6 +535,7 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   rumboot_printf("  dma_box_offset_x = %d\n",cfg_dma->dma_box_offset_x);
   rumboot_printf("  dma_box_offset_y = %d\n",cfg_dma->dma_box_offset_y);
   rumboot_printf("  dma_box_offset_z = %d\n",cfg_dma->dma_box_offset_z);
+  rumboot_printf("  dma_axi_len = %d\n",cfg_dma->dma_axi_len);
 #endif // NU_NO_PRINT
   
 }
@@ -852,22 +857,23 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   // Configuration of VPE -------------------------------------------------------------------------
   // CUBE_SIZE 
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
-  iowrite32((cfg->wdma_config.dma_cube_size_c-1)/16 +1, base + NU_VPE + NU_VPE_CUBE_SIZE_C );  // size in vectors!!!!!!!  // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
-  iowrite32(cfg->wdma_config.dma_cube_size_w,           base + NU_VPE + NU_VPE_CUBE_SIZE_W );                             // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
-  iowrite32(cfg->wdma_config.dma_cube_size_h,           base + NU_VPE + NU_VPE_CUBE_SIZE_H );                             // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
+
+  iowrite32((cfg->wdma_config.dma_cube_size_c-1)/16 +1, base + NU_VPE + NU_VPE_CUBE_SIZE_C );  // size in vectors!!!!!!!
+  iowrite32(cfg->wdma_config.dma_cube_size_w,           base + NU_VPE + NU_VPE_CUBE_SIZE_W );
+  iowrite32(cfg->wdma_config.dma_cube_size_h,           base + NU_VPE + NU_VPE_CUBE_SIZE_H );
   
   if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
   else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
-  else                                                                                      tmp_type = DataType_Int8  ;
+  else                                                                                       tmp_type = DataType_Int8  ;
   tmp_data = (1<<30) | (1<<29) | (1<<28) |   // All Counters On
              (cfg->out_data_type << 16) | 
-             ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
-             ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
-             ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
+             ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |
+             ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |
+             ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |
              (                 (tmp_type>>1) <<  9) | (/*(cfg->dst_flying == Enable_NotEn)*/cfg->trace_mode<<8) |           // that 8bit definition is RIGHT only here !!!!!!!!!!!
              (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
-  
+
   // Configuration OUT --------------------------------------------------
   iowrite32(cfg->c3_offset, base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL);
   iowrite32(cfg->c3_scale , base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL );
@@ -934,8 +940,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->op2_config.c1_trunc , base + NU_VPE + NU_VPE_OP2_MUL_CVT_TRUNC_VAL );  
   
   tmp_data = (cfg->op2_config.norm_round_mode << 16) | (cfg->op2_config.norm_saturation_en << 8) | (cfg->op2_config.norm_round_size << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);   
-  
+  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);
+
   if(cfg->op2_config.lut_en) {
     int32_t shift_i1;
     int32_t shift_i2;
@@ -1028,11 +1034,11 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->wdma_config.dma_box_offset_z    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
 
   // Configuration SRC_RDMA ------------------------------------------------------
-  
   //iowrite32(cfg->src_rdma_config.dma_en , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CFG );
   
   tmp_data = (cfg->src_rdma_config.dma_ram_type << 8) | ((cfg->src_rdma_config.dma_data_mode >> 1) << 7) | (cfg->src_rdma_config.dma_data_size << 6) | (cfg->src_rdma_config.dma_data_use << 4) | (cfg->src_rdma_config.dma_en << 0);
   iowrite32(tmp_data, base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CFG );
+
 
   iowrite32((0x00020000 | (uint32_t) cfg->src_rdma_config.dma_axi_len), base + NU_VPE_SRC_RDMA + NU_VPE_DMA_AXI_PARAM );
 
@@ -1067,7 +1073,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(tmp_data, base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CFG );
   
   iowrite32((0x00020000 | (uint32_t) cfg->op0_rdma_config.dma_axi_len), base + NU_VPE_OP0_RDMA + NU_VPE_DMA_AXI_PARAM );
-  
+
   iowrite32(cfg->op0_rdma_config.dma_baddr           , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BASE                ) ;
   iowrite32(cfg->op0_rdma_config.dma_cube_size_c     , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
   iowrite32(cfg->op0_rdma_config.dma_cube_size_w     , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????

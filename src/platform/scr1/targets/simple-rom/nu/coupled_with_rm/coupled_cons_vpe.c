@@ -8,6 +8,7 @@
 
 #include <platform/devices/nu_lib.h> 
 #include <platform/devices/nu_test_lib.h> 
+#include <platform/devices/nu_test_macro.h> 
 
 #include "platform/devices/nu_vpe_file_tags.h"
 
@@ -39,14 +40,8 @@ void nu_vpe_decide_dma_config (
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
   cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
-  cfg->wdma_config.dma_data_use=DmaDUse_Off;
+  cfg->wdma_config.dma_data_use      = DmaDUse_Off;
   
-  cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
-#ifdef FORCE_VPE_WDMA_EN
-  cfg->dst_flying = Enable_NotEn;
-#else
-  cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
-#endif
 #ifdef AXI_LEN
     axi_len = AxiLen;
 #else 
@@ -63,7 +58,7 @@ void nu_vpe_decide_dma_config (
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
   cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
-  cfg->wdma_config.dma_baddr = (uint32_t) res_data;
+  cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
   
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
@@ -105,6 +100,10 @@ int main() {
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
   rumboot_printf("Number of iterations %d\n",iterations);
   
+#if DUT_IS_NPE
+  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
+#endif
+  
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);
     
@@ -142,7 +141,7 @@ int main() {
       lut2_metrics = nu_load_vec_metrics(heap_id,metrics_lut2_file_tag[i]);
       lut1 = nu_load_vec(heap_id,lut1_file_tag[i],lut1_metrics);
       lut2 = nu_load_vec(heap_id,lut2_file_tag[i],lut2_metrics);
-      nu_vpe_load_lut(NU_VPE_STANDALONE_BASE,lut1,lut2);
+      nu_vpe_load_lut(MY_VPE_REGS_BASE,lut1,lut2);
     }
     
     etalon = nu_load_cube(heap_id,etalon_file_tag[i],res_metrics);
@@ -150,7 +149,15 @@ int main() {
     
     //print_in_data(in_data,in_size);
 
+    cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
+#ifdef FORCE_VPE_WDMA_EN
+    cfg.dst_flying = Enable_NotEn;
+#else
+    cfg.dst_flying = cfg.out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
+#endif
     cfg.trace_mode = TraceMode_MPE;
+    cfg.mark       = Enable_NotEn;
+    cfg.cube_size = (in_metrics->C/16 + ((in_metrics->C%16) != 0 ? 1 : 0)) * in_metrics->W * in_metrics->H - 1;
 
     //nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
@@ -162,15 +169,15 @@ int main() {
     
     start[i] = rumboot_platform_get_uptime();
     
-    nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg);
+    nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);
     
     
     rumboot_printf("Running DMA..\n");
     
     
-    nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
+    nu_vpe_run(MY_VPE_REGS_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
     
-    nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
+    nu_vpe_wait(MY_VPE_REGS_BASE, &cfg);
     
     end[i] = rumboot_platform_get_uptime();
     delta[i] = end[i] - start[0];

@@ -41,13 +41,6 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
   cfg->wdma_config.dma_data_use      = DmaDUse_Off;
   
-  cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
-#ifdef FORCE_VPE_WDMA_EN
-  cfg->dst_flying = Enable_NotEn;
-#else
-  cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
-#endif
-  
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
   cfg_dma->H = in_metrics->H;
   cfg_dma->W = in_metrics->W;
@@ -164,6 +157,13 @@ int main() {
     //print_in_data(in_data,in_size);
     
     if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
+
+    cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
+#ifdef FORCE_VPE_WDMA_EN
+    cfg.dst_flying = Enable_NotEn;
+#else
+    cfg.dst_flying = cfg.out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
+#endif
 
 #ifdef VPE_TraceMode_PPE
     cfg.trace_mode = TraceMode_PPE;
