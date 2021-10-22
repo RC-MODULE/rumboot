@@ -551,14 +551,14 @@ int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
 
 void nu_vpe_interpret_mismatch_print_op01(ConfigOp01 *op_config,void* op,uint32_t offset_out,int C) {
   uint32_t offset_op;
-  if(op_config->alu_mode == Mode_Channel && op_config->alu_en ||
-     op_config->mux_mode == Mode_Channel && op_config->mux_en )
+  if((op_config->alu_mode == Mode_Channel && op_config->alu_en == Enable_En) ||
+     (op_config->mux_mode == Mode_Channel && op_config->mux_en == Enable_En))
     offset_op = offset_out % C;
   else 
     offset_op = offset_out;
   
-  if(op_config->alu_mode == Mode_Channel && op_config->alu_en &&
-     op_config->mux_mode == Mode_Channel && op_config->mux_en ) { // sengvitch :)
+  if(op_config->alu_mode == Mode_Channel && op_config->alu_en == Enable_En &&
+     op_config->mux_mode == Mode_Channel && op_config->mux_en == Enable_En ) { // sengvitch :)
     offset_op = offset_op << 1; 
     if(op_config->coef_type == DataType_Int8) {
       uint8_t* op8 = (uint8_t*) op;
@@ -581,14 +581,14 @@ void nu_vpe_interpret_mismatch_print_op01(ConfigOp01 *op_config,void* op,uint32_
 
 void nu_vpe_interpret_mismatch_print_op2(ConfigOp2 *op_config,void* op,uint32_t offset_out,int C) {
   uint32_t offset_op;
-  if(op_config->alu_mode == Mode_Channel && op_config->alu_en ||
-     op_config->mux_mode == Mode_Channel && op_config->mux_en )
+  if((op_config->alu_mode == Mode_Channel && op_config->alu_en == Enable_En) ||
+     (op_config->mux_mode == Mode_Channel && op_config->mux_en == Enable_En) )
     offset_op = offset_out % C;
   else 
     offset_op = offset_out;
   
-  if(op_config->alu_mode == Mode_Channel && op_config->alu_en &&
-     op_config->mux_mode == Mode_Channel && op_config->mux_en ) { // sengvitch :)
+  if(op_config->alu_mode == Mode_Channel && op_config->alu_en == Enable_En &&
+     op_config->mux_mode == Mode_Channel && op_config->mux_en == Enable_En ) { // sengvitch :)
     offset_op = offset_op << 1; 
     if(op_config->coef_type == DataType_Int8) {
       uint8_t* op8 = (uint8_t*) op;
