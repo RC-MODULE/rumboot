@@ -590,6 +590,7 @@ void nu_mpe_print_ConfigRDDMAMPE(ConfigRDDMAMPE* cfg,char* name) {
     rumboot_printf("  BPYOffset = %d \n",cfg->BPYOffset);
     rumboot_printf("  CntSha = %d \n",cfg->CntSha);
     rumboot_printf("  CntThresholdSha = %d \n",cfg->CntThresholdSha);
+    rumboot_printf("  ThreCtrl = %d \n",cfg->ThreCtrl);
     nu_vpe_print_Enable(cfg->LPXEn,"LPXEn");
     nu_vpe_print_Enable(cfg->RPXEn,"RPXEn");
     nu_vpe_print_Enable(cfg->TPYEn,"TPYEn");
@@ -1646,6 +1647,7 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
   
 //                                  ptr+=5;
   cfg->rdma.CntThresholdSha=(uint16_t)*ptr;ptr++;
+  cfg->rdma.ThreCtrl=(uint8_t)   *ptr;ptr++;
   cfg->rdma.LPXEn=               *ptr;ptr++;
   cfg->rdma.RPXEn=               *ptr;ptr++;
   cfg->rdma.TPYEn=               *ptr;ptr++;
@@ -1884,7 +1886,7 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
   uint32_t temp_PadCtrl;
   uint32_t temp_BiasBase;
   temp_BiasCtrl = 0;
-  temp_ThreCtrl = 0;
+  temp_ThreCtrl = cfg->ThreCtrl;
   temp_DecCtrl = 0;
   temp_PadCtrl = 0;
   temp_BiasBase = 0; // Offset Of The First Bias Couple
@@ -1901,8 +1903,12 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
     
       // Accumulate Common Regs
     temp_BiasCtrl = temp_BiasCtrl | (cfg->Bias[i].BiasEn << i);
-    temp_ThreCtrl = temp_ThreCtrl | (cfg->Bias[i].ThreCtrl << (i*3)); // *3 :-( May Be Done By Looped+
-    temp_DecCtrl  = temp_DecCtrl  | (cfg->Bias[i].DecCtrl << (i*3));
+    temp_ThreCtrl = temp_ThreCtrl | (
+      ( (uint32_t)cfg->Bias[i].ThreCtrl ) << ((i+1)*3)
+    ); // *3 :-( May Be Done By Looped+ // +1 - Because The lsb Position is For cfg->ThreCtrl
+    temp_DecCtrl  = temp_DecCtrl  | (
+      ( (uint32_t)cfg->Bias[i].DecCtrl ) << (i*3)
+    );
     temp_PadCtrl  = temp_PadCtrl  | (cfg->Bias[i].PXBSEn << (i+4)) | (cfg->Bias[i].PYBSEn << (i+12));
     
       // Point At The Next Bias Couple
