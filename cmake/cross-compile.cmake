@@ -43,10 +43,4 @@ macro(CROSS_COMPILE_DETECT_SYSROOT)
     else()
         message(WARNING "Couldn't auto-detect sysroot dir")
     endif()
-
-    # search for programs in the build host directories
-    SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-    # for libraries and headers in the target directories
-    SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-    SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 endmacro()
