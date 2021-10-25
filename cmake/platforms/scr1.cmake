@@ -947,20 +947,42 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       macro (ADD_PPE_TESTS name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
         set (TST_NMB 1)
+        set (name_macro "${name}")
         set (Sh_is_1 "--set_Sh 1 --Sh 1")
         set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
+
+        if (EXPERIMENT_STAGE_2_SUB_2)
+          string(REPLACE "ppe_i8_max_ml"    "PPE_2_i8_max_ml"     name_macro  ${name_macro})
+          string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name_macro  ${name_macro})
+          string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name_macro  ${name_macro})
+          string(REPLACE "ppe_i8_min_ml"    "PPE_5_i8_min_ml"     name_macro  ${name_macro})
+          string(REPLACE "ppe_i16_min_ml"   "PPE_6_i16_min_ml"    name_macro  ${name_macro})
+          string(REPLACE "ppe_fp16_min_ml"  "PPE_7_fp16_min_ml"   name_macro  ${name_macro})
+          string(REPLACE "ppe_i8_avg_ml"    "PPE_8_i8_avg_ml"     name_macro  ${name_macro})
+          string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name_macro  ${name_macro})
+          string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name_macro  ${name_macro})
+
+          if (${name_macro} STREQUAL "PPE_10_fp16_avg_ml")
+            set (TST_NMB 1)
+          else()
+            set (TST_NMB 0)
+          endif()
+
+        endif()
 
         foreach(i RANGE ${TST_NMB})
 
           if (i EQUAL TST_NMB)
             set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
+
+            string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name_macro  ${name_macro})
           else()
             set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
           endif()
 
           add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${i}
+            NAME ${name_macro}_${i}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
 
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
@@ -1681,7 +1703,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             set (LBS "BOX")
             set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
           endif()
-        
+
+          if (EXPERIMENT_STAGE_2_SUB_2)
+            if (${name} MATCHES "_8b")
+              set (name "NA_3_${name}")
+            endif()
+            if (${name} MATCHES "_16b")
+              set (name "NA_4_${name}")
+            endif()
+          endif()
+       
           add_rumboot_target(
             CONFIGURATION ROM
             NAME ${name}
@@ -1804,7 +1835,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
         ADD_VPE_PPE_WKH_COMB(vpe_ppe_wkh_comb)
         #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
-
+ 
       endif()
 
       if(DUT STREQUAL "PPE")
