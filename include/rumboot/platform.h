@@ -79,7 +79,7 @@ enum rumboot_simulation_event {
 #define rumboot_platform_panic(fmt, ...) \
     { \
         if (fmt) { \
-            rumboot_printf("PANIC: %s", fmt, ##__VA_ARGS__); \
+            rumboot_printf("PANIC: " fmt "\n", ##__VA_ARGS__); \
         } \
         exit(13); /* Trigger an exit */ \
         while(1);; /* And loop if the above didn't work */ \
