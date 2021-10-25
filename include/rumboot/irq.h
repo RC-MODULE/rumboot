@@ -37,9 +37,9 @@
 #ifndef __ASSEMBLER__
 #include <stdlib.h>
 
-#if defined( __arm__) || defined(__riscv) || defined (__NM__)
+#if !defined(RUMBOOT_NATIVE) && (defined( __arm__) || defined(__riscv) || defined (__NM__))
 #include <arch/irq_macros.h>
-#elif defined( __PPC__ ) && !defined(RUMBOOT_NO_IRQ_MACROS)
+#elif !defined(RUMBOOT_NATIVE) && (defined( __PPC__ ) && !defined(RUMBOOT_NO_IRQ_MACROS))
 #include <arch/irq_macros.h>
 #else
 
