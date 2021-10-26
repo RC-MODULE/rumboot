@@ -2020,6 +2020,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                      +metrics_in_arr=in_arr.bin.metrics
         )
 
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME MPE_PERFORMANCE
+          FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
+          PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+        )
+
         macro(ADD_NPE_SIMPLE_TEST name filename)
           add_rumboot_target(
             CONFIGURATION ROM
