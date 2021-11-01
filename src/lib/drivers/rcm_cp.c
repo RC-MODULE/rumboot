@@ -45,7 +45,7 @@ int32_t cp_set_speed(struct rcm_cp_instance *inst, int32_t target_freq_khz)
     int32_t best_freq_delta = inst->base_freq_khz;
 
     for (int fdiv = 0; fdiv < 16; fdiv++) {
-        int32_t freq = inst->base_freq_khz / (fdiv + 3);
+        int32_t freq = inst->base_freq_khz / (fdiv + 1);
         int32_t delta = abs(target_freq_khz - freq);
         if (delta < best_freq_delta) {
             best_div = fdiv; 
