@@ -110,9 +110,11 @@
 #define TIMEOUT (BUF_SIZE*50)
 #define WORD_SIZE 8
 #ifndef BASE_FREQ
-    #define BASE_FREQ 50000
+    #define BASE_FREQ 100000
 #endif
-
+#ifndef TARGET_FREQ
+    #define TARGET_FREQ 50000
+#endif
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
 static volatile uint32_t hscb0_dma_status;
@@ -469,6 +471,15 @@ int check_results(hscb_descr *tx_dsc_table, hscb_descr *rx_dsc_table) {
     return 0; 
 }
 
+// Add by M.Chelyshev as glitch-protect
+uint32_t disable_hscb (uint32_t hscb_base){
+    uint32_t tmp = 0;
+    tmp = ioread32(hscb_base + HSCB_SETTINGS);
+    tmp = tmp & 0xfffffffe;
+    iowrite32(tmp, hscb_base + HSCB_SETTINGS);
+}
+// ------------------------------------
+
 int main() {
 // -----------------------------------------------------------
     uint32_t result = 0;
@@ -511,6 +522,13 @@ int main() {
     tbl = create_irq_handlers();   
     
     // ---- Config of HSCB     
+// Add by M.Chelyshev as glitch-protect
+    if(DEBUG_PRINT) rumboot_printf( "Disable all HSCB controllers\n");
+    disable_hscb(HSCB0_BASE);
+    disable_hscb(HSCB1_BASE);
+    disable_hscb(HSCB2_BASE);
+    disable_hscb(HSCB3_BASE);
+// ------------------------------------
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB0----\n");
     config_hscb(HSCB0_BASE, &hscb0_tx_dsc_table, HSCB0_TX_DSCTBL_BASE, HSCB0_TX_DATA_BASE, &hscb0_rx_dsc_table, HSCB0_RX_DSCTBL_BASE, HSCB0_RX_DATA_BASE, &rdma_ctrl_word[0]);
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB1----\n");
@@ -553,8 +571,8 @@ int main() {
     
     rumboot_printf("----\n");
     
-    r = cp_set_speed(&c0,BASE_FREQ); // WE GOT AN EXCEPTION: 15: Data TLB Error
-    r = cp_set_speed(&c1,BASE_FREQ);
+    r = cp_set_speed(&c0,TARGET_FREQ); // WE GOT AN EXCEPTION: 15: Data TLB Error
+    r = cp_set_speed(&c1,TARGET_FREQ);
     
     rumboot_printf("Initialized instances 0x%x 0x%x\n",c0.base,c1.base);
     ////    
