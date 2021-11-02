@@ -944,30 +944,29 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       set (i16_avg  "--pool_meth 0 --data_type 1")
       set (fp16_avg "--pool_meth 0 --data_type 2")
 
-      macro (ADD_PPE_TESTS name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
+      macro (ADD_PPE_TESTS name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
         set (TST_NMB 1)
-        set (name_macro "${name}")
+        set (name "${name_in}")
         set (Sh_is_1 "--set_Sh 1 --Sh 1")
         set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
 
         if (EXPERIMENT_STAGE_2_SUB_2)
-          string(REPLACE "ppe_i8_max_ml"    "PPE_2_i8_max_ml"     name_macro  ${name_macro})
-          string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name_macro  ${name_macro})
-          string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name_macro  ${name_macro})
-          string(REPLACE "ppe_i8_min_ml"    "PPE_5_i8_min_ml"     name_macro  ${name_macro})
-          string(REPLACE "ppe_i16_min_ml"   "PPE_6_i16_min_ml"    name_macro  ${name_macro})
-          string(REPLACE "ppe_fp16_min_ml"  "PPE_7_fp16_min_ml"   name_macro  ${name_macro})
-          string(REPLACE "ppe_i8_avg_ml"    "PPE_8_i8_avg_ml"     name_macro  ${name_macro})
-          string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name_macro  ${name_macro})
-          string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name_macro  ${name_macro})
+          string(REPLACE "ppe_i8_max_ml"    "PPE_2_i8_max_ml"     name  ${name})
+          string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name  ${name})
+          string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name  ${name})
+          string(REPLACE "ppe_i8_min_ml"    "PPE_5_i8_min_ml"     name  ${name})
+          string(REPLACE "ppe_i16_min_ml"   "PPE_6_i16_min_ml"    name  ${name})
+          string(REPLACE "ppe_fp16_min_ml"  "PPE_7_fp16_min_ml"   name  ${name})
+          string(REPLACE "ppe_i8_avg_ml"    "PPE_8_i8_avg_ml"     name  ${name})
+          string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name  ${name})
+          string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name  ${name})
 
-          if (${name_macro} STREQUAL "PPE_10_fp16_avg_ml")
+          if (${name} STREQUAL "PPE_10_fp16_avg_ml")
             set (TST_NMB 1)
           else()
             set (TST_NMB 0)
           endif()
-
         endif()
 
         foreach(i RANGE ${TST_NMB})
@@ -975,14 +974,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           if (i EQUAL TST_NMB)
             set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
 
-            string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name_macro  ${name_macro})
+            string(REPLACE "PPE_10_fp16_avg_ml" "PPE_11_fp16_avg_ml" name ${name})
           else()
             set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
           endif()
 
           add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name_macro}_${i}
+            NAME ${name}_${i}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
 
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
