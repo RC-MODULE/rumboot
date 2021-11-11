@@ -4,6 +4,7 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <platform/devices/nu_lib.h> 
 
@@ -672,4 +673,97 @@ void nu_vpe_interpret_mismatch(ConfigVPE *cfg,void* res_data,void* etalon,void* 
     }
       
   }
+}
+
+char* int_to_strdec (char* str, int arg) {
+
+  int i, msd;
+  char d[10];
+
+  d[0] = (arg%10)/1;
+  d[1] = (arg%100)/10;
+  d[2] = (arg%1000)/100;
+  d[3] = (arg%10000)/1000;
+  d[4] = (arg%100000)/10000;
+  d[5] = (arg%1000000)/100000;
+  d[6] = (arg%10000000)/1000000;
+  d[7] = (arg%100000000)/10000000;
+  d[8] = (arg%1000000000)/100000000;
+  d[9] = (arg%10000000000)/1000000000;
+
+  for (msd=0, i=0; i<10; i++) if (d[i]) msd = i;
+
+  for (i=0; i<msd+1; i++) {
+    if      (d[i] == 0) *(str+msd-i) = '0';
+    else if (d[i] == 1) *(str+msd-i) = '1';
+    else if (d[i] == 2) *(str+msd-i) = '2';
+    else if (d[i] == 3) *(str+msd-i) = '3';
+    else if (d[i] == 4) *(str+msd-i) = '4';
+    else if (d[i] == 5) *(str+msd-i) = '5';
+    else if (d[i] == 6) *(str+msd-i) = '6';
+    else if (d[i] == 7) *(str+msd-i) = '7';
+    else if (d[i] == 8) *(str+msd-i) = '8';
+    else if (d[i] == 9) *(str+msd-i) = '9';
+  }
+
+  *(str+msd+1) = '\0';
+
+  //rumboot_printf ("nmb %d %s\n", arg, str);
+
+  return str;
+}
+
+int str_length(char* str) {
+  int i, len;
+
+  for (len=0, i=0; !len && i<1023; i++) if (*(str+i) == '\0') len = i;
+
+  if (i > 1023) rumboot_printf ("ERROR:str_length: string is too long\n");
+
+  //rumboot_printf ("%s\n", len);
+
+  return len;
+}
+
+char* str_concat(char* lstr, char* rstr) {
+  int i, lenl, lenr;
+
+  lenl= str_length(lstr);
+  lenr= str_length(rstr);
+
+  for (i=0; i<lenr+1; i++) *(lstr+lenl+i) = *(rstr+i);
+
+  //rumboot_printf ("%s\n", lstr);
+
+  return lstr;
+}
+
+char* str_copy (char* dst, char* src) {
+  int i, len;
+
+  len = str_length(src);
+
+  for (i=0; i<len+1; i++) *(dst+i) = *(src+i);
+
+  //rumboot_printf ("%s\n", dst);
+
+  return dst;
+}
+
+char* fn_base_it_nmb (char* dst, char* src, int it_nmb) {
+  char it_nmb_str[8];
+
+  //int_to_strdec(&it_nmb_str, it_nmb);
+  //str_copy(dst, src);
+  //str_concat(dst, &it_nmb_str);
+  //str_concat(dst, "_");
+
+  sprintf (it_nmb_str, "%d", it_nmb);
+  strcpy(dst, src);
+  strcat(dst, it_nmb_str);
+  strcat(dst, "_");
+
+  rumboot_printf("%s\n", dst);
+
+  return dst;
 }

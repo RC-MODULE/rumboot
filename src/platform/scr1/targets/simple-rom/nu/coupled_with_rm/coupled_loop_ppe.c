@@ -31,7 +31,17 @@ int main() {
 
   uint32_t flying_mode, lbs, mv;
 
-  char** in_tag_pt;
+  char* fn_in_base          = "in_file_tag_"        ;
+  char* fn_cfg_base         = "cfg_ppe_file_tag_"   ;
+  char* fn_in_metrics_base  = "metrics_in_tag_"     ;
+  char* fn_res_metrics_base = "metrics_etalon_tag_" ;
+  char* fn_etalon_base      = "etalon_file_tag_"    ;
+
+  char  fn_in[32];
+  char  fn_cfg[32];
+  char  fn_in_metrics[32];
+  char  fn_res_metrics[32];
+  char  fn_etalon[32];
 
   int heap_id = nu_get_heap_id();
 
@@ -42,12 +52,10 @@ int main() {
 
   #if DUT_IS_NPE
     na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
-
-    in_tag_pt = &in_file_tag;
   #endif
 
   #if DUT_IS_PPE
-    in_tag_pt = &in_ameba_file_tag;
+    fn_in_base = "in_ameba_file_tag_";
   #endif
 
   #ifdef LIN
@@ -73,16 +81,22 @@ int main() {
   for (i=0; i<it_nmb && !res; i++) {
     rumboot_malloc_update_heaps(1);
 
-    nu_ppe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]);
+    fn_base_it_nmb(fn_in, fn_in_base, i);
+    fn_base_it_nmb(fn_cfg, fn_cfg_base, i);
+    fn_base_it_nmb(fn_in_metrics, fn_in_metrics_base, i);
+    fn_base_it_nmb(fn_res_metrics, fn_res_metrics_base, i);
+    fn_base_it_nmb(fn_etalon, fn_etalon_base, i);
 
-    in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_tag[i]);
-    res_metrics = nu_load_cube_metrics (heap_id, metrics_etalon_tag[i]);
+    nu_ppe_load_cfg_by_tag(heap_id, &cfg, fn_cfg);
+
+    in_metrics  = nu_load_cube_metrics(heap_id, fn_in_metrics);
+    res_metrics = nu_load_cube_metrics (heap_id, fn_res_metrics);
 
     if (in_metrics == NULL || res_metrics == NULL) res = 1;
 
     if (!res) {
-      in_data     = nu_load_cube(heap_id, *(in_tag_pt+i), in_metrics);
-      etalon      = nu_load_cube (heap_id, etalon_file_tag[i], res_metrics);
+      in_data     = nu_load_cube(heap_id, fn_in, in_metrics);
+      etalon      = nu_load_cube (heap_id, fn_etalon, res_metrics);
       res_data    = nu_ppe_malloc_res(heap_id, res_metrics);
     }
 

@@ -56,4 +56,12 @@ void nu_vpe_interpret_mismatch(ConfigVPE *cfg,void* res_data,void* etalon,void* 
 
 int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps);
 
+//in case of <string.h> and <stdio.h> are absent;
+char* int_to_strdec (char* str, int arg);
+int str_length(char* str);
+char* str_concat(char* lstr, char* rstr);
+char* str_copy (char* dst, char* src);
+
+char* fn_base_it_nmb (char* dst, char* src, int it_nmb);
+
 #endif
