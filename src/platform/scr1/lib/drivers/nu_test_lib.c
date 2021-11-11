@@ -763,7 +763,7 @@ char* fn_base_it_nmb (char* dst, char* src, int it_nmb) {
   strcat(dst, it_nmb_str);
   strcat(dst, "_");
 
-  rumboot_printf("%s\n", dst);
+  //rumboot_printf("%s\n", dst);
 
   return dst;
 }
