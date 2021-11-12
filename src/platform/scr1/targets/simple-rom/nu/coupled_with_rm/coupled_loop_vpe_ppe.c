@@ -10,8 +10,6 @@
 #include <platform/devices/nu_test_lib.h> 
 #include <platform/devices/nu_test_macro.h> 
 
-#include "platform/devices/nu_vpe_ppe_file_tags.h"
-
 ConfigVPE     cfg_vpe;
 ConfigPPE     cfg_ppe;
 
