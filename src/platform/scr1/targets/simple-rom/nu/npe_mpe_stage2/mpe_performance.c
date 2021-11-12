@@ -6,8 +6,8 @@
 #include <rumboot/io.h>
 #include <string.h>
 
-#include <platform/devices/nu_lib.h>
-#include <platform/devices/nu_test_lib.h>
+#include <devices/rcm_na/nu_lib.h>
+#include <devices/rcm_na/nu_test_lib.h>
 #include <regs/regs_na.h>
 #include <platform/devices.h>
 void nu_run_mpe_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {

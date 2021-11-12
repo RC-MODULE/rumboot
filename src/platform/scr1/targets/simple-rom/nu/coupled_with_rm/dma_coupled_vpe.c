@@ -6,8 +6,8 @@
 
 #include <platform/devices.h> 
 
-#include <platform/devices/nu_lib.h> 
-#include <platform/devices/nu_test_lib.h> 
+#include <devices/rcm_na/nu_lib.h> 
+#include <devices/rcm_na/nu_test_lib.h> 
 
 int32_t *in_data;
 int16_t *etalon;

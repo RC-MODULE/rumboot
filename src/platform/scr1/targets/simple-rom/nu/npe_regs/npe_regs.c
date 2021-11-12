@@ -5,7 +5,7 @@
 #include <rumboot/io.h>
 #include <string.h>
 
-#include <platform/devices/nu_lib.h>
+#include <devices/rcm_na/nu_lib.h>
 #include <regs/regs_na.h>
 #include <platform/devices.h>
 

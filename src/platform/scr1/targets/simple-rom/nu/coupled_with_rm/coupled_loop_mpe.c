@@ -6,8 +6,8 @@
 
 #include <platform/devices.h>
 
-#include <platform/devices/nu_lib.h>
-#include <platform/devices/nu_test_lib.h>
+#include <devices/rcm_na/nu_lib.h>
+#include <devices/rcm_na/nu_test_lib.h>
 #include <regs/regs_nu_mpe.h>
 
 #include "platform/devices/nu_mpe_file_tags.h"

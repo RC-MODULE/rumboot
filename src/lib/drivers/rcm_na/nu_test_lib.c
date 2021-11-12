@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <platform/devices/nu_lib.h> 
+#include <devices/rcm_na/nu_lib.h> 
 
 int nu_get_heap_id() {
   return 1;  // CHECK // fix this by define when compile under other platform than scr1

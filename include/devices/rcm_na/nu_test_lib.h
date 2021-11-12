@@ -3,7 +3,7 @@
 #define NU_TEST_LIB_H
 
 #include <stdint.h>
-#include "platform/devices/nu_lib.h"
+#include "devices/rcm_na/nu_lib.h"
 
 int nu_get_heap_id();
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);

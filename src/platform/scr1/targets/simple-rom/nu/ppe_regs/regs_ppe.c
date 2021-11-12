@@ -7,10 +7,8 @@
 
 #include <platform/devices/nu_cpdmac_lib.h>
 #include <platform/devices.h>
-#include <platform/devices/nu_lib.h>
-#include <regs/regs_nu_ppe.h>
 
-#include <platform/devices/nu_test_macro.h> 
+#include <devices/rcm_na/nu_test_macro.h> 
 
 //ConfigPPE cfg;
 

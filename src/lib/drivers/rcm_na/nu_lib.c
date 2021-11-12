@@ -6,13 +6,9 @@
 #include <rumboot/io.h>
 
 #include <regs/regs_na.h>
-//#include <regs/regs_nu_mpe.h>
-//#include <regs/regs_nu_vpe.h>
-//#include <regs/regs_nu_ppe.h>
 
-//#include <platform/devices.h> 
-#include <platform/devices/nu_cpdmac_lib.h>
-#include <platform/devices/nu_lib.h>
+#include <devices/rcm_na/nu_cpdmac_lib.h>
+#include <devices/rcm_na/nu_lib.h>
 
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   int32_t* ptr;
