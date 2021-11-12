@@ -10,7 +10,7 @@
 #include <devices/rcm_na/nu_test_lib.h> 
 #include <devices/rcm_na/nu_test_macro.h> 
 
-#include "platform/devices/nu_npe_file_tags.h"
+#include "devices/rcm_na/nu_npe_file_tags.h"
 
 int PPE_ENABLED;
 

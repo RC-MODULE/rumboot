@@ -9,7 +9,7 @@
 #include <devices/rcm_na/nu_lib.h> 
 #include <devices/rcm_na/nu_test_lib.h> 
 
-#include "platform/devices/nu_ppe_file_tags.h"
+#include "devices/rcm_na/nu_ppe_file_tags.h"
 
 ConfigREGPPE  cfg_reg = {0};
 

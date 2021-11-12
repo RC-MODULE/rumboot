@@ -10,7 +10,7 @@
 #include <devices/rcm_na/nu_test_lib.h>
 #include <regs/regs_nu_mpe.h>
 
-#include "platform/devices/nu_mpe_file_tags.h"
+#include "devices/rcm_na/nu_mpe_file_tags.h"
 
 void *in_data;
 void *warr;
