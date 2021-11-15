@@ -5,7 +5,6 @@
 #include <rumboot/io.h>
 #include <string.h>
 
-#include <platform/devices/nu_cpdmac_lib.h>
 #include <platform/devices.h>
 
 #include <devices/rcm_na/nu_test_macro.h> 
