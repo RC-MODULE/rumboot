@@ -230,12 +230,14 @@ int main() {
     rumboot_printf("Performance: 0.%d vectors/cycle num_vectors = %d, num_cycles = %d \n",
                    productivity_x1000,num_vectors,num_cycles);
     
-    if(cfg.src_rdma_config.dma_cube_size_c%16 == 0) {
+    //if(cfg.src_rdma_config.dma_cube_size_c%16 == 0) {
         if(nu_vpe_check_status_regs(MY_VPE_REGS_BASE, &status_regs_etalon) != 0) {
         rumboot_printf("Test FAILED Due to Status Reg Check at iteration %d\n",i);
         return -1;
         }
-    }
+        else {rumboot_printf("Test OK Due to Status Reg Check at iteration %d\n",i);}
+        
+    //}
   }
   
   return 0;

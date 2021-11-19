@@ -855,9 +855,9 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   // CUBE_SIZE 
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
 
-  iowrite32((cfg->wdma_config.dma_cube_size_c-1)/16 +1, base + NU_VPE + NU_VPE_CUBE_SIZE_C );  // size in vectors!!!!!!!
-  iowrite32(cfg->wdma_config.dma_cube_size_w,           base + NU_VPE + NU_VPE_CUBE_SIZE_W );
-  iowrite32(cfg->wdma_config.dma_cube_size_h,           base + NU_VPE + NU_VPE_CUBE_SIZE_H );
+  iowrite32(cfg->wdma_config.dma_cube_size_c-1, base + NU_VPE + NU_VPE_CUBE_SIZE_C );
+  iowrite32(cfg->wdma_config.dma_cube_size_w-1, base + NU_VPE + NU_VPE_CUBE_SIZE_W );
+  iowrite32(cfg->wdma_config.dma_cube_size_h-1, base + NU_VPE + NU_VPE_CUBE_SIZE_H );
   
   if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
   else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
