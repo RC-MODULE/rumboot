@@ -110,6 +110,8 @@
 #define NU_VPE_DMA_BOX_OFFSET_SIZE_X   0x06C
 #define NU_VPE_DMA_BOX_OFFSET_SIZE_Y   0x070
 #define NU_VPE_DMA_BOX_OFFSET_SIZE_Z   0x074
+#define NU_VPE_DMA_BATCH_SIZE          0x078
+#define NU_VPE_DMA_BATCH_STRIDE        0x07C
 
 #endif
 

@@ -42,6 +42,11 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
   
+  cfg->src_rdma_config.dma_bsize=0;
+  cfg->src_rdma_config.dma_bstride=0;
+  cfg->wdma_config.dma_bsize=0;
+  cfg->wdma_config.dma_bstride=0;
+  
   cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
 #ifdef FORCE_VPE_WDMA_EN
   cfg->dst_flying = Enable_NotEn;

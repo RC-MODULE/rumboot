@@ -130,6 +130,11 @@ int main() {
       cfg_vpe.op1_rdma_config.dma_axi_len   = 0x0;
       cfg_vpe.op2_rdma_config.dma_axi_len   = 0x0;
       cfg_vpe.wdma_config.dma_axi_len       = 0x0;
+      cfg_vpe.src_rdma_config.dma_bsize=0;
+      cfg_vpe.src_rdma_config.dma_bstride=0;
+      cfg_vpe.wdma_config.dma_bsize=0;
+      cfg_vpe.wdma_config.dma_bstride=0;
+      
 
       cfg_vpe.src_flying = Enable_NotEn;
       cfg_vpe.src_flying = Enable_NotEn;

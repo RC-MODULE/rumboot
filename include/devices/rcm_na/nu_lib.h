@@ -137,6 +137,11 @@
     DmaXYZDirection_Y,
     DmaXYZDirection_Z
   }DmaXYZDirectionType;
+  
+  typedef enum CubeRole {
+    CubeRole_LastInBatch,
+    CubeRole_NotLastInBatch
+  }CubeRole;
 
   /**
   VPE modes for ResNet50
@@ -359,6 +364,8 @@
     uint16_t     dma_box_offset_y    ;
     uint16_t     dma_box_offset_z    ;
     uint8_t      dma_axi_len         ;
+    uint8_t      dma_bsize           ;
+    uint32_t     dma_bstride         ;
   }ConfigDMA;
 
   typedef struct ConfigVPE {
@@ -497,6 +504,7 @@
     int32_t H;
     int32_t W;
     int32_t C;
+    CubeRole role;
   }CubeMetrics;
 
   typedef struct WarrMetrics{

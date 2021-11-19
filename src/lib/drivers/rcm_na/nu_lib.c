@@ -531,6 +531,8 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   rumboot_printf("  dma_box_offset_x = %d\n",cfg_dma->dma_box_offset_x);
   rumboot_printf("  dma_box_offset_y = %d\n",cfg_dma->dma_box_offset_y);
   rumboot_printf("  dma_box_offset_z = %d\n",cfg_dma->dma_box_offset_z);
+  rumboot_printf("  dma_bsize = %d\n",cfg_dma->dma_bsize);
+  rumboot_printf("  dma_bstride = %d\n",cfg_dma->dma_bstride);
   rumboot_printf("  dma_axi_len = %d\n",cfg_dma->dma_axi_len);
 #endif // NU_NO_PRINT
   
@@ -1029,6 +1031,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->wdma_config.dma_box_offset_x    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
   iowrite32(cfg->wdma_config.dma_box_offset_y    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
   iowrite32(cfg->wdma_config.dma_box_offset_z    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
+  iowrite32(cfg->wdma_config.dma_bsize           , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BATCH_SIZE          ) ;
+  iowrite32(cfg->wdma_config.dma_bstride         , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BATCH_STRIDE        ) ;
 
   // Configuration SRC_RDMA ------------------------------------------------------
   //iowrite32(cfg->src_rdma_config.dma_en , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CFG );
@@ -1061,6 +1065,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->src_rdma_config.dma_box_offset_x    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
   iowrite32(cfg->src_rdma_config.dma_box_offset_y    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
   iowrite32(cfg->src_rdma_config.dma_box_offset_z    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
+  iowrite32(cfg->src_rdma_config.dma_bsize           , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BATCH_SIZE          ) ;
+  iowrite32(cfg->src_rdma_config.dma_bstride         , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BATCH_STRIDE        ) ;
   
 
   // Configuration OP0_RDMA ------------------------------------------------------
@@ -1374,6 +1380,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   }  
   else cfg->op0_rdma_config.dma_data_use = DmaDUse_Off ;
 
+  cfg->op0_rdma_config.dma_bsize=0;    // Operands Cannot Be Batch
+  cfg->op0_rdma_config.dma_bstride=0;
+  
   nu_vpe_decide_dma_cube_config(&(cfg->op0_rdma_config), cfg->trace_mode, metrics);
 
   // OP1_RDMA -------------------------------------------------------------------------------------------- 
@@ -1418,6 +1427,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
     cfg->op1_rdma_config.dma_data_use = DmaDUse_Mux ;
   }  
   else cfg->op1_rdma_config.dma_data_use = DmaDUse_Off ;
+  
+  cfg->op1_rdma_config.dma_bsize=0;    // Operands Cannot Be Batch
+  cfg->op1_rdma_config.dma_bstride=0;
   
   nu_vpe_decide_dma_cube_config(&(cfg->op1_rdma_config), cfg->trace_mode, metrics);
   
@@ -1464,6 +1476,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   }  
   else cfg->op2_rdma_config.dma_data_use = DmaDUse_Off ;
 
+  cfg->op2_rdma_config.dma_bsize=0;    // Operands Cannot Be Batch
+  cfg->op2_rdma_config.dma_bstride=0;
+  
   nu_vpe_decide_dma_cube_config(&(cfg->op2_rdma_config), cfg->trace_mode, metrics);
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }

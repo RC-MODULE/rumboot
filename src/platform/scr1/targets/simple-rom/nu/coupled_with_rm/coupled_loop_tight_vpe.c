@@ -42,6 +42,11 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
   cfg->wdma_config.dma_data_use      = DmaDUse_Off;
 
+  cfg->src_rdma_config.dma_bsize=0;
+  cfg->src_rdma_config.dma_bstride=0;
+  cfg->wdma_config.dma_bsize=0;
+  cfg->wdma_config.dma_bstride=0;
+  
 #ifdef AXI_LEN
     axi_len = AxiLen;
 #else 

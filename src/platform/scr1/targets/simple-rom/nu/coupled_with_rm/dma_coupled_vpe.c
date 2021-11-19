@@ -34,6 +34,11 @@ void print_in_data(int32_t * in_data, int in_size){
 }
 
 void nu_vpe_decide_dma_config (ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma) {
+  cfg->src_rdma_config.dma_bsize=0;
+  cfg->src_rdma_config.dma_bstride=0;
+  cfg->wdma_config.dma_bsize=0;
+  cfg->wdma_config.dma_bstride=0;
+  
   nu_vpe_decide_dma_config_trivial(cfg,metrics);
   cfg_dma->H = metrics->H;
   cfg_dma->W = metrics->W;
