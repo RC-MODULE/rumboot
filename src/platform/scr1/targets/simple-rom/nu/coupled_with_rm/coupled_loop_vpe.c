@@ -34,7 +34,7 @@ void nu_vpe_decide_dma_config (
   void*res_data, 
   ConfigDMAVPE* cfg_dma
 ) {
-  rumboot_printf("nu_vpe_decide_dma_config \n");
+   rumboot_printf("nu_vpe_decide_dma_config \n");
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
@@ -92,6 +92,66 @@ int main() {
   uint32_t misalign;
   uint8_t  axi_len;
   
+  char* fn_in_base          			= "in_file_tag_"        ;
+  char* fn_cfg_base         			= "cfg_file_tag_"   ;
+  char* fn_in_metrics_base  			= "metrics_in_tag_"     ;
+  char* fn_res_metrics_base 			= "metrics_etalon_tag_" ;
+  char* fn_etalon_base      			= "etalon_file_tag_"    ;
+  
+  char* fn_metrics_op0_cube_base    	= "metrics_op0_cube_tag_" ;
+  char* fn_metrics_op0_vec_base     	= "metrics_op0_vec_tag_" ;
+  char* fn_op0_cube_file_base   		= "op0_cube_file_tag_" ;
+  char* fn_op0_vec_file_base    		= "op0_vec_file_tag_" ;
+  
+  char* fn_metrics_op1_cube_base    	= "metrics_op1_cube_tag_" ;
+  char* fn_metrics_op1_vec_base     	= "metrics_op1_vec_tag_" ;
+  char* fn_op1_cube_file_base   		= "op1_cube_file_tag_" ;
+  char* fn_op1_vec_file_base    		= "op1_vec_file_tag_" ;
+  
+  char* fn_metrics_op2_cube_base    	= "metrics_op2_cube_tag_" ;
+  char* fn_metrics_op2_vec_base     	= "metrics_op2_vec_tag_" ;
+  char* fn_op2_cube_file_base   		= "op2_cube_file_tag_" ;
+  char* fn_op2_vec_file_base    		= "op2_vec_file_tag_" ;
+  
+  char* fn_metrics_lut1_file_base   	= "metrics_lut1_file_tag_" ; 
+  char* fn_metrics_lut2_file_base   	= "metrics_lut2_file_tag_" ;
+  char* fn_lut1_file_base   			= "lut1_file_tag_" ; 
+  char* fn_lut2_file_base   			= "lut2_file_tag_" ;
+ 
+  char* fn_status_regs_file_base   		= "status_regs_file_tag_" ;
+ 
+  char  fn_in[32];
+  char  fn_cfg[32];
+  char  fn_in_metrics[32];
+  char  fn_res_metrics[32];
+  char  fn_etalon[32];
+   
+  char  fn_metrics_op0_cube[32]; 
+  char  fn_metrics_op0_vec[32];
+  char  fn_op0_cube_file[32]; 
+  char  fn_op0_vec_file[32];
+
+  char  fn_metrics_op1_cube[32]; 
+  char  fn_metrics_op1_vec[32];
+  char  fn_op1_cube_file[32]; 
+  char  fn_op1_vec_file[32];
+
+  char  fn_metrics_op2_cube[32]; 
+  char  fn_metrics_op2_vec[32];
+  char  fn_op2_cube_file[32]; 
+  char  fn_op2_vec_file[32];
+
+  char  fn_metrics_lut1_file[32]; 
+  char  fn_metrics_lut2_file[32];
+  char  fn_lut1_file[32]; 
+  char  fn_lut2_file[32];
+
+  char  fn_status_regs_file[32]; 
+//---------  
+  #if DUT_IS_VPE
+    fn_in_base = "in_ameba_file_tag_";
+  #endif 
+//---------  
 #ifdef MISALIGN_EN
     misalign = IntMisalign;
 #else
@@ -118,50 +178,80 @@ int main() {
   
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);
+	
+    fn_base_it_nmb(fn_in, fn_in_base, i);
+    fn_base_it_nmb(fn_cfg, fn_cfg_base, i);
+    fn_base_it_nmb(fn_in_metrics, fn_in_metrics_base, i);
+    fn_base_it_nmb(fn_res_metrics, fn_res_metrics_base, i);
+    fn_base_it_nmb(fn_etalon, fn_etalon_base, i);
+	
+	
+	fn_base_it_nmb(fn_metrics_op0_cube, fn_metrics_op0_cube_base, i);
+	fn_base_it_nmb(fn_metrics_op0_vec, fn_metrics_op0_vec_base, i);
+	fn_base_it_nmb(fn_op0_cube_file, fn_op0_cube_file_base, i);
+	fn_base_it_nmb(fn_op0_vec_file, fn_op0_vec_file_base, i);	
+	
+	
+	fn_base_it_nmb(fn_metrics_op1_cube, fn_metrics_op1_cube_base, i);
+	fn_base_it_nmb(fn_metrics_op1_vec, fn_metrics_op1_vec_base, i);
+	fn_base_it_nmb(fn_op1_cube_file, fn_op1_cube_file_base, i);
+	fn_base_it_nmb(fn_op1_vec_file, fn_op1_vec_file_base, i);	
+
+	fn_base_it_nmb(fn_metrics_op2_cube, fn_metrics_op2_cube_base, i);
+	fn_base_it_nmb(fn_metrics_op2_vec, fn_metrics_op2_vec_base, i);
+	fn_base_it_nmb(fn_op2_cube_file, fn_op2_cube_file_base, i);
+	fn_base_it_nmb(fn_op2_vec_file, fn_op2_vec_file_base, i);	
+	
+	fn_base_it_nmb(fn_metrics_lut1_file, fn_metrics_lut1_file_base, i);
+	fn_base_it_nmb(fn_metrics_lut2_file, fn_metrics_lut2_file_base, i);
+	fn_base_it_nmb(fn_lut1_file, fn_lut1_file_base, i);
+	fn_base_it_nmb(fn_lut2_file, fn_lut2_file_base, i);
+	
+	fn_base_it_nmb(fn_status_regs_file, fn_status_regs_file_base, i);
+	
+    if(nu_vpe_load_cfg_by_tag(heap_id, &cfg, fn_cfg) != 0) return -1;
     
-    if(nu_vpe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]) != 0) return -1;
-    
-    in_metrics = nu_load_cube_metrics(heap_id,metrics_in_tag[i]);
+    in_metrics = nu_load_cube_metrics(heap_id,fn_in_metrics);
     if(in_metrics == NULL) return -1;
     
-    res_metrics= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
+    res_metrics= nu_load_cube_metrics(heap_id,fn_res_metrics);
     if(res_metrics == NULL) return -1;
 
-    in_data = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,misalign);
+    in_data = nu_load_cube_misaligned(heap_id,fn_in,in_metrics,misalign);
     if(in_data == NULL) return -1;
     
     res_data = nu_vpe_malloc_res(heap_id, res_metrics);
     if(res_data == NULL) return -1;
     
       // Load OP0-OP2 Operands If Needed
-    if(cfg.op0_en==Enable_En) {
-      op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],misalign);
-    }
+    if(cfg.op0_en==Enable_En) {  
+  op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,fn_metrics_op0_cube,fn_metrics_op0_vec,fn_op0_cube_file,fn_op0_vec_file,misalign);
+}
     else op0 = NULL;
     if(cfg.op1_en==Enable_En) {
-      op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],misalign);
-    }
+	   op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,fn_metrics_op1_cube,fn_metrics_op1_vec,fn_op1_cube_file,fn_op1_vec_file,misalign);
+ }
     else op1 = NULL;
     if(cfg.op2_en==Enable_En) {
-      op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],misalign);
-    }
+		op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,fn_metrics_op2_cube,fn_metrics_op2_vec,fn_op2_cube_file,fn_op2_vec_file,misalign);
+ }
     else op2 = NULL;
     
       // Load LUTs If Needed
     if(cfg.op2_config.lut_en == Enable_En) {
-      lut1_metrics = nu_load_vec_metrics(heap_id,metrics_lut1_file_tag[i]);
-      lut2_metrics = nu_load_vec_metrics(heap_id,metrics_lut2_file_tag[i]);
-      lut1 = nu_load_vec(heap_id,lut1_file_tag[i],lut1_metrics);
-      lut2 = nu_load_vec(heap_id,lut2_file_tag[i],lut2_metrics);
+      lut1_metrics = nu_load_vec_metrics(heap_id,fn_metrics_lut1_file);
+      lut2_metrics = nu_load_vec_metrics(heap_id,fn_metrics_lut2_file);
+      lut1 = nu_load_vec(heap_id,fn_lut1_file,lut1_metrics);
+      lut2 = nu_load_vec(heap_id,fn_lut2_file,lut2_metrics);
       nu_vpe_load_lut(MY_VPE_REGS_BASE,lut1,lut2);
     }
-    
-    etalon = nu_load_cube(heap_id,etalon_file_tag[i],res_metrics);
+     
+	etalon = nu_load_cube(heap_id,fn_etalon,res_metrics);
     if(etalon == NULL) return -1;
     
     //print_in_data(in_data,in_size);
     
-    if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
+    if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,fn_status_regs_file/*status_regs_file_tag[i]*/) != 0) return -1;
 
     cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
 #ifdef FORCE_VPE_WDMA_EN
@@ -235,14 +325,13 @@ int main() {
     rumboot_printf("Performance: 0.%d vectors/cycle num_vectors = %d, num_cycles = %d \n",
                    productivity_x1000,num_vectors,num_cycles);
     
-    //if(cfg.src_rdma_config.dma_cube_size_c%16 == 0) {
+  // if(cfg.src_rdma_config.dma_cube_size_c%16 == 0) {
         if(nu_vpe_check_status_regs(MY_VPE_REGS_BASE, &status_regs_etalon) != 0) {
         rumboot_printf("Test FAILED Due to Status Reg Check at iteration %d\n",i);
         return -1;
         }
-        else {rumboot_printf("Test OK Due to Status Reg Check at iteration %d\n",i);}
-        
-    //}
+       else {rumboot_printf("Test OK Due to Status Reg Check at iteration %d\n",i);}		
+   // }
   }
   
   return 0;
