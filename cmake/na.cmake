@@ -599,6 +599,9 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
 
     # Test on VPE special cases
     ADD_VPE_COUPLED_TEST_LOOP(vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
+
+    # Test on VPE batch-mode
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_batch_mode main_vpe_batch_mode)    
   endif()  # if(DUT STREQUAL "VPE")
 
   ###################################################################
