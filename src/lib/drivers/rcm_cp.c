@@ -110,6 +110,52 @@ void cp_start_tx(struct rcm_cp_instance *inst, const void *buf, size_t len)
     iowrite32(0x1,   inst->base + RCM_CP_CSR_TR);
 }
 
+void cp_prep_tx(struct rcm_cp_instance *inst, const void *buf, size_t len)
+{
+    if (inst->txbuf) {
+        if (inst->buflen < len) {
+            rumboot_platform_panic("BUG: Please increase cp dma buffer\n");
+        }
+        memcpy(inst->txbuf, buf, len);
+        buf = inst->txbuf;
+    } else {
+        cp_check_buffer(buf, len);
+    }
+	iowrite32( len >> 3,  inst->base + RCM_CP_MAINCOUNTER_TR ); //set dma total data 512 byte
+	iowrite32( rumboot_virt_to_dma(buf), inst->base + RCM_CP_ADDRESS_TR ); //dma destination atart address
+	iowrite32( 0x0,  inst->base + RCM_CP_BIAS_TR );
+	iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_TR );
+    iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_TR);
+    #ifdef __PPC__
+    asm("msync");
+    #endif
+    /* Go! */
+    //iowrite32(0x1,   inst->base + RCM_CP_CSR_TR);
+}
+
+void cp_go_tx(struct rcm_cp_instance *inst, const void *buf, size_t len)
+{
+    //if (inst->txbuf) {
+    //    if (inst->buflen < len) {
+    //        rumboot_platform_panic("BUG: Please increase cp dma buffer\n");
+    //    }
+    //    memcpy(inst->txbuf, buf, len);
+    //    buf = inst->txbuf;
+    //} else {
+    //    cp_check_buffer(buf, len);
+    //}
+	//iowrite32( len >> 3,  inst->base + RCM_CP_MAINCOUNTER_TR ); //set dma total data 512 byte
+	//iowrite32( rumboot_virt_to_dma(buf), inst->base + RCM_CP_ADDRESS_TR ); //dma destination atart address
+	//iowrite32( 0x0,  inst->base + RCM_CP_BIAS_TR );
+	//iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_TR );
+    //iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_TR);
+    //#ifdef __PPC__
+    //asm("msync");
+    //#endif
+    /* Go! */
+    iowrite32(0x1,   inst->base + RCM_CP_CSR_TR);
+}
+
 enum cp_status cp_tx_status(struct rcm_cp_instance *inst)
 {
     uint32_t status = ioread32(inst->base + RCM_CP_CSR_TR);
@@ -146,6 +192,60 @@ void cp_start_rx(struct rcm_cp_instance *inst, void *buf, size_t len)
     iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_RCV);
 
     /* Go! */
+    iowrite32(0x1,   inst->base + RCM_CP_CSR_RCV);
+}
+
+void cp_prep_rx(struct rcm_cp_instance *inst, void *buf, size_t len)
+{
+    if ((len % 8) != 0) {
+      rumboot_platform_panic("BUG: len % 8 != 0");      
+    }
+    
+    if (inst->rxbuf) {
+        if (inst->buflen < len) {
+            rumboot_platform_panic("BUG: Please increase cp dma buffer");
+        }
+        inst->rxtargetbuf = buf;
+        buf = inst->rxbuf;
+    } else {
+        cp_check_buffer(buf, len);
+    }
+    
+	  iowrite32( len >> 3,  inst->base + RCM_CP_MAINCOUNTER_RCV ); //set dma total data 512 byte
+	  iowrite32( rumboot_virt_to_dma(buf), inst->base +  RCM_CP_ADDRESS_RCV ); //dma destination atart address
+	  iowrite32( 0x0,  inst->base + RCM_CP_BIAS_RCV );
+	  iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_RCV );
+	  iowrite32( 0x0,  inst->base + RCM_CP_ADDRESSMODE_RCV );	
+    iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_RCV);
+
+    ///* Go! */
+    //iowrite32(0x1,   inst->base + RCM_CP_CSR_RCV);
+}
+
+void cp_go_rx(struct rcm_cp_instance *inst, void *buf, size_t len)
+{
+    //if ((len % 8) != 0) {
+    //  rumboot_platform_panic("BUG: len % 8 != 0");      
+    //}
+    //
+    //if (inst->rxbuf) {
+    //    if (inst->buflen < len) {
+    //        rumboot_platform_panic("BUG: Please increase cp dma buffer");
+    //    }
+    //    inst->rxtargetbuf = buf;
+    //    buf = inst->rxbuf;
+    //} else {
+    //    cp_check_buffer(buf, len);
+    //}
+    //
+	//  iowrite32( len >> 3,  inst->base + RCM_CP_MAINCOUNTER_RCV ); //set dma total data 512 byte
+	//  iowrite32( rumboot_virt_to_dma(buf), inst->base +  RCM_CP_ADDRESS_RCV ); //dma destination atart address
+	//  iowrite32( 0x0,  inst->base + RCM_CP_BIAS_RCV );
+	//  iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_RCV );
+	//  iowrite32( 0x0,  inst->base + RCM_CP_ADDRESSMODE_RCV );	
+    //iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_RCV);
+    //
+    ///* Go! */
     iowrite32(0x1,   inst->base + RCM_CP_CSR_RCV);
 }
 

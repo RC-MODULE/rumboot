@@ -121,6 +121,7 @@ rumboot_add_configuration(
     LDS oi10/rom.lds
     SNAPSHOT default
     PREFIX supplementary
+    #CFLAGS -DOI10_MINIMAL_INIT -DRUMBOOT_NOINIT
     CFLAGS -DOI10_MINIMAL_INIT
     FEATURES STUB
 )
@@ -1411,6 +1412,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS +RANDOMIZE_SRAM        
         FILES power/test_oi10_power_1_7.S test_oi10_cpu_power_helper.c
         NAME "test_oi10_cpu_power_helper"
+        OPTIMIZE -O3
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_max_power.lds
+        IRUN_FLAGS +RANDOMIZE_SRAM        
+        FILES test_oi10_max_power_helper.c
+        NAME "test_oi10_max_power_helper"
+        OPTIMIZE -O3
     )
 
     add_rumboot_target(
@@ -2457,7 +2468,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION IRAM
         FILES simple-iram/test_oi10_cpu_023.c test_oi10_cpu_power.c
         PREFIX simple-iram
-        CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=1
+        CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
                -DHSCB0_TX_DSCTBL_BASE="IM1"
                -DHSCB0_TX_DATA_BASE="SSRAM"
                -DHSCB0_RX_DSCTBL_BASE="IM1"
@@ -2486,9 +2497,51 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_power"
         TESTGROUP o32tonly
+        OPTIMIZE -O3
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_power_helper
     )    
+      
+      
+        add_rumboot_target(
+        CONFIGURATION IRAM
+        #FILES simple-iram/test_oi10_cpu_023.c test_oi10_max_power.c
+        FILES test_oi10_max_power.c
+        PREFIX simple-iram
+        CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
+               -DHSCB0_TX_DSCTBL_BASE="IM1"
+               -DHSCB0_TX_DATA_BASE="IM2"
+               -DHSCB0_RX_DSCTBL_BASE="IM1"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="IM1"
+               -DHSCB1_TX_DATA_BASE="IM2"
+               -DHSCB1_RX_DSCTBL_BASE="IM1"
+               -DHSCB1_RX_DATA_BASE="SSRAM"
+               -DHSCB2_TX_DSCTBL_BASE="IM1"
+               -DHSCB2_TX_DATA_BASE="IM3"
+               -DHSCB2_RX_DSCTBL_BASE="IM1"
+               -DHSCB2_RX_DATA_BASE="SSRAM"
+               -DHSCB3_TX_DSCTBL_BASE="IM1"
+               -DHSCB3_TX_DATA_BASE="IM3"
+               -DHSCB3_RX_DSCTBL_BASE="IM1"
+               -DHSCB3_RX_DATA_BASE="SSRAM"
+               -DCOM_SRC_HEAP="IM1"
+               -DCOM_DST_HEAP="IM1"
+               -DSIZE_OF_PACKET=4096
+               -DN_OF_PACKETS=5   
+               -DTEST_DATA_SIZE=4096   
+               -DPOWER_TEST=1
+               -DEMI_INIT_FOR_POWER=1
+               -DCOMP_FOR_POWER=1
+               #-DDEBUG_PRINT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
+        NAME "test_oi10_max_power"
+        TESTGROUP o32tonly
+        OPTIMIZE -O3
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_max_power_helper
+    )    
+      
       
     
         add_rumboot_target(

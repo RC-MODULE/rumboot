@@ -12,6 +12,7 @@ MEMORY {
     /* Cached IM0 not directly supported by bootrom. Only for hackish power tests */
     IM0_CACHE   (rwx):  ORIGIN = 0x80060000,    LENGTH = 0x20000
     ROM          (rx):  ORIGIN = 0xFFFF0000,    LENGTH = 0x10000
+    IM0_PWR_CACHE (rwx):  ORIGIN = 0x80090000,    LENGTH = 0x4000
 
 }
 

@@ -69,10 +69,16 @@ void rumboot_platform_exit(int status) {
 }
 
 
-
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
     return get_physical_addr( (uint32_t) addr, 0);
+}
+
+uint64_t rumboot_virt_to_dma64(volatile void *addr)
+{   
+    uint64_t ret = get_physical_addr( (uint32_t) addr, 0);
+    rumboot_printf("rumboot_virt_to_dma64: vaddr = %x, paddr = %x%x\n", addr, (uint32_t)(ret>>32), (uint32_t)ret);
+    return ret;    
 }
 
 uint32_t rumboot_virt_to_dma(volatile const void *addr)
