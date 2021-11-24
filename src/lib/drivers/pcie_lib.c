@@ -30,7 +30,7 @@
 //  These defines must be changed for real program
 //  Unproven values!!
 //-----------------------------------------------------------------------------
-#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
+#ifdef CMAKE_BUILD_TYPE_DEBUG
 #define PCIE_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000
 #define PCIE_TEST_LIB_TRAINING_TIMEOUT    0x1000
 #else
@@ -41,8 +41,8 @@
 void pcie_sim_speedup ()
 {
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
-#ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
-#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
+#ifdef RUMBOOT_BUILD_TYPE_DEBUG
+#ifdef CMAKE_BUILD_TYPE_DEBUG
     /***************************************************/
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
