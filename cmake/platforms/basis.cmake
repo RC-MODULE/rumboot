@@ -1686,14 +1686,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
         CONFIGURATION IRAM_SPL
-        FILES configtool/ini_loader.c
+        FILES configtool/ini_loader.c configtool/ddrlib.c 
         APPEND configtool/hello.ini
         NAME bconfig_test
       )
 
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
-    FILES configtool/ini_loader.c
+    FILES configtool/ini_loader.c configtool/ddrlib.c
     NAME bconfig
   )
 

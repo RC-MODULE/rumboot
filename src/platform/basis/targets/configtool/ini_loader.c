@@ -123,6 +123,7 @@ void pcie_apply(void *user)
         }
 }
 
+static int the_exitcode = 0;
 int exit_handler(void *user, const char *section,
                  const char *name, const char *value,
                  int lineno)
@@ -142,13 +143,15 @@ int exit_handler(void *user, const char *section,
         if (strcmp(value, "next") == 0)
         {
                 rumboot_printf("Returning to bootrom to boot from next device\n");
-                exit(0);
+                the_exitcode = 0;
+                return 1;
         }
 
         if (strcmp(value, "host") == 0)
         {
                 rumboot_printf("Will now go back to host mode\n");
-                exit(-1);
+                the_exitcode = -1;
+                return 1;
         }
 
         if (strcmp(value, "wfiloop") == 0)
@@ -164,8 +167,27 @@ int exit_handler(void *user, const char *section,
         if (1 == sscanf(value, "jump:%d", &jid))
         {
                 rumboot_printf("Jumping to boot device %d\n", jid);
-                exit(jid);
+                the_exitcode = jid;
+                return 1;
         }
+}
+
+extern int ddr_do_init (int slot, const char* memtype);
+int ddr_handler(void *user, const char *section,
+                 const char *name, const char *value,
+                 int lineno)
+{
+        int slot;
+        if (!sscanf(name, "slot[%d]", &slot))
+                return 0;
+        rumboot_printf("DDR: Slot: %d Part: %s\n", slot, value);
+        int ret = ddr_do_init(slot, value);
+        if (ret) {
+                rumboot_printf("DDR initialisation of slot %d type %s failed\n", slot, value);
+                rumboot_printf("System halted\n");
+                while(1);
+        }
+        return 1;
 }
 
 struct sectionfilter filters[] = {
@@ -183,6 +205,16 @@ struct sectionfilter filters[] = {
         .handler = iomem_handler,
         .apply = NULL,
     },
+    {
+        .section = "IOMEM",
+        .handler = iomem_handler,
+        .apply = NULL,
+    },
+    {
+        .section = "DDR",
+        .handler = ddr_handler,
+        .apply = NULL,
+    },
     {/* Sentinel */},
 };
 
@@ -193,14 +225,14 @@ int theini_handler(void *user, const char *section,
                    const char *name, const char *value,
                    int lineno)
 {
-        rumboot_printf("[%s] : %s=%s\n", section, name, value);
+        //rumboot_printf("[%s] : %s=%s\n", section, name, value);
 
         if (!strlen(prevsection) || strcmp(prevsection, section) != 0)
         {
                 bzero(user, USERDATA_LEN);
                 if (strlen(prevsection))
                 {
-                        rumboot_printf("Finished parsing section: %s\n", prevsection);
+                        //rumboot_printf("Finished parsing section: %s\n", prevsection);
                 }
                 if (curfilter && curfilter->apply)
                 {
@@ -227,7 +259,7 @@ int theini_handler(void *user, const char *section,
                 }
                 else
                 {
-                        rumboot_printf("Current filter: %s\n", curfilter->section);
+                        //rumboot_printf("Current filter: %s\n", curfilter->section);
                 }
         }
 
@@ -237,10 +269,14 @@ int theini_handler(void *user, const char *section,
 
 int main()
 {
+        rumboot_platform_runtime_info->silent = 0;
         rumboot_printf("Parsing ini at 0x%x\n", &rumboot_platform_spl_end);
         char userdata[USERDATA_LEN];
-
-        ini_parse_string(&rumboot_platform_spl_end, theini_handler, userdata);
-        /* Return 0, test passed */
-        exit(0);
+        int ret = ini_parse_string(&rumboot_platform_spl_end, theini_handler, userdata);
+        if (ret != 0) {
+                rumboot_printf("Failed to parse config, problem on line %d\n", ret);
+                while(1);;
+        }
+        rumboot_printf("Done parsing config, code %d \n", the_exitcode);
+        return the_exitcode;
 }
