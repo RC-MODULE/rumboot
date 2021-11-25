@@ -403,8 +403,8 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   //nu_vpe_print_Enable(cfg->mark,"mark");
   //rumboot_printf("  cube_size = %d\n" , cfg->cube_size);
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
-  nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
+  nu_vpe_print_Enable(cfg->op2_en,"op2_en");
   rumboot_printf("  c3_offset = %d\n" , cfg->c3_offset);
   rumboot_printf("  c3_scale = %d\n" , cfg->c3_scale);
   rumboot_printf("  c3_trunc = %d\n" , cfg->c3_trunc);
