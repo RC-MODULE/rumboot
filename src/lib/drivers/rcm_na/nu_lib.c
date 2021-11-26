@@ -1338,8 +1338,10 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   nu_vpe_decide_dma_cube_config(&(cfg->src_rdma_config), cfg->trace_mode, metrics);
   
   // OP0_RDMA -------------------------------------------------------------------------------------------- 
-  if((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) ||
-     (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
+  if(cfg->op0_en && (
+     (cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) ||
+     (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary)  
+  )) { // if Some Of Operands Enabled And Not A Single Value
     cfg->op0_rdma_config.dma_en = Enable_En; // new struct ============
   }
   else {
@@ -1386,8 +1388,10 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   nu_vpe_decide_dma_cube_config(&(cfg->op0_rdma_config), cfg->trace_mode, metrics);
 
   // OP1_RDMA -------------------------------------------------------------------------------------------- 
-  if((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) ||
-     (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
+  if(cfg->op1_en && (
+     (cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) ||
+     (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary)  
+  )) { // if Some Of Operands Enabled And Not A Single Value
     cfg->op1_rdma_config.dma_en = Enable_En; // new struct ============
   }
   else {
@@ -1434,8 +1438,10 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   nu_vpe_decide_dma_cube_config(&(cfg->op1_rdma_config), cfg->trace_mode, metrics);
   
   // OP2_RDMA -------------------------------------------------------------------------------------------- 
-  if((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) ||
-     (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
+  if(cfg->op2_en && (
+     (cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) ||
+     (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary)  
+  )) { // if Some Of Operands Enabled And Not A Single Value
     cfg->op2_rdma_config.dma_en = Enable_En; // new struct ============
   }
   else {
