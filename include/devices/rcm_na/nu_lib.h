@@ -139,8 +139,8 @@
   }DmaXYZDirectionType;
   
   typedef enum CubeRole {
-    CubeRole_LastInBatch,
-    CubeRole_NotLastInBatch
+    CubeRole_NotLastInBatch,
+    CubeRole_LastInBatch
   }CubeRole;
 
   /**
