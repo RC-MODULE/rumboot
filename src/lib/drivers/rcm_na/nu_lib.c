@@ -532,7 +532,7 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   rumboot_printf("  dma_box_offset_y = %d\n",cfg_dma->dma_box_offset_y);
   rumboot_printf("  dma_box_offset_z = %d\n",cfg_dma->dma_box_offset_z);
   rumboot_printf("  dma_bsize = %d\n",cfg_dma->dma_bsize);
-  rumboot_printf("  dma_bstride = %d\n",cfg_dma->dma_bstride);
+  rumboot_printf("  dma_bstride = 0x%x\n",cfg_dma->dma_bstride);
   rumboot_printf("  dma_axi_len = %d\n",cfg_dma->dma_axi_len);
 #endif // NU_NO_PRINT
   
