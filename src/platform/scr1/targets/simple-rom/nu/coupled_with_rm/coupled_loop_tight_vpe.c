@@ -148,11 +148,7 @@ int main() {
   char  fn_lut2_file[32];
 
   char  fn_status_regs_file[32]; 
-//---------  
-  #if DUT_IS_VPE
-    fn_in_base = "in_ameba_file_tag_";
-  #endif 
-//---------
+
   rumboot_printf("Hello \n");
   
   heap_id = nu_get_heap_id();
