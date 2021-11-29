@@ -1,4 +1,3 @@
-
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/rumboot.h>
@@ -147,11 +146,7 @@ int main() {
   char  fn_lut2_file[32];
 
   char  fn_status_regs_file[32]; 
-//---------  
-  #if DUT_IS_VPE
-    fn_in_base = "in_ameba_file_tag_";
-  #endif 
-//---------  
+
 #ifdef MISALIGN_EN
     misalign = IntMisalign;
 #else
