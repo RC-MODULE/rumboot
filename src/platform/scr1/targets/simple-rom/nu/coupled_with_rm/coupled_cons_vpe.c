@@ -47,11 +47,11 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_bsize=0;
   cfg->wdma_config.dma_bstride=0;
  
-#ifdef AXI_LEN
-    axi_len = AxiLen;
-#else 
-    axi_len = 15;
-#endif
+//#ifdef AXI_LEN
+//    axi_len = AxiLen;
+//#else 
+ //   axi_len = 15;
+//#endif
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
   cfg_dma->H = in_metrics->H;
