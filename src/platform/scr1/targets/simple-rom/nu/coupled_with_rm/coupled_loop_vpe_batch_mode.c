@@ -203,8 +203,6 @@ int main() {
     etalon[i] = nu_load_cube(heap_id,etalon_file_tag[i],res_metrics);
     if(etalon[i] == NULL) return -1;
     
-    rumboot_printf("res_data = 0x%x, res_metrics->s = %d\n",(uint32_t)res_data,res_metrics->s);
-    
     if(turn_index==0) {
       nu_vpe_decide_dma_config(&cfg,in_metrics,axi_len,in_data,res_metrics,res_data);
       
@@ -262,8 +260,6 @@ int main() {
       nu_print_config_dma(&cfg.wdma_config,"wdma_config");
       // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
       
-      rumboot_printf("res_metrics = 0x%x, res_metrics->s = %d\n",(uint32_t)res_metrics, res_metrics->s);
-    
       nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);
       
         // Setup Main Channel DMAs if Required
@@ -296,8 +292,6 @@ int main() {
       in_data_ptr = in_data_first;
       for(int j=k; j<=i; j++) { // Iterate From The Batch Start To The Current Iteration
         rumboot_printf("Comparing iteration %d: res=0x%x, etalon=0x%x, %d bytes\n",j,(uint32_t)res_ptr,(uint32_t)etalon[j], res_metrics->s);
-        
-        if(res_metrics->s > 1000000) return 1;
         
         if(nu_bitwise_compare(res_ptr,etalon[j],res_metrics->s) == 0)
           rumboot_printf("Iteration %d PASSED\n",j);
