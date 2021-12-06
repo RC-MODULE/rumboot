@@ -396,18 +396,6 @@
     Enable      mark            ;
   }ConfigVPE;
 
-  typedef struct ConfigDMAVPE {
-    Enable dma_src_en;
-    Enable dma_op0_en;
-    Enable dma_op1_en;
-    Enable dma_op2_en;
-    Enable dma_dst_en;
-    int32_t H;
-    int32_t W;
-    int32_t C;
-    // Add Here DMA Parameter Fields
-  }ConfigDMAVPE;
-
   /**
   Настройки блока субдескритизации
   */
@@ -550,7 +538,6 @@
   
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);
-void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
 void nu_print_config_dma(ConfigDMA * cfg_dma,char* name);
 
 uint32_t nu_lut_log2(uint32_t a);

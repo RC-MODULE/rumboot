@@ -492,17 +492,6 @@ void nu_vpe_print_config(ConfigVPE* cfg){
 #endif // NU_NO_PRINT
 }
 
-void nu_vpe_print_config_dma(ConfigDMAVPE* cfg) {
-#ifndef NU_NO_PRINT
-  rumboot_printf("ConfigDMAVPE:\n");
-  nu_vpe_print_Enable(cfg->dma_src_en,"dma_src_en");
-  nu_vpe_print_Enable(cfg->dma_op0_en,"dma_op0_en");
-  nu_vpe_print_Enable(cfg->dma_op1_en,"dma_op1_en");
-  nu_vpe_print_Enable(cfg->dma_op2_en,"dma_op2_en");
-  nu_vpe_print_Enable(cfg->dma_dst_en,"dma_dst_en");
-#endif
-}
-
 void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
 #ifndef NU_NO_PRINT
   rumboot_printf("ConfigDMA (%s):\n",name);
@@ -2374,7 +2363,6 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
   nu_cpdmac_trn512_wait_complete(dma_base);
 }
 
-//void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3апуск DMA
   uint32_t temp;

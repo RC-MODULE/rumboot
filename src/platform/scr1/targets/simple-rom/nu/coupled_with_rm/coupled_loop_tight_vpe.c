@@ -30,8 +30,7 @@ void nu_vpe_decide_dma_config (
   void*op1,
   void*op2,
   CubeMetrics*res_metrics,
-  void*res_data, 
-  ConfigDMAVPE* cfg_dma
+  void*res_data
 ) {
   uint8_t axi_len;
   
@@ -54,10 +53,6 @@ void nu_vpe_decide_dma_config (
 #endif
 
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
-  cfg_dma->H = in_metrics->H;
-  cfg_dma->W = in_metrics->W;
-  cfg_dma->C = in_metrics->C;
-  cfg_dma->dma_dst_en = cfg->dst_flying ? Enable_NotEn : Enable_NotEn;
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data ;
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0     ;
@@ -74,7 +69,6 @@ void nu_vpe_decide_dma_config (
 }
 
 ConfigVPE cfg;
-ConfigDMAVPE cfg_dma;
 
 CubeMetrics* in_metrics;
 CubeMetrics* res_metrics;
@@ -245,7 +239,7 @@ int main() {
       cfg.trace_mode = TraceMode_MPE;
 
       // nu_vpe_print_config(&cfg);
-      nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
+      nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data);
       if(i==iterations-1) 
         cfg.mark = Enable_En;
       else
