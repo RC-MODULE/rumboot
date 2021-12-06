@@ -253,11 +253,6 @@ int main() {
     //~ }
 
       nu_vpe_print_config(&cfg);
-      nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
-      nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
-      nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
-      nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
-      nu_print_config_dma(&cfg.wdma_config,"wdma_config");
       // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
       
       nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);

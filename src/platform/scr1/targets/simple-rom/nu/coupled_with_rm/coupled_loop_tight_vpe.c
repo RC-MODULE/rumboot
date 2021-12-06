@@ -30,11 +30,21 @@ void nu_vpe_decide_dma_config (
   void*op1,
   void*op2,
   CubeMetrics*res_metrics,
-  void*res_data
+  void*res_data,
+  bool last_turn
 ) {
   uint8_t axi_len;
   
   rumboot_printf("nu_vpe_decide_dma_config \n");
+  
+  cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
+#ifdef FORCE_VPE_WDMA_EN
+  cfg->dst_flying = Enable_NotEn;
+#else
+  cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
+#endif
+  cfg->trace_mode = TraceMode_MPE;
+
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
@@ -53,6 +63,9 @@ void nu_vpe_decide_dma_config (
 #endif
 
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
+  
+  if(last_turn) 
+    cfg->mark = Enable_En;
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data ;
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0     ;
@@ -230,26 +243,9 @@ int main() {
       
       // if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
       
-      cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
-  #ifdef FORCE_VPE_WDMA_EN
-      cfg.dst_flying = Enable_NotEn;
-  #else
-      cfg.dst_flying = cfg.out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
-  #endif
-      cfg.trace_mode = TraceMode_MPE;
-
-      // nu_vpe_print_config(&cfg);
-      nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data);
-      if(i==iterations-1) 
-        cfg.mark = Enable_En;
-      else
-        cfg.mark = Enable_NotEn;
+      nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,i==iterations-1);
       
-      // nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
-      // nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
-      // nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
-      // nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
-      // nu_print_config_dma(&cfg.wdma_config,"wdma_config");
+      // nu_vpe_print_config(&cfg);
       // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
       
       nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);

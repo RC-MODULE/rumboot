@@ -396,12 +396,12 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
 void nu_vpe_print_config(ConfigVPE* cfg){
 #ifndef NU_NO_PRINT
   rumboot_printf("ConfigVPE:\n");
-  //nu_vpe_print_Enable(cfg->src_flying,"src_flying(data from MPE)");
-  //nu_vpe_print_Enable(cfg->dst_flying,"dst_flying(data to PPE)");
+  nu_vpe_print_Enable(cfg->src_flying,"src_flying(data from MPE)");
+  nu_vpe_print_Enable(cfg->dst_flying,"dst_flying(data to PPE)");
   nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
   nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
-  //nu_vpe_print_Enable(cfg->mark,"mark");
-  //rumboot_printf("  cube_size = %d\n" , cfg->cube_size);
+  nu_vpe_print_Enable(cfg->mark,"mark");
+  rumboot_printf("  cube_size = %d\n" , cfg->cube_size);
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
   nu_vpe_print_Enable(cfg->op2_en,"op2_en");
@@ -489,6 +489,11 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  lut_xoffset = %x \n", cfg->op2_config.lut_xoffset);
   rumboot_printf("  lut_yoffset = %x \n", cfg->op2_config.lut_yoffset);
 
+  nu_print_config_dma(&(cfg->src_rdma_config),"src_rdma_config");
+  nu_print_config_dma(&(cfg->op0_rdma_config),"op0_rdma_config");
+  nu_print_config_dma(&(cfg->op1_rdma_config),"op1_rdma_config");
+  nu_print_config_dma(&(cfg->op2_rdma_config),"op2_rdma_config");
+  nu_print_config_dma(&(cfg->wdma_config),"wdma_config");
 #endif // NU_NO_PRINT
 }
 

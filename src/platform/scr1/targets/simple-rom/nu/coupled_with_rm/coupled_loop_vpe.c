@@ -33,6 +33,20 @@ void nu_vpe_decide_dma_config (
   void*res_data
 ) {
    rumboot_printf("nu_vpe_decide_dma_config \n");
+  
+  cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
+#ifdef FORCE_VPE_WDMA_EN
+  cfg->dst_flying = Enable_NotEn;
+#else
+  cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
+#endif
+
+#ifdef VPE_TraceMode_PPE
+  cfg->trace_mode = TraceMode_PPE;
+#else
+  cfg->trace_mode = TraceMode_MPE;
+#endif
+
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
@@ -242,26 +256,8 @@ int main() {
     
     if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,fn_status_regs_file/*status_regs_file_tag[i]*/) != 0) return -1;
 
-    cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
-#ifdef FORCE_VPE_WDMA_EN
-    cfg.dst_flying = Enable_NotEn;
-#else
-    cfg.dst_flying = cfg.out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
-#endif
-
-#ifdef VPE_TraceMode_PPE
-    cfg.trace_mode = TraceMode_PPE;
-#else
-    cfg.trace_mode = TraceMode_MPE;
-#endif
-
-    nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,axi_len,in_data,op0,op1,op2,res_metrics,res_data);
-    nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
-    nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
-    nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
-    nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
-    nu_print_config_dma(&cfg.wdma_config,"wdma_config");
+    nu_vpe_print_config(&cfg);
     nu_vpe_print_status_regs_etalon(&status_regs_etalon);
     
     nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);

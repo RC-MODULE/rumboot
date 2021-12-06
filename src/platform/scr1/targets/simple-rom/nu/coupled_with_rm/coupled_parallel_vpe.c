@@ -35,6 +35,22 @@ void nu_vpe_decide_dma_config (
   uint8_t axi_len;
   
   rumboot_printf("nu_vpe_decide_dma_config \n");
+  
+  cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
+#ifdef FORCE_VPE_WDMA_EN
+  cfg->dst_flying = Enable_NotEn;
+#else
+  cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
+#endif
+
+#ifdef VPE_TraceMode_PPE
+  cfg->trace_mode = TraceMode_PPE;
+#else
+  cfg->trace_mode = TraceMode_MPE;
+#endif
+  cfg->mark       = Enable_NotEn;
+  cfg->cube_size = (in_metrics -> C/16 + ((in_metrics -> C%16) != 0 ? 1 : 0)) * in_metrics->W * in_metrics->H - 1;
+  
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
@@ -240,30 +256,8 @@ int main() {
     etalon = nu_load_cube(heap_id,fn_etalon,res_metrics);
     if(etalon == NULL) return -1;
     
-    //print_in_data(in_data,in_size);
-
-    cfg.src_flying = cfg.in_data_type == DataTypeExt_Int32 || cfg.in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
-#ifdef FORCE_VPE_WDMA_EN
-    cfg.dst_flying = Enable_NotEn;
-#else
-    cfg.dst_flying = cfg.out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
-#endif
-
-#ifdef VPE_TraceMode_PPE
-    cfg.trace_mode = TraceMode_PPE;
-#else
-    cfg.trace_mode = TraceMode_MPE;
-#endif
-    cfg.mark       = Enable_NotEn;
-    cfg.cube_size = (in_metrics -> C/16 + ((in_metrics -> C%16) != 0 ? 1 : 0)) * in_metrics->W * in_metrics->H - 1;
-    
-    //nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data);
-    //nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
-    //nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
-    //nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
-    //nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
-    //nu_print_config_dma(&cfg.wdma_config,"wdma_config");
+    //nu_vpe_print_config(&cfg);
     
     start[i] = rumboot_platform_get_uptime();
     
