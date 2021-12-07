@@ -71,6 +71,12 @@ void nu_vpe_decide_dma_config (
 ) {
   cfg->trace_mode = TraceMode_MPE;  // FIRST!!!! Because nu_vpe_decide_dma_config_trivial depends On It
   
+  cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
+  cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
+  cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
+  cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
+  cfg->wdma_config.dma_data_use=DmaDUse_Off;
+  
   cfg->src_rdma_config.dma_bsize=0;
   cfg->src_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
@@ -118,7 +124,69 @@ int main() {
   int i;
   int iterations;
   uint8_t  axi_len;
+ 
+  char* fn_in_base          			= "in_file_tag_"        ;
+  char* fn_cfg_mpe_base   				= "cfg_mpe_file_tag_"	;
+  char* fn_cfg_vpe_base   				= "cfg_file_tag_"	;
+  char* fn_cfg_ppe_base   				= "cfg_ppe_file_tag_"	;  
+  char* fn_in_metrics_base  			= "metrics_in_tag_"     ;
+  char* fn_warr_metrics_base  			= "metrics_warr_tag_"   ;
+  char* fn_res_metrics_base 			= "metrics_etalon_tag_" ;
+  char* fn_etalon_base      			= "etalon_file_tag_"    ;
+  char* fn_warr_base	      			= "warr_file_tag_"    	; 
   
+  char* fn_metrics_op0_cube_base    	= "metrics_op0_cube_tag_" ;
+  char* fn_metrics_op0_vec_base     	= "metrics_op0_vec_tag_" ;
+  char* fn_op0_cube_file_base   		= "op0_cube_file_tag_" ;
+  char* fn_op0_vec_file_base    		= "op0_vec_file_tag_" ;
+  
+  char* fn_metrics_op1_cube_base    	= "metrics_op1_cube_tag_" ;
+  char* fn_metrics_op1_vec_base     	= "metrics_op1_vec_tag_" ;
+  char* fn_op1_cube_file_base   		= "op1_cube_file_tag_" ;
+  char* fn_op1_vec_file_base    		= "op1_vec_file_tag_" ;
+  
+  char* fn_metrics_op2_cube_base    	= "metrics_op2_cube_tag_" ;
+  char* fn_metrics_op2_vec_base     	= "metrics_op2_vec_tag_" ;
+  char* fn_op2_cube_file_base   		= "op2_cube_file_tag_" ;
+  char* fn_op2_vec_file_base    		= "op2_vec_file_tag_" ;
+  
+  char* fn_metrics_lut1_file_base   	= "metrics_lut1_file_tag_" ; 
+  char* fn_metrics_lut2_file_base   	= "metrics_lut2_file_tag_" ;
+  char* fn_lut1_file_base   			= "lut1_file_tag_" ; 
+  char* fn_lut2_file_base   			= "lut2_file_tag_" ;
+  
+  
+  char  fn_in[32];
+  char  fn_cfg_mpe[32];
+  char  fn_cfg_vpe[32];
+  char  fn_cfg_ppe[32]; 
+  
+  char  fn_in_metrics[32];
+  char  fn_warr_metrics[32];  
+  char  fn_res_metrics[32];
+  char  fn_etalon[32];
+  char  fn_warr[32];
+
+  char  fn_metrics_op0_cube[32]; 
+  char  fn_metrics_op0_vec[32];
+  char  fn_op0_cube_file[32]; 
+  char  fn_op0_vec_file[32];
+
+  char  fn_metrics_op1_cube[32]; 
+  char  fn_metrics_op1_vec[32];
+  char  fn_op1_cube_file[32]; 
+  char  fn_op1_vec_file[32];
+
+  char  fn_metrics_op2_cube[32]; 
+  char  fn_metrics_op2_vec[32];
+  char  fn_op2_cube_file[32]; 
+  char  fn_op2_vec_file[32];
+
+  char  fn_metrics_lut1_file[32]; 
+  char  fn_metrics_lut2_file[32];
+  char  fn_lut1_file[32]; 
+  char  fn_lut2_file[32];
+ 
   axi_len = 15;
 #ifdef DONT_USE_PPE
   PPE_ENABLED=0;
@@ -126,66 +194,99 @@ int main() {
   PPE_ENABLED=1;
 #endif
 
-  rumboot_printf("Hello\n");
+  rumboot_printf("Hello \n");
 
   heap_id = nu_get_heap_id();
   
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
   rumboot_printf("Number of iterations %d\n",iterations);
   
-  mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
+  mpe_cfg_lut =  nu_mpe_load_cfg_lut(heap_id);
+
+ 
   if(mpe_cfg_lut == NULL) return -1;
   
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE+NA_UNITS_MODE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
   
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);
+	
+	fn_base_it_nmb(fn_in, fn_in_base, i);
+    fn_base_it_nmb(fn_cfg_mpe,fn_cfg_mpe_base, i);
+    fn_base_it_nmb(fn_cfg_vpe,fn_cfg_vpe_base, i);
+    fn_base_it_nmb(fn_cfg_ppe,fn_cfg_ppe_base, i);	
+    fn_base_it_nmb(fn_in_metrics, fn_in_metrics_base, i);
+    fn_base_it_nmb(fn_warr_metrics, fn_warr_metrics_base, i);		
+    fn_base_it_nmb(fn_res_metrics, fn_res_metrics_base, i);
+    fn_base_it_nmb(fn_etalon, fn_etalon_base, i);
+	fn_base_it_nmb(fn_warr, fn_warr_base, i);
+	
+	fn_base_it_nmb(fn_metrics_op0_cube, fn_metrics_op0_cube_base, i);
+	fn_base_it_nmb(fn_metrics_op0_vec, fn_metrics_op0_vec_base, i);
+	fn_base_it_nmb(fn_op0_cube_file, fn_op0_cube_file_base, i);
+	fn_base_it_nmb(fn_op0_vec_file, fn_op0_vec_file_base, i);	
+	
+	
+	fn_base_it_nmb(fn_metrics_op1_cube, fn_metrics_op1_cube_base, i);
+	fn_base_it_nmb(fn_metrics_op1_vec, fn_metrics_op1_vec_base, i);
+	fn_base_it_nmb(fn_op1_cube_file, fn_op1_cube_file_base, i);
+	fn_base_it_nmb(fn_op1_vec_file, fn_op1_vec_file_base, i);	
+
+	fn_base_it_nmb(fn_metrics_op2_cube, fn_metrics_op2_cube_base, i);
+	fn_base_it_nmb(fn_metrics_op2_vec, fn_metrics_op2_vec_base, i);
+	fn_base_it_nmb(fn_op2_cube_file, fn_op2_cube_file_base, i);
+	fn_base_it_nmb(fn_op2_vec_file, fn_op2_vec_file_base, i);	
+	
+	fn_base_it_nmb(fn_metrics_lut1_file, fn_metrics_lut1_file_base, i);
+	fn_base_it_nmb(fn_metrics_lut2_file, fn_metrics_lut2_file_base, i);
+	fn_base_it_nmb(fn_lut1_file, fn_lut1_file_base, i);
+	fn_base_it_nmb(fn_lut2_file, fn_lut2_file_base, i);
     
-    if(nu_mpe_load_cfg_by_tag(heap_id, &cfg_mpe, cfg_mpe_file_tag[i]) != 0) return -1;
-    if(nu_vpe_load_cfg_by_tag(heap_id, &cfg_vpe, cfg_vpe_file_tag[i]) != 0) return -1;
+    if(nu_mpe_load_cfg_by_tag(heap_id, &cfg_mpe, fn_cfg_mpe) != 0) return -1;
+    if(nu_vpe_load_cfg_by_tag(heap_id, &cfg_vpe, fn_cfg_vpe) != 0) return -1;
     if(PPE_ENABLED) {
-      if(nu_ppe_load_cfg_by_tag(heap_id, &cfg_ppe, cfg_ppe_file_tag[i]) != 0) return -1;
+      if(nu_ppe_load_cfg_by_tag(heap_id, &cfg_ppe, fn_cfg_ppe) != 0) return -1;
     }
     
       // Load Metrics Files
-    in_metrics = nu_load_cube_metrics(heap_id,metrics_in_tag[i]);
+    in_metrics = nu_load_cube_metrics(heap_id,fn_in_metrics);
     if(in_metrics == NULL) return -1;
     
-    warr_metrics = nu_load_warr_metrics(heap_id, metrics_warr_tag[i]);
+    warr_metrics = nu_load_warr_metrics(heap_id, fn_warr_metrics);
     if(warr_metrics == NULL) return -1;
 
     mpe_out_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),64);
 
-    res_metrics= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
+    res_metrics= nu_load_cube_metrics(heap_id,fn_res_metrics);
     if(res_metrics == NULL) return -1;
 
       // Load Input Data
-    in_data = nu_load_cube(heap_id, in_file_tag[i],in_metrics);
+    in_data = nu_load_cube(heap_id, fn_in,in_metrics);
     if(in_data == NULL) return -1;
 
-    warr = nu_load_warr(heap_id, warr_file_tag[i], warr_metrics);
+    warr = nu_load_warr(heap_id, fn_warr, warr_metrics);
     if(warr == NULL) return -1;
     
       // Load OP0-OP2 Operands If Needed
     if(cfg_vpe.op0_en==Enable_En) {
-      op0 = nu_vpe_load_op01_by_tags(heap_id,&cfg_vpe.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i]);
+      op0 = nu_vpe_load_op01_by_tags(heap_id,&cfg_vpe.op0_config,fn_metrics_op0_cube,fn_metrics_op0_vec,fn_op0_cube_file,fn_op0_vec_file);
     }
     else op0 = NULL;
     if(cfg_vpe.op1_en==Enable_En) {
-      op1 = nu_vpe_load_op01_by_tags(heap_id,&cfg_vpe.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i]);
+      op1 = nu_vpe_load_op01_by_tags(heap_id,&cfg_vpe.op1_config,fn_metrics_op1_cube,fn_metrics_op1_vec,fn_op1_cube_file,fn_op1_vec_file);
     }
     else op1 = NULL;
     if(cfg_vpe.op2_en==Enable_En) {
-      op2 = nu_vpe_load_op2_by_tags(heap_id,&cfg_vpe.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i]);
+      op2 = nu_vpe_load_op2_by_tags(heap_id,&cfg_vpe.op2_config,fn_metrics_op2_cube,fn_metrics_op2_vec,fn_op2_cube_file,fn_op2_vec_file);
     }
     else op2 = NULL;
     
       // Load LUTs If Needed
     if(cfg_vpe.op2_config.lut_en == Enable_En) {
-      lut1_metrics = nu_load_vec_metrics(heap_id,metrics_lut1_file_tag[i]);
-      lut2_metrics = nu_load_vec_metrics(heap_id,metrics_lut2_file_tag[i]);
-      lut1 = nu_load_vec(heap_id,lut1_file_tag[i],lut1_metrics);
-      lut2 = nu_load_vec(heap_id,lut2_file_tag[i],lut2_metrics);
+      lut1_metrics = nu_load_vec_metrics(heap_id,fn_metrics_lut1_file);
+      lut2_metrics = nu_load_vec_metrics(heap_id,fn_metrics_lut2_file);
+      lut1 = nu_load_vec(heap_id,fn_lut1_file,lut1_metrics);
+      lut2 = nu_load_vec(heap_id,fn_lut2_file,lut2_metrics);
       nu_vpe_load_lut(MY_VPE_REGS_BASE,lut1,lut2);
     }
     
@@ -195,7 +296,7 @@ int main() {
     if(res_data == NULL) return -1;
     
       // Load Etalon
-    etalon = nu_load_cube(heap_id, etalon_file_tag[i], res_metrics);
+    etalon = nu_load_cube(heap_id, fn_etalon, res_metrics);
     if(etalon == NULL) return -1;
 
     // if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
