@@ -32,6 +32,8 @@ rumboot_add_configuration(
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
 
+    rumboot_add_external_project(externals/py_mpe_test)
+
     add_rumboot_target(
         CONFIGURATION ROM
         FILES common/tools/print-heaps.c

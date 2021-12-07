@@ -1911,7 +1911,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
       --op0_TF_file=${NPE_BINS}/resnet_bins/${name}/op0.bin.0
     )
 
-    set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/npe_rm/rm_core/ConfigMPE_to_LUT.py)
+    set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
     set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
       # Tests Use MPE+VPE (Without PPE)
@@ -1946,7 +1946,12 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
           ${RM_TF_KEYS}
-          > ${RM_LOGFILE} || exit 1
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+
+          || exit 1
+
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )

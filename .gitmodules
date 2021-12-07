@@ -4,3 +4,6 @@
 [submodule "utils/npe_rm"]
 	path = externals/npe_rm
 	url = git@git.module.ru:verification-components/npe_rm.git
+[submodule "externals/py_mpe_test"]
+	path = externals/py_mpe_test
+	url = git@git.module.ru:lava/py_mpe_test.git
