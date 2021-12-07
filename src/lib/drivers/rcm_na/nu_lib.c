@@ -1285,6 +1285,63 @@ void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, Cub
   }
 }
 
+void nu_vpe_decide_op01_rdma_config(ConfigOp01* op_config, ConfigDMA* op_rdma_config, TraceMode trace_mode, CubeMetrics* metrics) {
+
+#define  NU_VPE_DECIDE_OP_RDMA_CONFIG_BODY \
+  if((op_config->alu_en == Enable_En && op_config->alu_mode != Mode_Unitary) ||         \
+     (op_config->mux_en == Enable_En && op_config->mux_mode != Mode_Unitary)  ) {       \
+    op_rdma_config->dma_en = Enable_En;                                                 \
+  }                                                                                     \
+  else {                                                                                \
+    op_rdma_config->dma_en = Enable_NotEn;                                              \
+  }                                                                                     \
+                                                                                        \
+  op_rdma_config->dma_ram_type = 0;                                                     \
+                                                                                        \
+                                                                                        \
+  if      (op_config->alu_en == Enable_En && op_config->alu_mode != Mode_Unitary) op_rdma_config->dma_data_mode = op_config->alu_mode;       \
+  else if (op_config->mux_en == Enable_En && op_config->mux_mode != Mode_Unitary) op_rdma_config->dma_data_mode = op_config->mux_mode;       \
+  else                                                                            op_rdma_config->dma_data_mode = Mode_Unitary;              \
+                                                                                                                                             \
+  if ((op_config->alu_en == Enable_En && op_config->alu_mode != Mode_Unitary) &&                                                             \
+      (op_config->mux_en == Enable_En && op_config->mux_mode != Mode_Unitary) &&                                                             \
+      (op_config->mux_mode != op_config->alu_mode)                                ) {                                                        \
+    rumboot_printf("ERROR! parameters alu_mode & mux_mode must be equal..\n");                                                               \
+  }                                                                                                                                          \
+                                                                                                                                             \
+                                                                                                                                             \
+  if (op_config->coef_type == DataType_Int8) op_rdma_config->dma_data_size = DmaDSize_One_Byte ;                                             \
+  else                                       op_rdma_config->dma_data_size = DmaDSize_Two_Byte ;                                             \
+                                                                                                                                             \
+                                                                                                                                             \
+  if      ((op_config->alu_en == Enable_En && op_config->alu_mode != Mode_Unitary) &&                                                        \
+           (op_config->mux_en == Enable_En && op_config->mux_mode != Mode_Unitary) ){                                                        \
+    op_rdma_config->dma_data_use = DmaDUse_Both ;                                                                                            \
+  }                                                                                                                                          \
+  else if (( op_config->alu_en == Enable_En && op_config->alu_mode != Mode_Unitary) &&                                                       \
+           ( op_config->mux_en != Enable_En || op_config->mux_mode == Mode_Unitary) ){                                                       \
+    op_rdma_config->dma_data_use = DmaDUse_Alu ;                                                                                             \
+  }                                                                                                                                          \
+  else if (( op_config->mux_en == Enable_En && op_config->mux_mode != Mode_Unitary) &&                                                       \
+           ( op_config->alu_en != Enable_En || op_config->alu_mode == Mode_Unitary) ){                                                       \
+    op_rdma_config->dma_data_use = DmaDUse_Mux ;                                                                                             \
+  }                                                                                                                                          \
+  else op_rdma_config->dma_data_use = DmaDUse_Off ;                                                                                          \
+                                                                                                                                             \
+  op_rdma_config->dma_bsize=0;                                                                                                               \
+  op_rdma_config->dma_bstride=0;                                                                                                             \
+                                                                                                                                             \
+  nu_vpe_decide_dma_cube_config(op_rdma_config, trace_mode, metrics);                                                                        \
+  
+  
+  NU_VPE_DECIDE_OP_RDMA_CONFIG_BODY
+}
+void nu_vpe_decide_op2_rdma_config(ConfigOp2* op_config, ConfigDMA* op_rdma_config, TraceMode trace_mode, CubeMetrics* metrics) {
+  NU_VPE_DECIDE_OP_RDMA_CONFIG_BODY
+}
+
+
+
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
 
   cfg->mark = Enable_NotEn;  // Why it's here?
@@ -1333,149 +1390,11 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   nu_vpe_decide_dma_cube_config(&(cfg->src_rdma_config), cfg->trace_mode, metrics);
   
   // OP0_RDMA -------------------------------------------------------------------------------------------- 
-  if((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) ||
-     (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
-    cfg->op0_rdma_config.dma_en = Enable_En; // new struct ============
-  }
-  else {
-    cfg->op0_rdma_config.dma_en = Enable_NotEn; // new struct ============
-  }
-  
-  cfg->op0_rdma_config.dma_ram_type = 0;  // ?????????????????????????????????
- 
-  // dma_data_mode parameter definition ----
-  if      (cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.alu_mode;
-  else if (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode;    
-  else                                                                                      cfg->op0_rdma_config.dma_data_mode = Mode_Unitary;
-  
-  if ((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) &&    // checking mode differences ????????????????????????????????????????
-      (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) &&
-      (cfg->op0_config.mux_mode != cfg->op0_config.alu_mode)                                ) {
-    rumboot_printf("ERROR! parameters alu_mode & mux_mode must be equal..\n");
-  }    
-  
-  // dma_data_size parameter definition ----
-  if (cfg->op0_config.coef_type == DataType_Int8) cfg->op0_rdma_config.dma_data_size = DmaDSize_One_Byte;
-  else                                            cfg->op0_rdma_config.dma_data_size = DmaDSize_Two_Byte;  
-  
-  // dma_data_use parameter definition ----
-  if      ((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) &&
-           (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) ){
-    cfg->op0_rdma_config.dma_data_use = DmaDUse_Both ;
-  }
-  else if (( cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) &&
-          (( cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode == Mode_Unitary) ||
-           ( cfg->op0_config.mux_en != Enable_En)                                           ) ){
-    cfg->op0_rdma_config.dma_data_use = DmaDUse_Alu ;
-  }
-  else if (( cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) &&
-          (( cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode == Mode_Unitary) ||
-           ( cfg->op0_config.alu_en != Enable_En)                                           ) ){
-    cfg->op0_rdma_config.dma_data_use = DmaDUse_Mux ;
-  }  
-  else cfg->op0_rdma_config.dma_data_use = DmaDUse_Off ;
-
-  cfg->op0_rdma_config.dma_bsize=0;    // Operands Cannot Be Batch
-  cfg->op0_rdma_config.dma_bstride=0;
-  
-  nu_vpe_decide_dma_cube_config(&(cfg->op0_rdma_config), cfg->trace_mode, metrics);
-
+  nu_vpe_decide_op01_rdma_config(&(cfg->op0_config), &(cfg->op0_rdma_config), cfg->trace_mode, metrics);
   // OP1_RDMA -------------------------------------------------------------------------------------------- 
-  if((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) ||
-     (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
-    cfg->op1_rdma_config.dma_en = Enable_En; // new struct ============
-  }
-  else {
-    cfg->op1_rdma_config.dma_en = Enable_NotEn; // new struct ============
-  }
-  
-  cfg->op1_rdma_config.dma_ram_type = 0;  // ?????????????????????????????????
- 
-  // dma_data_mode parameter definition ----
-  if      (cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.alu_mode;
-  else if (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode; 
-  else                                                                                      cfg->op1_rdma_config.dma_data_mode = Mode_Unitary;
-  
-  if ((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) &&    // checking mode differences ????????????????????????????????????????
-      (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) &&
-      (cfg->op1_config.mux_mode != cfg->op1_config.alu_mode)                                ) {
-    rumboot_printf("ERROR! parameters alu_mode & mux_mode must be equal..\n");
-  }    
-  
-  // dma_data_size parameter definition ----
-  if (cfg->op1_config.coef_type == DataType_Int8) cfg->op1_rdma_config.dma_data_size = DmaDSize_One_Byte ;
-  else                                            cfg->op1_rdma_config.dma_data_size = DmaDSize_Two_Byte ;
-
-  // dma_data_use parameter definition ----
-  if      ((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) &&
-           (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) ){
-    cfg->op1_rdma_config.dma_data_use = DmaDUse_Both ;
-  }
-  else if (( cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) &&
-          (( cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode == Mode_Unitary) ||
-           ( cfg->op1_config.mux_en != Enable_En)                                           ) ){
-    cfg->op1_rdma_config.dma_data_use = DmaDUse_Alu ;
-  }
-  else if (( cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) &&
-          (( cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode == Mode_Unitary) ||
-           ( cfg->op1_config.alu_en != Enable_En)                                           ) ){
-    cfg->op1_rdma_config.dma_data_use = DmaDUse_Mux ;
-  }  
-  else cfg->op1_rdma_config.dma_data_use = DmaDUse_Off ;
-  
-  cfg->op1_rdma_config.dma_bsize=0;    // Operands Cannot Be Batch
-  cfg->op1_rdma_config.dma_bstride=0;
-  
-  nu_vpe_decide_dma_cube_config(&(cfg->op1_rdma_config), cfg->trace_mode, metrics);
-  
+  nu_vpe_decide_op01_rdma_config(&(cfg->op1_config), &(cfg->op1_rdma_config), cfg->trace_mode, metrics);
   // OP2_RDMA -------------------------------------------------------------------------------------------- 
-  if((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) ||
-     (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
-    cfg->op2_rdma_config.dma_en = Enable_En; // new struct ============
-  }
-  else {
-    cfg->op2_rdma_config.dma_en = Enable_NotEn; // new struct ============
-  }
-  
-  cfg->op2_rdma_config.dma_ram_type = 0;  // ?????????????????????????????????
- 
-  // dma_data_mode parameter definition ----
-  if      (cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.alu_mode;
-  else if (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;    
-  else                                                                                      cfg->op2_rdma_config.dma_data_mode = Mode_Unitary;
-  
-  if ((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) &&    // checking mode differences ????????????????????????????????????????
-      (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) &&
-      (cfg->op2_config.mux_mode != cfg->op2_config.alu_mode)                                ) {
-    rumboot_printf("ERROR! parameters alu_mode & mux_mode must be equal..\n");
-  }    
-  
-  // dma_data_size parameter definition ----
-  if (cfg->op2_config.coef_type == DataType_Int8) cfg->op2_rdma_config.dma_data_size = DmaDSize_One_Byte ;
-  else                                            cfg->op2_rdma_config.dma_data_size = DmaDSize_Two_Byte ;
-
-  // dma_data_use parameter definition ----
-  if      ((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) &&
-           (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) ){
-    cfg->op2_rdma_config.dma_data_use = DmaDUse_Both ;
-  }
-  else if (( cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) &&
-          (( cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode == Mode_Unitary) ||
-           ( cfg->op2_config.mux_en != Enable_En)                                           ) ){
-    cfg->op2_rdma_config.dma_data_use = DmaDUse_Alu ;
-  }
-  else if (( cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) &&
-          (( cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode == Mode_Unitary) ||
-           ( cfg->op2_config.alu_en != Enable_En)                                           ) ){
-    cfg->op2_rdma_config.dma_data_use = DmaDUse_Mux ;
-  }  
-  else cfg->op2_rdma_config.dma_data_use = DmaDUse_Off ;
-
-  cfg->op2_rdma_config.dma_bsize=0;    // Operands Cannot Be Batch
-  cfg->op2_rdma_config.dma_bstride=0;
-  
-  nu_vpe_decide_dma_cube_config(&(cfg->op2_rdma_config), cfg->trace_mode, metrics);
-  // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
+  nu_vpe_decide_op2_rdma_config(&(cfg->op2_config), &(cfg->op2_rdma_config), cfg->trace_mode, metrics);
 }
 
 int out_dim_comp(int in_dim, int k_dim, int k_str) {
