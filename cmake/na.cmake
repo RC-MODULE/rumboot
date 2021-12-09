@@ -144,8 +144,8 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
   set(PLUSARG_metrics_op2_cube_tag metrics_op2_cube_tag)
   set(PLUSARG_metrics_op2_ameba_tag metrics_op2_ameba_tag)
   set(PLUSARG_metrics_op2_with_unused_tag metrics_op2_with_unused_tag)
-  set(PLUSARG_metrics_lut1_tag metrics_lut1_tag)
-  set(PLUSARG_metrics_lut2_tag metrics_lut2_tag)
+  set(PLUSARG_metrics_lut1_tag metrics_lut1_file_tag)
+  set(PLUSARG_metrics_lut2_tag metrics_lut2_file_tag)
   set(PLUSARG_metrics_mpe_cmd_tag metrics_mpe_cmd_tag)
 
   set(PLUSARG_status_regs_file_tag status_regs_file_tag)
