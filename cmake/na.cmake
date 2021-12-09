@@ -1927,7 +1927,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
           ${RM_TF_KEYS}
           > ${RM_LOGFILE} &&
 
-          ${PYTHON_EXECUTABLE} ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
 
           || exit 1
 
@@ -1948,7 +1948,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
           ${RM_TF_KEYS}
           > ${RM_LOGFILE} &&
 
-          ${PYTHON_EXECUTABLE} ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
 
           || exit 1
 
