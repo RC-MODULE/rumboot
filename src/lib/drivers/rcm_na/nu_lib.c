@@ -802,8 +802,10 @@ int32_t nu_lut_log2_f(float a) {
   uint32_t temp_ui;
   uint32_t mant;
   int32_t temp_i;
+  void* temp_ptr;
   
-  temp_ui = *((uint32_t*) &a); // Take A Bit Couple
+  temp_ptr = &a;
+  temp_ui = *((uint32_t*) temp_ptr); // Take A Bit Couple
   
   temp_ui = temp_ui & 0x7FFFFFFF; // Take Sign Out
   mant = temp_ui & ((1<<23)-1);  // Mantissa
@@ -839,6 +841,174 @@ void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
   
 }
 
+
+void nu_vpe_setup_op01(uintptr_t base_, Enable op_en, ConfigOp01* op_config) {
+  uint32_t tmp_data;
+  
+  tmp_data = (!op_config->relu_en      << 6) | // RELU_BYPASS
+             ( op_config->prelu_en     << 5) | // MUL_PRELU
+             (!op_config->mux_en       << 4) | // MUL_BYPASS
+             (op_config->alu_operation << 2) | // ALU_ALGO
+             (!op_config->alu_en       << 1) | // ALU_BYPASS
+             (!op_en                   << 0);  //  BYPASS
+  iowrite32(tmp_data, base_ + NU_VPE_OP0_CFG);
+  
+  tmp_data = (op_config->lshift_value << 8) | ((op_config->alu_mode>>1) << 0) ;
+  iowrite32(tmp_data, base_ + NU_VPE_OP0_ALU_CFG);
+  
+  iowrite32(op_config->alu_value, base_ + NU_VPE_OP0_ALU_SRC_VAL);
+  
+  iowrite32((op_config->mux_mode>>1) , base_ + NU_VPE_OP0_MUL_CFG);
+  iowrite32(op_config->mux_value, base_ + NU_VPE_OP0_MUL_SRC_VAL);
+
+  tmp_data = (op_config->norm_round_mode << 16) | (op_config->norm_saturation_en << 8) | (op_config->norm_round_size << 0);
+  iowrite32(tmp_data, base_ + NU_VPE_OP0_NORM_PARAM);  
+  
+}
+
+void nu_vpe_setup_lut(uintptr_t base_, ConfigOp2* op_config, DataTypeExt in_data_type) {
+  int32_t shift_i1;
+  int32_t shift_i2;
+  uint32_t tmp_data;
+  
+  tmp_data = (op_config->lut_mrr_type       << 4) | 
+             (op_config->lut_mrr_en         << 3) |
+             (op_config->lut_sel            << 2) | // HYBR_SEL
+             (op_config->lut_right_priority << 1) | // OVRF_SEL
+             (op_config->lut_left_priority  << 0) ; // UNDF_SEL
+  iowrite32(tmp_data, base_ + NU_VPE_LUT_CFG);
+  
+  iowrite32(op_config->lut_tab1_x_start, base_ + NU_VPE_LUT_TAB0_XMIN);
+  iowrite32(op_config->lut_tab1_x_end  , base_ + NU_VPE_LUT_TAB0_XMAX);
+  iowrite32(op_config->lut_tab2_x_start, base_ + NU_VPE_LUT_TAB1_XMIN);
+  iowrite32(op_config->lut_tab2_x_end  , base_ + NU_VPE_LUT_TAB1_XMAX);
+  
+  tmp_data = 0x000000000 | ((op_config->lut_tab1_slope_ovrf_scale & 0x0000FFFF) << 16) |
+                           ((op_config->lut_tab1_slope_undf_scale & 0x0000FFFF)      );
+  iowrite32(tmp_data, base_ + NU_VPE_LUT_TAB0_SLOPE_SCALE);
+  
+  tmp_data = 0x000000000 | ((op_config->lut_tab1_slope_ovrf_shift & 0x1F) << 8) |
+                           ((op_config->lut_tab1_slope_undf_shift & 0x1F)     );
+  iowrite32(tmp_data, base_ + NU_VPE_LUT_TAB0_SLOPE_SHIFT);
+  
+  tmp_data = 0x000000000 | ((op_config->lut_tab2_slope_ovrf_scale & 0x0000FFFF) << 16) |
+                           ((op_config->lut_tab2_slope_undf_scale & 0x0000FFFF)      );
+  iowrite32(tmp_data, base_ + NU_VPE_LUT_TAB1_SLOPE_SCALE);
+  
+  tmp_data = 0x000000000 | ((op_config->lut_tab2_slope_ovrf_shift & 0x1F) << 8) |
+                           ((op_config->lut_tab2_slope_undf_shift & 0x1F)     );
+  iowrite32(tmp_data, base_ + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+  
+  iowrite32(op_config->lut_xoffset, base_ + NU_VPE_LUT_XOFFSET);
+  tmp_data = 0x000000000 | op_config->lut_yoffset;
+  iowrite32(tmp_data, base_ + NU_VPE_LUT_YOFFSET);
+  
+  
+  if(in_data_type == DataTypeExt_Fp16 || in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
+    float start_f;
+    float end_f;
+    float diff_f;
+    void* temp_ptr;
+    
+    temp_ptr = &(op_config->lut_tab1_x_end)  ;end_f   = *((float*) temp_ptr);// Read The Couple Of Bits 
+    temp_ptr = &(op_config->lut_tab1_x_start);start_f = *((float*) temp_ptr);//  And Store It In A float Variable
+    diff_f = end_f  - start_f;
+    shift_i1 = nu_lut_log2_f(diff_f) - 8;
+    
+    temp_ptr = &(op_config->lut_tab2_x_end)  ;end_f   = *((float*) temp_ptr);// Read The Couple Of Bits 
+    temp_ptr = &(op_config->lut_tab2_x_start);start_f = *((float*) temp_ptr);//  And Store It In A float Variable
+    diff_f = end_f  - start_f;
+    shift_i2 = nu_lut_log2_f(diff_f) - 6;
+  }
+  else { // Integer LUT
+    shift_i1 = nu_lut_log2_i(op_config->lut_tab1_x_end - op_config->lut_tab1_x_start) - 8;
+    shift_i2 = nu_lut_log2_i(op_config->lut_tab2_x_end - op_config->lut_tab2_x_start) - 6;
+  }
+  
+  rumboot_printf("LUTs: shift_i1 = %x, shift_i2 = %x\n",shift_i1,shift_i2);
+  iowrite32(shift_i1,base_ + NU_VPE_LUT_TAB0_XSHIFT);
+  iowrite32(shift_i2,base_ + NU_VPE_LUT_TAB1_XSHIFT);
+}
+
+void nu_vpe_setup_op2(uintptr_t base_, Enable op_en, ConfigOp2* op_config, DataTypeExt in_data_type) {
+  uint32_t tmp_data;
+  
+  tmp_data = ( (op_config->alu_operation & (1<<2)) << (7-2) ) | // ALU_ALGO Split Field MSB
+             (!op_config->lut_en                   <<  6)     | // LUT_BYPASS
+             ( op_config->prelu_en                 <<  5)     | // MUL_PRELU
+             (!op_config->mux_en                   <<  4)     | // MUL_BYPASS
+             ( (op_config->alu_operation & 3)      <<  2 )    | // ALU_ALGO Split Field LSB
+             (!op_config->alu_en                   <<  1)     | // ALU_BYPASS
+             (!op_en                               <<  0)     ;  //  BYPASS
+  iowrite32(tmp_data, base_ + NU_VPE_OP2_CFG);   
+  
+  tmp_data = (!op_config->c2_en << 1) | ((op_config->alu_mode>>1) << 0) ;
+  iowrite32(tmp_data, base_ + NU_VPE_OP2_ALU_CFG);  
+
+  iowrite32(op_config->alu_value, base_ + NU_VPE_OP2_ALU_SRC_VAL);
+  
+  iowrite32(op_config->c2_offset, base_ + NU_VPE_OP2_ALU_CVT_OFFSET_VAL);
+  iowrite32(op_config->c2_scale , base_ + NU_VPE_OP2_ALU_CVT_SCALE_VAL );
+  iowrite32(op_config->c2_trunc , base_ + NU_VPE_OP2_ALU_CVT_TRUNC_VAL );
+
+
+  tmp_data = (!op_config->c1_en << 1) | ((op_config->mux_mode>>1) << 0) ;
+  iowrite32(tmp_data, base_ + NU_VPE_OP2_MUL_CFG);  
+
+  iowrite32(op_config->mux_value, base_ + NU_VPE_OP2_MUL_SRC_VAL);
+  
+  iowrite32(op_config->c1_offset, base_ + NU_VPE_OP2_MUL_CVT_OFFSET_VAL);
+  iowrite32(op_config->c1_scale , base_ + NU_VPE_OP2_MUL_CVT_SCALE_VAL );
+  iowrite32(op_config->c1_trunc , base_ + NU_VPE_OP2_MUL_CVT_TRUNC_VAL );  
+  
+  tmp_data = (op_config->norm_round_mode << 16) | (op_config->norm_saturation_en << 8) | (op_config->norm_round_size << 0);
+  iowrite32(tmp_data, base_ + NU_VPE_OP2_NORM_PARAM);
+
+  if(op_config->lut_en) {
+    nu_vpe_setup_lut(base_, op_config, in_data_type);
+  }
+}
+
+void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config) {
+  uint32_t tmp_data;
+  
+  tmp_data =( dma_config->dma_ram_type        << 8) | 
+            ((dma_config->dma_data_mode >> 1) << 7) | 
+            ( dma_config->dma_data_size       << 6) | 
+            ( dma_config->dma_data_use        << 4) | 
+            ( dma_config->dma_en              << 0) ;
+  iowrite32(tmp_data, base_ + NU_VPE_DMA_CFG);
+
+  tmp_data = (2                       << 16) | // AXI_PROT
+             (dma_config->dma_axi_len <<  0) ; // AXI_LEN
+  iowrite32(tmp_data, base_ + NU_VPE_DMA_AXI_PARAM );
+
+  iowrite32(dma_config->dma_baddr           , base_ + NU_VPE_DMA_BASE                ) ;
+  iowrite32(dma_config->dma_cube_size_c     , base_ + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
+  iowrite32(dma_config->dma_cube_size_w     , base_ + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
+  iowrite32(dma_config->dma_cube_size_h     , base_ + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
+  iowrite32(dma_config->dma_border_x        , base_ + NU_VPE_DMA_BORDER_X            ) ;
+  iowrite32(dma_config->dma_border_y        , base_ + NU_VPE_DMA_BORDER_Y            ) ;
+  iowrite32(dma_config->dma_border_z        , base_ + NU_VPE_DMA_BORDER_Z            ) ;
+  iowrite32(dma_config->dma_stride_x        , base_ + NU_VPE_DMA_STRIDE_X            ) ;
+  iowrite32(dma_config->dma_stride_y        , base_ + NU_VPE_DMA_STRIDE_Y            ) ;
+  iowrite32(dma_config->dma_stride_z        , base_ + NU_VPE_DMA_STRIDE_Z            ) ;
+  iowrite32(dma_config->dma_frag_last_size  , base_ + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
+  iowrite32(dma_config->dma_frag_size       , base_ + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
+  iowrite32(dma_config->dma_xyz_drct        , base_ + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
+  iowrite32(dma_config->dma_box_st_size_x   , base_ + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
+  iowrite32(dma_config->dma_box_st_size_y   , base_ + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
+  iowrite32(dma_config->dma_box_st_size_z   , base_ + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
+  iowrite32(dma_config->dma_box_size_x      , base_ + NU_VPE_DMA_BOX_SIZE_X          ) ;
+  iowrite32(dma_config->dma_box_size_y      , base_ + NU_VPE_DMA_BOX_SIZE_Y          ) ;
+  iowrite32(dma_config->dma_box_size_z      , base_ + NU_VPE_DMA_BOX_SIZE_Z          ) ;
+  iowrite32(dma_config->dma_box_offset_x    , base_ + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
+  iowrite32(dma_config->dma_box_offset_y    , base_ + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
+  iowrite32(dma_config->dma_box_offset_z    , base_ + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
+  iowrite32(dma_config->dma_bsize           , base_ + NU_VPE_DMA_BATCH_SIZE          ) ;
+  iowrite32(dma_config->dma_bstride         , base_ + NU_VPE_DMA_BATCH_STRIDE        ) ;
+}
+
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   rumboot_printf("Configuring VPE..\n");
 
@@ -863,7 +1033,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |
              ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |
              ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |
-             (                 (tmp_type>>1) <<  9) | (/*(cfg->dst_flying == Enable_NotEn)*/cfg->trace_mode<<8) |           // that 8bit definition is RIGHT only here !!!!!!!!!!!
+             (                 (tmp_type>>1) <<  9) | ( (cfg->trace_mode==TraceMode_MPE?1:0)<<8) |
              (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
 
@@ -875,288 +1045,21 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(tmp_data , base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL );
 
   // OP0 ----------------------------------------------------------------
-  tmp_data = (!cfg->op0_config.relu_en << 6) | (cfg->op0_config.prelu_en << 5) | (!cfg->op0_config.mux_en << 4) | (cfg->op0_config.alu_operation << 2) | (!cfg->op0_config.alu_en << 1) | (!cfg->op0_en << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP0_CFG);
-  
-  tmp_data = (cfg->op0_config.lshift_value << 8) | ((cfg->op0_config.alu_mode>>1) << 0) ; // (nu_vpe_mode_to_bool(cfg->op0_config.alu_mode) = (cfg->op0_config.alu_mode>>1)
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP0_ALU_CFG);
-  
-  iowrite32(cfg->op0_config.alu_value, base + NU_VPE + NU_VPE_OP0_ALU_SRC_VAL);
-  
-  iowrite32((cfg->op0_config.mux_mode>>1) , base + NU_VPE + NU_VPE_OP0_MUL_CFG); //???????????????????
-  iowrite32(cfg->op0_config.mux_value, base + NU_VPE + NU_VPE_OP0_MUL_SRC_VAL);
-
-  tmp_data = (cfg->op0_config.norm_round_mode << 16) | (cfg->op0_config.norm_saturation_en << 8) | (cfg->op0_config.norm_round_size << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP0_NORM_PARAM);  
-  
+  nu_vpe_setup_op01(base + NU_VPE                                  , cfg->op0_en, &(cfg->op0_config) );
   // OP1 ----------------------------------------------------------------
-  tmp_data = (!cfg->op1_config.relu_en << 6) | (cfg->op1_config.prelu_en << 5) | (!cfg->op1_config.mux_en << 4) | (cfg->op1_config.alu_operation << 2) | (!cfg->op1_config.alu_en << 1) | (!cfg->op1_en << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP1_CFG);  
-  
-  tmp_data = (cfg->op1_config.lshift_value << 8) | ((cfg->op1_config.alu_mode>>1) << 0) ; // ???????????????????????????????
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP1_ALU_CFG);
-
-  iowrite32(cfg->op1_config.alu_value, base + NU_VPE + NU_VPE_OP1_ALU_SRC_VAL);
-
-  iowrite32((cfg->op1_config.mux_mode>>1) , base + NU_VPE + NU_VPE_OP1_MUL_CFG);
-  iowrite32(cfg->op1_config.mux_value, base + NU_VPE + NU_VPE_OP1_MUL_SRC_VAL);
-
-  tmp_data = (cfg->op1_config.norm_round_mode << 16) | (cfg->op1_config.norm_saturation_en << 8) | (cfg->op1_config.norm_round_size << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP1_NORM_PARAM);    
-  
+  nu_vpe_setup_op01(base + NU_VPE + (NU_VPE_OP1_CFG-NU_VPE_OP0_CFG), cfg->op1_en, &(cfg->op1_config) );
   // OP2 ----------------------------------------------------------------
-  if (cfg->op2_config.alu_operation == AluOperationExtSwitch_Eql) {
-      tmp_data = (0x1 << 7) | (!cfg->op2_config.lut_en << 6) | (cfg->op2_config.prelu_en << 5) | (!cfg->op2_config.mux_en << 4) | (                            0 << 2) | (!cfg->op2_config.alu_en << 1) | (!cfg->op2_en << 0);
-  }
-  else {  
-      tmp_data =              (!cfg->op2_config.lut_en << 6) | (cfg->op2_config.prelu_en << 5) | (!cfg->op2_config.mux_en << 4) | (cfg->op2_config.alu_operation << 2) | (!cfg->op2_config.alu_en << 1) | (!cfg->op2_en << 0);
-  }
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_CFG);   
-  
-  tmp_data = (!cfg->op2_config.c2_en << 1) | ((cfg->op2_config.alu_mode>>1) << 0) ; // ???????????????????????????????
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_ALU_CFG);  
-
-  iowrite32(cfg->op2_config.alu_value, base + NU_VPE + NU_VPE_OP2_ALU_SRC_VAL);
-
-  iowrite32(cfg->op2_config.c2_offset, base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL);
-  iowrite32(cfg->op2_config.c2_scale , base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL );
-  iowrite32(cfg->op2_config.c2_trunc , base + NU_VPE + NU_VPE_OP2_ALU_CVT_TRUNC_VAL );
-
-
-  tmp_data = (!cfg->op2_config.c1_en << 1) | ((cfg->op2_config.mux_mode>>1) << 0) ; // ???????????????????????????????
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_MUL_CFG);  
-
-  iowrite32(cfg->op2_config.mux_value, base + NU_VPE + NU_VPE_OP2_MUL_SRC_VAL);
-  
-  iowrite32(cfg->op2_config.c1_offset, base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL);
-  iowrite32(cfg->op2_config.c1_scale , base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL );
-  iowrite32(cfg->op2_config.c1_trunc , base + NU_VPE + NU_VPE_OP2_MUL_CVT_TRUNC_VAL );  
-  
-  tmp_data = (cfg->op2_config.norm_round_mode << 16) | (cfg->op2_config.norm_saturation_en << 8) | (cfg->op2_config.norm_round_size << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);
-
-  if(cfg->op2_config.lut_en) {
-    int32_t shift_i1;
-    int32_t shift_i2;
-    
-    tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0) |
-                             (cfg->op2_config.lut_mrr_type << 4) | (cfg->op2_config.lut_mrr_en << 3);
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_CFG);
-    
-    iowrite32(cfg->op2_config.lut_tab1_x_start, base + NU_VPE + NU_VPE_LUT_TAB0_XMIN);
-    iowrite32(cfg->op2_config.lut_tab1_x_end  , base + NU_VPE + NU_VPE_LUT_TAB0_XMAX  );
-    iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB1_XMIN);
-    iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB1_XMAX  );
-    
-    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_scale & 0x0000FFFF) << 16) |
-                             ((cfg->op2_config.lut_tab1_slope_undf_scale & 0x0000FFFF)      );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB0_SLOPE_SCALE);
-    
-    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_shift & 0x1F) << 8) |
-                             ((cfg->op2_config.lut_tab1_slope_undf_shift & 0x1F)     );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB0_SLOPE_SHIFT);
-    
-    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_scale & 0x0000FFFF) << 16) |
-                             ((cfg->op2_config.lut_tab2_slope_undf_scale & 0x0000FFFF)      );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE);
-    
-    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_shift & 0x1F) << 8) |
-                             ((cfg->op2_config.lut_tab2_slope_undf_shift & 0x1F)     );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
-    
-    iowrite32(cfg->op2_config.lut_xoffset, base + NU_VPE + NU_VPE_LUT_XOFFSET);
-    tmp_data = 0x000000000 | cfg->op2_config.lut_yoffset;
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_YOFFSET);
-    
-    
-    if(cfg->in_data_type == DataTypeExt_Fp16 || cfg->in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
-      float start_f;
-      float end_f;
-      float diff_f;
-      uint32_t temp_ui;
-      
-      temp_ui = cfg->op2_config.lut_tab1_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
-      temp_ui = cfg->op2_config.lut_tab1_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
-      diff_f = end_f  - start_f;
-      shift_i1 = nu_lut_log2_f(diff_f) - 8;
-      
-      temp_ui = cfg->op2_config.lut_tab2_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
-      temp_ui = cfg->op2_config.lut_tab2_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
-      diff_f = end_f  - start_f;
-      shift_i2 = nu_lut_log2_f(diff_f) - 6;
-    }
-    else { // Integer LUT
-      shift_i1 = nu_lut_log2_i(cfg->op2_config.lut_tab1_x_end - cfg->op2_config.lut_tab1_x_start) - 8;
-      shift_i2 = nu_lut_log2_i(cfg->op2_config.lut_tab2_x_end - cfg->op2_config.lut_tab2_x_start) - 6;
-    }
-    
-    rumboot_printf("LUTs: shift_i1 = %x, shift_i2 = %x\n",shift_i1,shift_i2);
-    iowrite32(shift_i1,base + NU_VPE + NU_VPE_LUT_TAB0_XSHIFT);
-    iowrite32(shift_i2,base + NU_VPE + NU_VPE_LUT_TAB1_XSHIFT);
-  }
-
+  nu_vpe_setup_op2 (base + NU_VPE                                  , cfg->op2_en, &(cfg->op2_config), cfg->in_data_type );
   // Configuration of WDMA -------------------------------------------------------------------------
-  //iowrite32(cfg->wdma_config.dma_en , base + NU_VPE_DST_WDMA + NU_VPE_DMA_CFG );
-  
-  tmp_data = (cfg->wdma_config.dma_ram_type << 8) | (cfg->wdma_config.dma_data_size << 6) | (cfg->wdma_config.dma_en << 0);
-  iowrite32(tmp_data, base + NU_VPE_DST_WDMA + NU_VPE_DMA_CFG);
-
-  iowrite32((0x00020000 | (uint32_t) cfg->wdma_config.dma_axi_len), base + NU_VPE_DST_WDMA + NU_VPE_DMA_AXI_PARAM );
-
-  iowrite32(cfg->wdma_config.dma_baddr           , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BASE                ) ;
-  iowrite32(cfg->wdma_config.dma_cube_size_c     , base + NU_VPE_DST_WDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
-  iowrite32(cfg->wdma_config.dma_cube_size_w     , base + NU_VPE_DST_WDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
-  iowrite32(cfg->wdma_config.dma_cube_size_h     , base + NU_VPE_DST_WDMA + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
-  iowrite32(cfg->wdma_config.dma_border_x        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BORDER_X            ) ;
-  iowrite32(cfg->wdma_config.dma_border_y        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BORDER_Y            ) ;
-  iowrite32(cfg->wdma_config.dma_border_z        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BORDER_Z            ) ;
-  iowrite32(cfg->wdma_config.dma_stride_x        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_STRIDE_X            ) ;
-  iowrite32(cfg->wdma_config.dma_stride_y        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_STRIDE_Y            ) ;
-  iowrite32(cfg->wdma_config.dma_stride_z        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_STRIDE_Z            ) ;
-  iowrite32(cfg->wdma_config.dma_frag_last_size  , base + NU_VPE_DST_WDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
-  iowrite32(cfg->wdma_config.dma_frag_size       , base + NU_VPE_DST_WDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(cfg->wdma_config.dma_xyz_drct        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(cfg->wdma_config.dma_box_st_size_x   , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
-  iowrite32(cfg->wdma_config.dma_box_st_size_y   , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
-  iowrite32(cfg->wdma_config.dma_box_st_size_z   , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(cfg->wdma_config.dma_box_size_x      , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_SIZE_X          ) ;
-  iowrite32(cfg->wdma_config.dma_box_size_y      , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_SIZE_Y          ) ;
-  iowrite32(cfg->wdma_config.dma_box_size_z      , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_SIZE_Z          ) ;
-  iowrite32(cfg->wdma_config.dma_box_offset_x    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
-  iowrite32(cfg->wdma_config.dma_box_offset_y    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
-  iowrite32(cfg->wdma_config.dma_box_offset_z    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
-  iowrite32(cfg->wdma_config.dma_bsize           , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BATCH_SIZE          ) ;
-  iowrite32(cfg->wdma_config.dma_bstride         , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BATCH_STRIDE        ) ;
-
+  nu_vpe_setup_dma (base + NU_VPE_DST_WDMA                                      , &(cfg->wdma_config) );
   // Configuration SRC_RDMA ------------------------------------------------------
-  //iowrite32(cfg->src_rdma_config.dma_en , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CFG );
-  
-  tmp_data = (cfg->src_rdma_config.dma_ram_type << 8) | ((cfg->src_rdma_config.dma_data_mode >> 1) << 7) | (cfg->src_rdma_config.dma_data_size << 6) | (cfg->src_rdma_config.dma_data_use << 4) | (cfg->src_rdma_config.dma_en << 0);
-  iowrite32(tmp_data, base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CFG );
-
-
-  iowrite32((0x00020000 | (uint32_t) cfg->src_rdma_config.dma_axi_len), base + NU_VPE_SRC_RDMA + NU_VPE_DMA_AXI_PARAM );
-
-  iowrite32(cfg->src_rdma_config.dma_baddr           , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BASE                ) ;
-  iowrite32(cfg->src_rdma_config.dma_cube_size_c     , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
-  iowrite32(cfg->src_rdma_config.dma_cube_size_w     , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
-  iowrite32(cfg->src_rdma_config.dma_cube_size_h     , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
-  iowrite32(cfg->src_rdma_config.dma_border_x        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BORDER_X            ) ;
-  iowrite32(cfg->src_rdma_config.dma_border_y        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BORDER_Y            ) ;
-  iowrite32(cfg->src_rdma_config.dma_border_z        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BORDER_Z            ) ;
-  iowrite32(cfg->src_rdma_config.dma_stride_x        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_STRIDE_X            ) ;
-  iowrite32(cfg->src_rdma_config.dma_stride_y        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_STRIDE_Y            ) ;
-  iowrite32(cfg->src_rdma_config.dma_stride_z        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_STRIDE_Z            ) ;
-  iowrite32(cfg->src_rdma_config.dma_frag_last_size  , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
-  iowrite32(cfg->src_rdma_config.dma_frag_size       , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(cfg->src_rdma_config.dma_xyz_drct        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_st_size_x   , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_st_size_y   , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_st_size_z   , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_size_x      , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_SIZE_X          ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_size_y      , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_SIZE_Y          ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_size_z      , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_SIZE_Z          ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_offset_x    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_offset_y    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
-  iowrite32(cfg->src_rdma_config.dma_box_offset_z    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
-  iowrite32(cfg->src_rdma_config.dma_bsize           , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BATCH_SIZE          ) ;
-  iowrite32(cfg->src_rdma_config.dma_bstride         , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BATCH_STRIDE        ) ;
-  
-
+  nu_vpe_setup_dma (base + NU_VPE_SRC_RDMA                                      , &(cfg->src_rdma_config) );
   // Configuration OP0_RDMA ------------------------------------------------------
-  //iowrite32(cfg->op0_rdma_config.dma_en , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CFG );
-
-  tmp_data = (cfg->op0_rdma_config.dma_ram_type << 8) | ((cfg->op0_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op0_rdma_config.dma_data_size << 6) | (cfg->op0_rdma_config.dma_data_use << 4) | (cfg->op0_rdma_config.dma_en << 0);
-  iowrite32(tmp_data, base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CFG );
-  
-  iowrite32((0x00020000 | (uint32_t) cfg->op0_rdma_config.dma_axi_len), base + NU_VPE_OP0_RDMA + NU_VPE_DMA_AXI_PARAM );
-
-  iowrite32(cfg->op0_rdma_config.dma_baddr           , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BASE                ) ;
-  iowrite32(cfg->op0_rdma_config.dma_cube_size_c     , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
-  iowrite32(cfg->op0_rdma_config.dma_cube_size_w     , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
-  iowrite32(cfg->op0_rdma_config.dma_cube_size_h     , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
-  iowrite32(cfg->op0_rdma_config.dma_border_x        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BORDER_X            ) ;
-  iowrite32(cfg->op0_rdma_config.dma_border_y        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BORDER_Y            ) ;
-  iowrite32(cfg->op0_rdma_config.dma_border_z        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BORDER_Z            ) ;
-  iowrite32(cfg->op0_rdma_config.dma_stride_x        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_STRIDE_X            ) ;
-  iowrite32(cfg->op0_rdma_config.dma_stride_y        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_STRIDE_Y            ) ;
-  iowrite32(cfg->op0_rdma_config.dma_stride_z        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_STRIDE_Z            ) ;
-  iowrite32(cfg->op0_rdma_config.dma_frag_last_size  , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
-  iowrite32(cfg->op0_rdma_config.dma_frag_size       , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(cfg->op0_rdma_config.dma_xyz_drct        , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_st_size_x   , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_st_size_y   , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_st_size_z   , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_size_x      , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_SIZE_X          ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_size_y      , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_SIZE_Y          ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_size_z      , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_SIZE_Z          ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_offset_x    , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_offset_y    , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
-  iowrite32(cfg->op0_rdma_config.dma_box_offset_z    , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
-
-  
+  nu_vpe_setup_dma (base + NU_VPE_OP0_RDMA                                      , &(cfg->op0_rdma_config) );
   // Configuration OP1_RDMA ------------------------------------------------------
-  //iowrite32(cfg->op1_rdma_config.dma_en , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CFG );
-  
-  tmp_data = (cfg->op1_rdma_config.dma_ram_type << 8) | ((cfg->op1_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op1_rdma_config.dma_data_size << 6) | (cfg->op1_rdma_config.dma_data_use << 4) | (cfg->op1_rdma_config.dma_en << 0);
-  iowrite32(tmp_data, base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CFG );
-  
-  iowrite32((0x00020000 | (uint32_t) cfg->op1_rdma_config.dma_axi_len), base + NU_VPE_OP1_RDMA + NU_VPE_DMA_AXI_PARAM );
-  
-  iowrite32(cfg->op1_rdma_config.dma_baddr           , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BASE                ) ;
-  iowrite32(cfg->op1_rdma_config.dma_cube_size_c     , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
-  iowrite32(cfg->op1_rdma_config.dma_cube_size_w     , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
-  iowrite32(cfg->op1_rdma_config.dma_cube_size_h     , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
-  iowrite32(cfg->op1_rdma_config.dma_border_x        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BORDER_X            ) ;
-  iowrite32(cfg->op1_rdma_config.dma_border_y        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BORDER_Y            ) ;
-  iowrite32(cfg->op1_rdma_config.dma_border_z        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BORDER_Z            ) ;
-  iowrite32(cfg->op1_rdma_config.dma_stride_x        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_STRIDE_X            ) ;
-  iowrite32(cfg->op1_rdma_config.dma_stride_y        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_STRIDE_Y            ) ;
-  iowrite32(cfg->op1_rdma_config.dma_stride_z        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_STRIDE_Z            ) ;
-  iowrite32(cfg->op1_rdma_config.dma_frag_last_size  , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
-  iowrite32(cfg->op1_rdma_config.dma_frag_size       , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(cfg->op1_rdma_config.dma_xyz_drct        , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_st_size_x   , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_st_size_y   , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_st_size_z   , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_size_x      , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_SIZE_X          ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_size_y      , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_SIZE_Y          ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_size_z      , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_SIZE_Z          ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_offset_x    , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_offset_y    , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
-  iowrite32(cfg->op1_rdma_config.dma_box_offset_z    , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
-  
+  nu_vpe_setup_dma (base + NU_VPE_OP1_RDMA                                      , &(cfg->op1_rdma_config) );
   // Configuration OP2_RDMA ------------------------------------------------------
-  //iowrite32(cfg->op2_rdma_config.dma_en , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CFG );
-  
-  tmp_data = (cfg->op2_rdma_config.dma_ram_type << 8) | ((cfg->op2_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op2_rdma_config.dma_data_size << 6) | (cfg->op2_rdma_config.dma_data_use << 4) | (cfg->op2_rdma_config.dma_en << 0);
-  iowrite32(tmp_data, base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CFG );
-
-  iowrite32((0x00020000 | (uint32_t) cfg->op2_rdma_config.dma_axi_len), base + NU_VPE_OP2_RDMA + NU_VPE_DMA_AXI_PARAM );
-
-  iowrite32(cfg->op2_rdma_config.dma_baddr           , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BASE                ) ;
-  iowrite32(cfg->op2_rdma_config.dma_cube_size_c     , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
-  iowrite32(cfg->op2_rdma_config.dma_cube_size_w     , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
-  iowrite32(cfg->op2_rdma_config.dma_cube_size_h     , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
-  iowrite32(cfg->op2_rdma_config.dma_border_x        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BORDER_X            ) ;
-  iowrite32(cfg->op2_rdma_config.dma_border_y        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BORDER_Y            ) ;
-  iowrite32(cfg->op2_rdma_config.dma_border_z        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BORDER_Z            ) ;
-  iowrite32(cfg->op2_rdma_config.dma_stride_x        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_STRIDE_X            ) ;
-  iowrite32(cfg->op2_rdma_config.dma_stride_y        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_STRIDE_Y            ) ;
-  iowrite32(cfg->op2_rdma_config.dma_stride_z        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_STRIDE_Z            ) ;
-  iowrite32(cfg->op2_rdma_config.dma_frag_last_size  , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
-  iowrite32(cfg->op2_rdma_config.dma_frag_size       , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(cfg->op2_rdma_config.dma_xyz_drct        , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_st_size_x   , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_st_size_y   , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_st_size_z   , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_size_x      , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_SIZE_X          ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_size_y      , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_SIZE_Y          ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_size_z      , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_SIZE_Z          ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_offset_x    , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_offset_y    , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Y   ) ;
-  iowrite32(cfg->op2_rdma_config.dma_box_offset_z    , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
-
+  nu_vpe_setup_dma (base + NU_VPE_OP2_RDMA                                      , &(cfg->op2_rdma_config) );
 }
 
 
@@ -1350,19 +1253,13 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0 ? 1 : 0)) * metrics->W * metrics->H - 1;  // Why it's here?
     
   // WDMA --------------------------------------------------------------------------------------------
-  ///if(cfg->out_data_type == DataTypeExt_Int32 || cfg->out_data_type == DataTypeExt_Fp32) {
-  ///     cfg->wdma_config.dma_en = Enable_NotEn; // new struct ============
-  ///}
-  ///else cfg->wdma_config.dma_en = Enable_En; // new struct ============
-  
-  //cfg->wdma_config.dma_en = Enable_En;  // it must be assigned in test main function !!!!!!!!!!!!
   
   if   (cfg->dst_flying == Enable_En) cfg->wdma_config.dma_en = Enable_NotEn ;
   else                                cfg->wdma_config.dma_en = Enable_En    ;
   
-  cfg->wdma_config.dma_ram_type = 0            ;  // ????????????????????????????????? 
-  cfg->wdma_config.dma_data_use = DmaDUse_Mux  ;  // ?????????????????????
-  cfg->wdma_config.dma_data_mode= Mode_Element ; // Copypaste From src_rdma_config, Not Used Actually
+  cfg->wdma_config.dma_ram_type = 0            ;  // Not Used Actually, But We Should Init
+  cfg->wdma_config.dma_data_use = DmaDUse_Mux  ;  // 
+  cfg->wdma_config.dma_data_mode= Mode_Element ;  // 
 
   // dma_data_size definition------------------- 
   if (cfg->out_data_type == DataType_Int8) cfg->wdma_config.dma_data_size = DmaDSize_One_Byte ;
@@ -1371,17 +1268,12 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   nu_vpe_decide_dma_cube_config(&(cfg->wdma_config), cfg->trace_mode, metrics);
 
   // SRC_DMA --------------------------------------------------------------------------------------------
-  if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32) {
     // if 32bit Input Data then Main Channel Works
-    cfg->src_rdma_config.dma_en       = Enable_NotEn ;
-    cfg->src_rdma_config.dma_data_use = DmaDUse_Off  ;
-  }
-  else {
-    cfg->src_rdma_config.dma_en       = Enable_En    ;
-    cfg->src_rdma_config.dma_data_use = DmaDUse_Mux  ;
-  }
+  if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32) cfg->src_rdma_config.dma_en = Enable_NotEn ;
+  else                                                                                cfg->src_rdma_config.dma_en = Enable_En    ;
 
-  cfg->src_rdma_config.dma_ram_type  = 0 ; // ?????????????????????????????????
+  cfg->src_rdma_config.dma_data_use = DmaDUse_Mux  ;
+  cfg->src_rdma_config.dma_ram_type  = 0 ;
   cfg->src_rdma_config.dma_data_mode = Mode_Element ;
   
   if (cfg->in_data_type == DataTypeExt_Int8) cfg->src_rdma_config.dma_data_size = DmaDSize_One_Byte ;
@@ -1664,29 +1556,30 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
 int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics) {
   
   uint32_t sizeof_C;
-  uint32_t sizeof_C_div128;
+  // uint32_t sizeof_C_div128;
   
-  uint32_t Hp;
-  uint32_t Wp;
-  uint32_t Rd;
-  uint32_t Sd;
-  uint32_t Ho;
-  uint32_t Wo;
+  // uint32_t Hp;
+  // uint32_t Wp;
+  // uint32_t Rd;
+  // uint32_t Sd;
+  // uint32_t Ho;
+  // uint32_t Wo;
   
-  Hp  = cfg->H+cfg->Tp+cfg->Bp; // H after null padding
-  Wp  = cfg->W+cfg->Lp+cfg->Rp; // W after null padding
+  // Hp  = cfg->H+cfg->Tp+cfg->Bp; // H after null padding
+  // Wp  = cfg->W+cfg->Lp+cfg->Rp; // W after null padding
 
-  Rd  = (cfg->R-1)*cfg->Dr + 1; // R kernel size after dilation
-  Sd  = (cfg->S-1)*cfg->Ds + 1; // S kernel size after dilation
+  // Rd  = (cfg->R-1)*cfg->Dr + 1; // R kernel size after dilation
+  // Sd  = (cfg->S-1)*cfg->Ds + 1; // S kernel size after dilation
 
-  Ho  = (Hp-Rd)/cfg->Sh + 1; // Hout with respect to striding, dilation, null padding, conv
-  Wo  = (Wp-Sd)/cfg->Sw + 1; // Wout with respect to striding, dilation, null padding, conv
+  // Ho  = (Hp-Rd)/cfg->Sh + 1; // Hout with respect to striding, dilation, null padding, conv
+  // Wo  = (Wp-Sd)/cfg->Sw + 1; // Wout with respect to striding, dilation, null padding, conv
 
   
   
     // [C/128] - it is a size in bytes, division with rounding up
   sizeof_C = cfg->C << (cfg->dt == DataType_Int16 || cfg->dt == DataType_Fp16 ? 1 : 0);
 
+  /*
   if (sizeof_C > 127) {
     if ((sizeof_C & 0x7F) > 0)  sizeof_C_div128 = (sizeof_C >> 7) + 1;
     else                        sizeof_C_div128 = sizeof_C >> 7;
@@ -1694,7 +1587,6 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   else sizeof_C_div128 = 1;
 
 
-  /*
   cfg->ma_config. ADD_CountI0 = 16;
   cfg->ma_config. CMP_CountI0 = cfg->K;
   cfg->ma_config. ADD_CountI1 = cfg->Sw;

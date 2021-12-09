@@ -542,7 +542,17 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name);
 
 uint32_t nu_lut_log2(uint32_t a);
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2);
+
+void nu_vpe_setup_op01(uintptr_t base_, Enable op_en, ConfigOp01* op_config);
+void nu_vpe_setup_lut(uintptr_t base_, ConfigOp2* op_config, DataTypeExt in_data_type);
+void nu_vpe_setup_op2(uintptr_t base_, Enable op_en, ConfigOp2* op_config, DataTypeExt in_data_type);
+void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config);
+  
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg);
+
+void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, CubeMetrics* metrics);
+void nu_vpe_decide_op01_rdma_config(ConfigOp01* op_config, ConfigDMA* op_rdma_config, TraceMode trace_mode, CubeMetrics* metrics);
+void nu_vpe_decide_op2_rdma_config(ConfigOp2* op_config, ConfigDMA* op_rdma_config, TraceMode trace_mode, CubeMetrics* metrics) ;
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics);
 
 bool nu_vpe_mode_to_bool (Mode in_mode);
