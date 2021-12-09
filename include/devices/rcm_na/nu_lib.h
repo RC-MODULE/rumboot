@@ -27,10 +27,14 @@
   Режим округления нормализатора
   */
   typedef enum RoundMode {
-    RoundMode_HalfAwayFromZero,
-    RoundMode_Nearest,
     RoundMode_Down,
-    RoundMode_Up
+    RoundMode_TowardsZero,
+    RoundMode_Up,
+    RoundMode_AwayFromZero,
+    RoundMode_HalfDown,
+    RoundMode_HalfTowardsZero,
+    RoundMode_Nearest, // Half Up
+    RoundMode_HalfAwayFromZero
   }RoundMode;
 
   /**
