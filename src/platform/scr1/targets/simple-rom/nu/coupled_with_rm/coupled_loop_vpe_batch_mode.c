@@ -288,36 +288,12 @@ int main() {
         return -1;
       }
     }
-             rumboot_printf("last_turn= %d\n",last_turn); 
-             rumboot_printf("Enable_op0= %d\n",cfg.op0_en); 
-             rumboot_printf("i= %d\n",i);
-			 rumboot_printf("turn_index= %d\n",turn_index);
-			 rumboot_printf("k= %d\n",(i-turn_index));
+       
     if(last_turn) {
       char* res_ptr;
       char* in_data_ptr;
       int k;
- /*
-    fn_base_it_nmb(fn_metrics_op0_cube, fn_metrics_op0_cube_base, k);
-	fn_base_it_nmb(fn_metrics_op0_vec, fn_metrics_op0_vec_base, k);
-	fn_base_it_nmb(fn_op0_cube_file, fn_op0_cube_file_base, k);
-	fn_base_it_nmb(fn_op0_vec_file, fn_op0_vec_file_base, k);	
-	
-	fn_base_it_nmb(fn_metrics_op1_cube, fn_metrics_op1_cube_base, k);
-	fn_base_it_nmb(fn_metrics_op1_vec, fn_metrics_op1_vec_base, k);
-	fn_base_it_nmb(fn_op1_cube_file, fn_op1_cube_file_base, k);
-	fn_base_it_nmb(fn_op1_vec_file, fn_op1_vec_file_base, k);	
-
-	fn_base_it_nmb(fn_metrics_op2_cube, fn_metrics_op2_cube_base, k);
-	fn_base_it_nmb(fn_metrics_op2_vec, fn_metrics_op2_vec_base, k);
-	fn_base_it_nmb(fn_op2_cube_file, fn_op2_cube_file_base, k);
-	fn_base_it_nmb(fn_op2_vec_file, fn_op2_vec_file_base, k);	
-	
-	fn_base_it_nmb(fn_metrics_lut1_file, fn_metrics_lut1_file_base, k);
-	fn_base_it_nmb(fn_metrics_lut2_file, fn_metrics_lut2_file_base, k);
-	fn_base_it_nmb(fn_lut1_file, fn_lut1_file_base, k);
-	fn_base_it_nmb(fn_lut2_file, fn_lut2_file_base, k);
-*/
+ 
       k=i-turn_index; // Iteration Which If The First For This Turn
         // Load OP0-OP2 Operands If Needed
        if(cfg.op0_en==Enable_En) {
