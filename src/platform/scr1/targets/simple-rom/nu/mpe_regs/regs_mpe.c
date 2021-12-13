@@ -3,14 +3,13 @@
 #include <rumboot/platform.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
-#include <string.h>
 
-#include <platform/devices/nu_cpdmac_lib.h>
 #include <platform/devices.h>
-#include <platform/devices/nu_lib.h>
+
+#include <devices/rcm_na/nu_lib.h> 
 #include <regs/regs_nu_mpe.h>
 #include <regs/regs_na.h>
-#include <platform/devices/nu_test_macro.h> 
+#include <devices/rcm_na/nu_test_macro.h> 
 
 #define SIZE 128
 
