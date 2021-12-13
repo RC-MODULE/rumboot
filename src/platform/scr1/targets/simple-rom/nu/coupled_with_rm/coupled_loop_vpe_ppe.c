@@ -183,7 +183,7 @@ int main() {
         nu_ppe_print_config_reg(&cfg_ppe_reg);
 
         nu_vpe_print_config(&cfg_vpe);
-        nu_vpe_print_config_dma(&(cfg_vpe.src_rdma_config));
+        nu_print_config_dma(&(cfg_vpe.src_rdma_config), "VPE RDMA");
       
         rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
         rumboot_platform_dump_region("cfg_ppe_reg.bin", &cfg_ppe_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
