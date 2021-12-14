@@ -1,0 +1,7 @@
+exclude:
+  - "cmake/platforms/**"
+  - "Jenkinsfile"
+include:
+  - "cmake/platforms/scr1.cmake"
+submodules:
+    
