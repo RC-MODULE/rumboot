@@ -755,15 +755,18 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_nowdma_dma main_vpe_26_autonom        ) # VPE_26  ?????????????
     #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_28_perf_dma           main_28_perf               ) # VPE_28  ?????????????
 
-    add_rumboot_target(
-      CONFIGURATION ROM
-      NAME vpe_batch_mode
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
-      CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-      PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode
-    )
+    # Tests on VPE batch-mode
+    foreach(number_testcase RANGE 1 4)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME vpe_batch_mode_${number_testcase}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${number_testcase}
+      )
+    endforeach()
 
     # Какие-то переименования ???
     if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
