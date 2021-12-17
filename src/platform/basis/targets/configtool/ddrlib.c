@@ -119,12 +119,13 @@ int ddr_do_init (int slot, const char* memtype)
         crg_ddr_init (0x63 ,0x0);
     }
 
-    if (strcmp(memtype, "mt41k256m8")==0) {
+    if (strcmp(memtype, "mt41k256m8") == 0) {
         mt41k256m8(DDRx_BASE);
-    } else if (strcmp(memtype, "mt41j512m8"))
+    } else if (strcmp(memtype, "mt41j512m8") == 0)
     {
         mt41j512m8(DDRx_BASE);        
     } else {
+        rumboot_printf("Don't know how to initialize %s. Error in config?\n", memtype);
         return 1;
     }
 
