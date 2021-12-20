@@ -295,6 +295,91 @@ struct __attribute__ ((__packed__)) mkio_rt_subaddress_table
     uint32_t sa3_rx_descriptor_pointer         : 32;
     uint32_t sa3_reserved                      : 32;
 
+    uint32_t sa4_ctrl_word                     : 32;
+    uint32_t sa4_tx_descriptor_pointer         : 32;
+    uint32_t sa4_rx_descriptor_pointer         : 32;
+    uint32_t sa4_reserved                      : 32;
+
+    uint32_t sa5_ctrl_word                     : 32;
+    uint32_t sa5_tx_descriptor_pointer         : 32;
+    uint32_t sa5_rx_descriptor_pointer         : 32;
+    uint32_t sa5_reserved                      : 32;
+
+    uint32_t sa6_ctrl_word                     : 32;
+    uint32_t sa6_tx_descriptor_pointer         : 32;
+    uint32_t sa6_rx_descriptor_pointer         : 32;
+    uint32_t sa6_reserved                      : 32;
+
+    uint32_t sa7_ctrl_word                     : 32;
+    uint32_t sa7_tx_descriptor_pointer         : 32;
+    uint32_t sa7_rx_descriptor_pointer         : 32;
+    uint32_t sa7_reserved                      : 32;
+
+    uint32_t sa8_ctrl_word                     : 32;
+    uint32_t sa8_tx_descriptor_pointer         : 32;
+    uint32_t sa8_rx_descriptor_pointer         : 32;
+    uint32_t sa8_reserved                      : 32;
+
+    uint32_t sa9_ctrl_word                     : 32;
+    uint32_t sa9_tx_descriptor_pointer         : 32;
+    uint32_t sa9_rx_descriptor_pointer         : 32;
+    uint32_t sa9_reserved                      : 32;
+
+    uint32_t sa10_ctrl_word                     : 32;
+    uint32_t sa10_tx_descriptor_pointer         : 32;
+    uint32_t sa10_rx_descriptor_pointer         : 32;
+    uint32_t sa10_reserved                      : 32;
+
+    uint32_t sa11_ctrl_word                     : 32;
+    uint32_t sa11_tx_descriptor_pointer         : 32;
+    uint32_t sa11_rx_descriptor_pointer         : 32;
+    uint32_t sa11_reserved                      : 32;
+
+    uint32_t sa12_ctrl_word                     : 32;
+    uint32_t sa12_tx_descriptor_pointer         : 32;
+    uint32_t sa12_rx_descriptor_pointer         : 32;
+    uint32_t sa12_reserved                      : 32;
+
+    uint32_t sa13_ctrl_word                     : 32;
+    uint32_t sa13_tx_descriptor_pointer         : 32;
+    uint32_t sa13_rx_descriptor_pointer         : 32;
+    uint32_t sa13_reserved                      : 32;
+
+    uint32_t sa14_ctrl_word                     : 32;
+    uint32_t sa14_tx_descriptor_pointer         : 32;
+    uint32_t sa14_rx_descriptor_pointer         : 32;
+    uint32_t sa14_reserved                      : 32;
+
+    uint32_t sa15_ctrl_word                     : 32;
+    uint32_t sa15_tx_descriptor_pointer         : 32;
+    uint32_t sa15_rx_descriptor_pointer         : 32;
+    uint32_t sa15_reserved                      : 32;
+
+    uint32_t sa16_ctrl_word                     : 32;
+    uint32_t sa16_tx_descriptor_pointer         : 32;
+    uint32_t sa16_rx_descriptor_pointer         : 32;
+    uint32_t sa16_reserved                      : 32;
+
+    uint32_t sa17_ctrl_word                     : 32;
+    uint32_t sa17_tx_descriptor_pointer         : 32;
+    uint32_t sa17_rx_descriptor_pointer         : 32;
+    uint32_t sa17_reserved                      : 32;
+
+    uint32_t sa18_ctrl_word                     : 32;
+    uint32_t sa18_tx_descriptor_pointer         : 32;
+    uint32_t sa18_rx_descriptor_pointer         : 32;
+    uint32_t sa18_reserved                      : 32;
+
+    uint32_t sa19_ctrl_word                     : 32;
+    uint32_t sa19_tx_descriptor_pointer         : 32;
+    uint32_t sa19_rx_descriptor_pointer         : 32;
+    uint32_t sa19_reserved                      : 32;
+
+    uint32_t sa20_ctrl_word                     : 32;
+    uint32_t sa20_tx_descriptor_pointer         : 32;
+    uint32_t sa20_rx_descriptor_pointer         : 32;
+    uint32_t sa20_reserved                      : 32;
+
 };
 
 struct __attribute__ ((__packed__)) mkio_rt_descriptor
