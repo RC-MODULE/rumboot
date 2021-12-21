@@ -331,7 +331,7 @@ set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${EXTRA_COMMON_FLAGS}")
 
 
 if (RUMBOOT_PLATFORM MATCHES native)
-    ADD_SOURCE("src/lib/eventsystem/wrappers-simulation.c")
+    ADD_SOURCE("src/lib/eventsystem/wrappers-serial.c")
     ADD_SOURCE("src/rumboot_main_native.c")
     ADD_SOURCE("src/lib/bootsrc/file.c")
 else()
