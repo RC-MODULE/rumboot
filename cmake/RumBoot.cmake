@@ -565,7 +565,7 @@ function(add_rumboot_target)
 
 
   list (FIND TARGET_FEATURES "STUB" _stub)
-  if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1 AND NOT ${RUMBOOT_PLATFORM} MATCHES "native")
+  if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1 AND NOT (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT CROSS_COMPILE))
     set(_plusargs "-A")
     expand_target_load(TARGET_LOAD TARGET_LOAD TARGET_LOAD_LIST)
     foreach(mem ${TARGET_LOAD_LIST})
@@ -583,9 +583,14 @@ function(add_rumboot_target)
     set(_plusargs "${_plusargs};+${mem}=${_load}")      
     endforeach()
 
+    if (NOT ${RUMBOOT_PLATFORM} MATCHES "native")
+      set(_suffix ".bin")
+    else()
+      set(_suffix "")
+    endif()
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/runners)
     string(REPLACE ";" " " _plusargs "${_plusargs}")
-    file(WRITE ${PROJECT_BINARY_DIR}/runners/${product} "${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-tools/rumboot_xrun.py -f ${product}.bin ${_plusargs} $* \${RUMBOOT_TESTING_ARGS}")
+    file(WRITE ${PROJECT_BINARY_DIR}/runners/${product} "${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-tools/rumboot_xrun.py -f ${product}${_suffix} ${_plusargs} $* \${RUMBOOT_TESTING_ARGS}")
     if(CHMOD_PROG)
       execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/runners/${product})
     endif()
@@ -599,7 +604,7 @@ function(add_rumboot_target)
   endif()
 
   # Native platform is special - we always do unit-testing!
-  if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 )
+  if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 AND NOT CROSS_COMPILE)
     add_test(${product} ${product})
     extract_labels_from_source(${product} ${TARGET_FILES})
 
