@@ -23,7 +23,10 @@ void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align,
 	ret = hp->pos;
 	hp->pos += length;
 	if (hp->pos >= hp->end) {
-		rumboot_platform_panic("Heap %s: out of memory!", hp->name);
+		rumboot_platform_panic("Heap %s: out of memory (pos %x end %x)!", 
+			hp->name, 
+			hp->pos, 
+			hp->end);
 	}
 
 	return ret;
@@ -80,9 +83,13 @@ int rumboot_malloc_register_heap(const char *name, void *heap_start, void *heap_
 {
 	int i;
 
-	/* Ignore empty heaps */
+	/* Silently ignore empty heaps */
 	if (heap_start == heap_end) {
 		return -1;
+	}
+
+	if (heap_end < heap_start) {
+		rumboot_platform_panic("heap_end is less than heap_start");
 	}
 
 	for (i = 0; i < RUMBOOT_PLATFORM_NUM_HEAPS; i++) {
