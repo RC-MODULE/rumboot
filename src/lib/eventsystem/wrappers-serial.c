@@ -51,7 +51,9 @@ void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 			 .length = 0,
 		 };
 		while(1) {
-			char tmp = rumboot_platform_getchar(500);
+			int tmp = rumboot_platform_getchar(500);
+			if (tmp < 0)
+				continue;
 			if (tmp == 'X') {
 				xmodem_get_async(-1, memcpy_cb, &dsc);
 				uint32_t crc = crc32(0, (void *) addr, dsc.length);
