@@ -756,16 +756,54 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_28_perf_dma           main_28_perf               ) # VPE_28  ?????????????
 
     # Tests on VPE batch-mode
-    foreach(number_testcase RANGE 1 4)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME vpe_batch_mode_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${number_testcase}
-      )
+    # foreach(number_testcase RANGE 1 4)
+    #   add_rumboot_target(
+    #     CONFIGURATION ROM
+    #     NAME vpe_batch_mode_${number_testcase}
+    #     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+    #     CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+    #     PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+    #     IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    #     SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${number_testcase}
+    #   )
+    # endforeach()
+
+    # Tests on VPE batch-mode for int-type
+    foreach(in IN ITEMS IN_INT8 IN_INT16)
+      foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
+        foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
+          foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
+            foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+              foreach(number_testcase RANGE 1 4)
+                add_rumboot_target(
+                  CONFIGURATION ROM
+                  NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+                  CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+                  PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+                  IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+                  SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                )
+              endforeach()
+            endforeach()
+          endforeach()
+        endforeach()
+      endforeach()
+    endforeach()
+
+    # Tests on VPE batch-mode for fp-type
+    foreach(out IN ITEMS OUT_INT16 OUT_FP16)
+      foreach(number_testcase RANGE 1 4)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+          CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+          PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+          SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+        )
+      endforeach()
     endforeach()
 
     # Какие-то переименования ???
