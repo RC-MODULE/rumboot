@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <rumboot/bitswapper.h>
-
+#include <platform/devices.h>
 
 int g_argc = 0;
 static int ipc_id;
@@ -135,6 +135,10 @@ static struct option long_options[] =
         { 0,	      0,		 0,	       0   }
 };
 
+#ifdef RUMBOOT_ENABLE_NATIVE_PCIE
+uintptr_t DUT_BASE;
+#endif
+
 void rumboot_platform_setup()
 {
 
@@ -196,9 +200,18 @@ void rumboot_platform_setup()
                 }
         }
 
-        system("touch " CMAKE_BINARY_DIR "/rumboot.tmp");
+        const char *token, *token_touch_cmd;
+        if (0 == access(CMAKE_BINARY_DIR, W_OK)) {
+                token = CMAKE_BINARY_DIR "/rumboot.tmp";
+        } else {
+                token = tmpnam(NULL);
+        }
+        FILE *tkfile = fopen(token, "w+");
+        fclose(tkfile);
+
+        //system("touch " token "/rumboot.tmp");
         #define HEAP_SIZE (1 * 1024 * 1024)
-        rumboot_platform_runtime_info = create_shared_memory(CMAKE_BINARY_DIR "/rumboot.tmp", ipc_id, sizeof(rumboot_platform_runtime_info) + HEAP_SIZE);
+        rumboot_platform_runtime_info = create_shared_memory(token, ipc_id, sizeof(rumboot_platform_runtime_info) + HEAP_SIZE);
         if (ipc_id == getpid()) {
                 /* If we own memory, clear it! */
                 memset(rumboot_platform_runtime_info, 0x0, sizeof(*rumboot_platform_runtime_info));
@@ -206,7 +219,15 @@ void rumboot_platform_setup()
                 char *heap = rumboot_platform_runtime_info;
                 heap = &heap[sizeof(*rumboot_platform_runtime_info)];
 	        rumboot_malloc_register_heap("IM0", heap, &heap[HEAP_SIZE]);
+#ifdef RUMBOOT_ENABLE_NATIVE_PCIE
+                void *ptr = rumboot_native_request_device(0, 0x0000, 2 * 1024 * 1024);
+        	rumboot_malloc_register_heap("IM1", ptr, ptr + 32 * 1024 * 1024);
+                ptr = rumboot_native_request_device(2, 32 * 1024 * 1024, 2 * 1024 * 1024);
+        	rumboot_malloc_register_heap("IM2", ptr, ptr + 32 * 1024 * 1024);
+                DUT_BASE = rumboot_native_request_device(1, 0x0000, 0xfd0000);
+#endif
         }
+
 }
 
 
@@ -260,6 +281,7 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t 
 void rumboot_platform_putchar(uint8_t c)
 {
         putc(c, stdout);
+        fflush(stdout);
 }
 
 int ngetc()
@@ -273,7 +295,7 @@ int ngetc()
 
     if(pollfds.revents & POLLIN)
     {
-            //Bonus points to the persons that can tell me if
+            //Bonus points go to the people that can tell me if
             //read() will change the value of '*c' if an error
             //occurs during the read
         read(STDIN_FILENO, &c, 1);
