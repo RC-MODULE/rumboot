@@ -1,6 +1,8 @@
 #ifndef DEVICES_H
 #define DEVICES_H
+#include <stdint.h>
 
+extern uintptr_t DUT_BASE;
 
  /**
   * \defgroup platform_native_register_map Register Map
