@@ -11,6 +11,7 @@
 //  Initialisation corresponds to next setings:
 //-----------------------------------------------------------------------------
 #include <stdint.h>
+#include <string.h>
 
 #include <regs/regs_ddr.h>
 #include <regs/regs_crg.h>
@@ -33,14 +34,100 @@
 
 
 #define DDR_HEADER_FILE "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
-#define DDR_INIT_NAME mt41k256m8
+#define DDR_INIT_NAME mt41k256m8_1600
+#include "ddr.template"
+#include "undef.h"
+
+#define DDR_HEADER_FILE "platform/ddr_config/ddr__mt41k256m8_125_8_7_533.h"
+#define DDR_INIT_NAME mt41k256m8_1066
 #include "ddr.template"
 #include "undef.h"
 
 #define DDR_HEADER_FILE "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533.h"
-#define DDR_INIT_NAME mt41j512m8
+#define DDR_INIT_NAME mt41j512m8_1066
 #include "ddr.template"
 #include "undef.h"
+
+#define DDR_HEADER_FILE "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_9_667.h"
+#define DDR_INIT_NAME jedec_ddr3_4g_x16_1333h_1333
+#include "ddr.template"
+#include "undef.h"
+
+struct ddr_lookup_entry {
+    const char *name;
+    int (*init)(uintptr_t DDRx_BASE);
+};
+
+static struct ddr_lookup_entry lookups[] = {
+    { "mt41k256m8_1600", &mt41k256m8_1600},
+    { "mt41k256m8_1066", &mt41k256m8_1066},
+    { "mt41j512m8_1066", &mt41j512m8_1066},
+    { "jedec_ddr3_4g_x16_1333h_1333", &jedec_ddr3_4g_x16_1333h_1333},
+    {}
+};
+
+int ddrlib_find_memtype(const char *type)
+{
+    int i = 0;
+    int configs_amount = sizeof(lookups)/sizeof(lookups[0]);
+    
+    for (i = 0; i < configs_amount; i++) {
+        // rumboot_printf("    lookups[%d].name %s\n", i, lookups[i].name);
+        if (strcmp(lookups[i].name, type) == 0)
+            return i;
+    }
+    
+    return -1;
+}
+
+static void ddr_simple_check (uint32_t emix_base)
+{
+    uint32_t rdata;
+    
+    iowrite32 (0x12345678, emix_base);
+    rdata = ioread32 (emix_base);
+    if (rdata == 0x12345678) {
+        iowrite32 (0x11223344, emix_base);
+        rdata = ioread32 (emix_base);
+        if (rdata == 0x11223344)
+            rumboot_printf("    INFO: DDR 0x%x very very simple test Ok\n", emix_base);
+        else
+            rumboot_printf("    ERROR: DDR 0x%x does not work  0x%x != 0x%x\n", emix_base, rdata, 0x11223344);
+    }
+    else
+        rumboot_printf("    ERROR: DDR 0x%x does not work  0x%x != 0x%x\n", emix_base, rdata, 0x12345678);
+    
+}
+
+
+//-----------------------------------------------------------------------------
+//  This function must be called after ddr_init (or smth similar)
+//  It prepares required value of SDRAM for work, if ECC is On
+//-----------------------------------------------------------------------------
+void ddr_enable_ecc (uint32_t DDRx_BASE, uint32_t SDRAM_start_addr, uint32_t SDRAM_size)
+{
+    uint32_t rdata;
+    
+    rumboot_printf ("    Note: DDR ECC is On. SDRAM will be prepared...");
+    
+    //  Enable ECC
+    rdata = ioread32 (DDRx_BASE + DENALI_CTL_81);
+    iowrite32 (rdata | (1 << 8), DDRx_BASE + DENALI_CTL_81);
+    
+    //  Disable ECC checks in Write transactions
+    //  Otherwise writes will fail because of trash in SDRAM
+    rdata = ioread32 (DDRx_BASE + DENALI_CTL_82);
+    iowrite32 (rdata | (1 << 24), DDRx_BASE + DENALI_CTL_82);
+    
+    for (uint32_t i = 0; i < SDRAM_size; i+=4)
+        iowrite32 (0x00000000, SDRAM_start_addr + i);
+    
+    //  Enable ECC checks in Write transactions
+    rdata = ioread32 (DDRx_BASE + DENALI_CTL_82);
+    iowrite32 (rdata & 0x00FFFFFF, DDRx_BASE + DENALI_CTL_82);
+    
+    rumboot_printf ("Ok\n");
+}
 
 
 //-----------------------------------------------------------------------------
@@ -100,15 +187,21 @@ static uint32_t crg_ddr_init
 }
 
 static int crg_init_done;
-int ddr_do_init (int slot, const char* memtype)
+
+int ddr_do_init (int slot, int memtype, int speed, int ecc)
 {
     uintptr_t DDRx_BASE; 
+    
+    uint32_t emix_base;
+    
     switch (slot) {
         case 0:
             DDRx_BASE = DDR0_BASE;
+            emix_base = EMI0_BASE;
             break;
         case 1:
             DDRx_BASE = DDR1_BASE;
+            emix_base = EMI1_BASE;
             break;
         default:
             return 1;
@@ -116,18 +209,18 @@ int ddr_do_init (int slot, const char* memtype)
 
     if (!crg_init_done) {
         crg_init_done++;
-        crg_ddr_init (0x63 ,0x0);
+        switch (speed) {
+            case 1600: crg_ddr_init (0x63 ,0x0); break;
+            case 1333: crg_ddr_init (0x52 ,0x0); break;
+            case 1066: crg_ddr_init (0x84 ,0x1); break;
+            default: rumboot_printf("DDR wrong speed %d. Must be [1600, 1333, 1066]\n", speed);
+        }
     }
 
-    if (strcmp(memtype, "mt41k256m8") == 0) {
-        mt41k256m8(DDRx_BASE);
-    } else if (strcmp(memtype, "mt41j512m8") == 0)
-    {
-        mt41j512m8(DDRx_BASE);        
-    } else {
-        rumboot_printf("Don't know how to initialize %s. Error in config?\n", memtype);
-        return 1;
-    }
+    lookups[memtype].init(DDRx_BASE);
+    
+    if (ecc != 0)
+        ddr_enable_ecc (DDRx_BASE, emix_base, 0x40000000);
 
     uint32_t timer_cntr = 0;
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)
@@ -137,6 +230,9 @@ int ddr_do_init (int slot, const char* memtype)
             return 1;
     }
     iowrite32(0b00000000000000000000100000000000, DDRx_BASE + DENALI_CTL_95); // clear interruption flag
+    
+    ddr_simple_check (emix_base);
+    
     return 0;
 }
 

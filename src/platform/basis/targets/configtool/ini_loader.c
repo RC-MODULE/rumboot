@@ -52,10 +52,25 @@ struct pcie_data
         struct pcie_barcfg bars[PCIE_NUM_BARS];
 };
 
+struct ddr_data
+{
+    int slot;
+    int identifier;
+    uint32_t speed;
+    uint32_t ecc;
+    uint32_t turn_on;
+};
+
 #define fill_hex(nm)                                 \
         if (strcmp(name, #nm) == 0)                  \
         {                                            \
                 data->nm = strtoul(value, NULL, 16); \
+        }
+
+#define fill_dec(nm)                                 \
+        if (strcmp(name, #nm) == 0)                  \
+        {                                            \
+                data->nm = strtoul(value, NULL, 10); \
         }
 
 #define fill_bar(bar, nm)                                      \
@@ -172,22 +187,54 @@ int exit_handler(void *user, const char *section,
         }
 }
 
-extern int ddr_do_init (int slot, const char* memtype);
+
+extern int ddr_do_init (int slot, int identifier, int speed, int ecc);
+extern int ddrlib_find_memtype (const char *type);
+
 int ddr_handler(void *user, const char *section,
                  const char *name, const char *value,
                  int lineno)
 {
-        int slot;
-        if (!sscanf(name, "slot[%d]", &slot))
-                return 0;
-        rumboot_printf("DDR: Slot: %d Part: %s\n", slot, value);
-        int ret = ddr_do_init(slot, value);
-        if (ret) {
-                rumboot_printf("DDR initialisation of slot %d type %s failed\n", slot, value);
-                rumboot_printf("System halted\n");
-                while(1);
+    struct ddr_data *data = user;
+    
+    if (sscanf(name, "slot[%d]", &(data->slot)))
+        data->identifier = ddrlib_find_memtype(value);
+    
+    if (strcmp(name, "speed") == 0)
+        data->speed = strtoul(value, NULL, 10);
+    
+    if (strcmp(name, "ecc") == 0)
+        data->ecc = strtoul(value, NULL, 16);
+    
+    if (strcmp(name, "turn_on") == 0) {
+        data->turn_on = strtoul(value, NULL, 16);
+        
+        if (data->turn_on) {
+            if (data->identifier != -1) {
+                rumboot_printf("  DDR turn ON: slot %d  memory type id %d  speed %d  ecc %d\n", data->slot, data->identifier, data->speed, data->ecc);
+                // rumboot_printf("    DDR slot %d\n", data->slot);
+                // rumboot_printf("    DDR identifier %d\n", data->identifier);
+                // rumboot_printf("    DDR speed %d\n", data->speed);
+                // rumboot_printf("    DDR ecc %d\n", data->ecc);
+                // rumboot_printf("    DDR turn_on %d\n", data->turn_on);
+                
+                int ret = ddr_do_init(data->slot, data->identifier, data->speed, data->ecc);
+                if (ret) {
+                        rumboot_printf("    DDR initialisation of slot %d type %s failed\n", data->slot, value);
+                        rumboot_printf("    System halted\n");
+                        while(1);
+                }
+                return 1;
+            }
+            else
+                rumboot_printf("  ERROR: unknown DDR memory type\n");
         }
-        return 1;
+        else
+            rumboot_printf("  DDR slot %d turn OFF\n", data->slot);
+    }
+        
+        
+        
 }
 
 struct sectionfilter filters[] = {
