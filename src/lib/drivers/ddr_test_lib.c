@@ -49,7 +49,7 @@
  #ifdef PRODUCTION_TESTING
     #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
  #else
-    #include "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_9_667.h"
+    #include "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_10_667.h"
  #endif
 //#include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_10_667.h"
@@ -58,6 +58,7 @@
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800_0_0_0_0_10.h"
 
 // #include "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_9_667.h"
+// #include "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_10_667.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock
@@ -620,9 +621,9 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 {
     uint32_t timer_cntr = 0;
 
-    // crg_ddr_init (0x84 ,0x1);
-    // crg_ddr_init (0x52 ,0x0);
-    crg_ddr_init (0x63 ,0x0);
+    // crg_ddr_init (0x84 ,0x1);  //  DDR-1066
+    crg_ddr_init (0x52 ,0x0);  //  DDR-1333
+    // crg_ddr_init (0x63 ,0x0);  //  DDR-1600
     ddr_registers_init (DDRx_BASE);
     
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)

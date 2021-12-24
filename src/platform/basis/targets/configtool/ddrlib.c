@@ -49,7 +49,12 @@
 #include "undef.h"
 
 #define DDR_HEADER_FILE "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_9_667.h"
-#define DDR_INIT_NAME jedec_ddr3_4g_x16_1333h_1333
+#define DDR_INIT_NAME jedec_ddr3_4g_x16_1333h_cl9_1333
+#include "ddr.template"
+#include "undef.h"
+
+#define DDR_HEADER_FILE "platform/ddr_config/ddr__jedec_ddr3_4g_x16_1333h_8_10_667.h"
+#define DDR_INIT_NAME jedec_ddr3_4g_x16_1333h_cl10_1333
 #include "ddr.template"
 #include "undef.h"
 
@@ -62,7 +67,8 @@ static struct ddr_lookup_entry lookups[] = {
     { "mt41k256m8_1600", &mt41k256m8_1600},
     { "mt41k256m8_1066", &mt41k256m8_1066},
     { "mt41j512m8_1066", &mt41j512m8_1066},
-    { "jedec_ddr3_4g_x16_1333h_1333", &jedec_ddr3_4g_x16_1333h_1333},
+    { "jedec_ddr3_4g_x16_1333h_cl9_1333", &jedec_ddr3_4g_x16_1333h_cl9_1333},
+    { "jedec_ddr3_4g_x16_1333h_cl10_1333", &jedec_ddr3_4g_x16_1333h_cl10_1333},
     {}
 };
 

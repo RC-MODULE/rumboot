@@ -46,8 +46,8 @@
 #define STABILITY_REP_NUMBER  5
 
 //-------------
-#define TEST_FAST
-// #define TEST_NORMAL
+// #define TEST_FAST
+#define TEST_NORMAL
 // #define TEST_MAXIMUM
 
 #define POST_TEST_BASE  EMI1_BASE
@@ -109,14 +109,14 @@ static volatile uint32_t ret, rep_cnt, err_cnt, done_cnt;
 
 uint32_t mdma_transfer_direction = 0;
 
-volatile struct mdma_rd_descriptor {
+volatile struct __attribute__ ((aligned (8))) mdma_rd_descriptor {
     uint32_t data_src;
     uint32_t data_len;
     uint32_t reserved_0;
     uint32_t stop_word;
 } mdma0_rd_descriptor;
 
-volatile struct mdma_wr_descriptor {
+volatile struct __attribute__ ((aligned (8))) mdma_wr_descriptor {
     uint32_t data_dst;
     uint32_t data_len;
     uint32_t reserved_0;
@@ -132,6 +132,11 @@ static inline void mdma0_start ()
 static inline void mdma0_transceive (uint32_t data_src, uint32_t data_dst)
 {
     // rumboot_printf ("  DMA start\n");
+    // rumboot_printf ("    data_src  0x%08x\n", data_src);
+    // rumboot_printf ("    data_dst  0x%08x\n", data_dst);
+    // rumboot_printf ("    data_len  0x%08x\n", MDMA_LEN);
+    
+    // rumboot_printf ("    MDMA0_BASE  0x%08x\n", MDMA0_BASE);
     
     mdma0_rd_descriptor.data_src   = data_src    ;
     mdma0_rd_descriptor.data_len   = MDMA_LEN    ;
@@ -182,11 +187,12 @@ static void mdma0_irq_handler (int irq, void *arg)
 
 int main (void)
 {
-    uint32_t time_0;
+    uint32_t time_start;
+    uint32_t time_finish;
 
     rumboot_printf ("\nddr1_loop_test test start\n");
-    time_0 = rumboot_platform_get_uptime();
-    rumboot_printf ("  TIME: start:  %d us\n", time_0);
+    time_start = rumboot_platform_get_uptime();
+    rumboot_printf ("  TIME: start:  %d us\n", time_start);
 
     ret = -1;
     rep_cnt = 0;
@@ -212,7 +218,7 @@ int main (void)
     uint32_t rdata;
     uint32_t err_cntr = 0;
     
-    rumboot_printf ("  start stability test\n");
+    rumboot_printf ("  start stability test...\n");
     for (uint32_t i = 0; i < (sizeof (src_test_array) >> 3); i++)
     {
         ((uint32_t *) EMI1_BASE) [i] = ((uint32_t *) src_test_array) [i];
@@ -228,7 +234,7 @@ int main (void)
             err_cntr++;
             ret = -1;
             rumboot_printf ("  ERROR_STABILITY");
-            rumboot_printf ("    #%d  etalon=0x%08x    read=0x%08x    read_2=0x%08x    XOR=0x%08x\n", i, ((uint32_t *) src_test_array) [i], rdata, ((uint32_t *) EMI0_BASE) [i], ((uint32_t *) src_test_array) [i]^rdata);
+            rumboot_printf ("    #%d  etalon=0x%08x    read=0x%08x    read_2=0x%08x    XOR=0x%08x\n", i, ((uint32_t *) src_test_array) [i], rdata, ((uint32_t *) EMI1_BASE) [i], ((uint32_t *) src_test_array) [i]^rdata);
             if (err_cntr == 50)
             {
                 rumboot_printf ("  Error counter overflow, test continued\n");
@@ -236,6 +242,8 @@ int main (void)
             }
         }
     }
+    if (err_cntr == 0)
+        rumboot_printf ("    PASSED\n");
 #endif
     
 #if !defined(TEST_NO_DMA)
@@ -243,6 +251,7 @@ int main (void)
 //  Copy data from IM to the end of DDR SDRAM
 //-----------------------------
 
+    rumboot_printf ("  copy data from IM to the end of DDR SDRAM for DMA");
     mdma0_transceive ((uint32_t) src_test_array, (uint32_t) MDMA0_SDRAM_SRC);
     
     while ((ioread32(MDMA0_BASE + MDMA_STATUS_W) & 0x10) == 0)
@@ -341,8 +350,10 @@ int main (void)
         rumboot_printf ("\nddr1_loop_test  PASS\n");
     else
         rumboot_printf ("\nddr1_loop_test  FAILED\n");
-
-    rumboot_printf ("  TIME: end:  %d us\n", rumboot_platform_get_uptime ());
+    
+    time_finish = rumboot_platform_get_uptime();
+    rumboot_printf ("  TIME: end:  %d us\n", time_finish);
+    rumboot_printf ("  TIME: delta:  %d us\n", time_finish-time_start);
 
     return ret;
 }
