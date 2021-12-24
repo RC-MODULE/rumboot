@@ -16,7 +16,7 @@
 #define MR1_DATA_0                                 0x0006
 //  unproven value; probably, training may be done once at start
 //    interval between WL = 0x1000*1024 dfi_clk (~ 4*10^6)
-#define WRLVL_INTERVAL                             0x1000
+#define WRLVL_INTERVAL                             0x0
 //  WL must be turn on
 #define WRLVL_EN                                   0x01
 //  Read Gating must be turn on
@@ -25,10 +25,10 @@
 #define RDLVL_EN                                   0x01
 //  unproven value; probably, training may be done once at start
 //    interval between Read Leveling = 0x1000*1024 dfi_clk (~ 4*10^6)
-#define RDLVL_INTERVAL                             0x1000
+#define RDLVL_INTERVAL                             0x0
 //  unproven value; probably, training may be done once at start
 //    interval between Read Gating = 0x1000*1024 dfi_clk (~ 4*10^6)
-#define RDLVL_GATE_INTERVAL                        0x1000
+#define RDLVL_GATE_INTERVAL                        0x0
 //  disable ECC while debug DDR.
 //  TODO: enable ECC
 #define ECC_EN                                     0x0

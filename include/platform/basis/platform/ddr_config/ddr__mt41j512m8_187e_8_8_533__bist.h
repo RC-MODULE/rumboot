@@ -18,7 +18,7 @@
 #define MR1_DATA_0                                 0x0006
 //  unproven value; probably, training may be done once at start
 //    interval between WL = 0x1000*1024 dfi_clk (~ 4*10^6)
-#define WRLVL_INTERVAL                             0x1000
+#define WRLVL_INTERVAL                             0x0
 //  WL must be turn off for BIST
 #define WRLVL_EN                                   0x00
 //  Read Gating must be turn off for BIST
@@ -27,10 +27,10 @@
 #define RDLVL_EN                                   0x00
 //  unproven value; probably, training may be done once at start
 //    interval between Read Leveling = 0x1000*1024 dfi_clk (~ 4*10^6)
-#define RDLVL_INTERVAL                             0x1000
+#define RDLVL_INTERVAL                             0x0
 //  unproven value; probably, training may be done once at start
 //    interval between Read Gating = 0x1000*1024 dfi_clk (~ 4*10^6)
-#define RDLVL_GATE_INTERVAL                        0x1000
+#define RDLVL_GATE_INTERVAL                        0x0
 
 //  Values got from    "Micron TN-41-13: DDR3 Point-to-Point Design Support Introduction"
 //  
