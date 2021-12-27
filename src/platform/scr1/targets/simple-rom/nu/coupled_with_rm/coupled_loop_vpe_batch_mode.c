@@ -135,6 +135,7 @@ int main() {
   int iterations;
   bool last_turn;
   int turn_index;
+  int invocation_index;
   
   uint32_t misalign; // Misaligns Operands Only
   uint8_t  axi_len;
@@ -225,8 +226,13 @@ int main() {
 
 
   turn_index=0;
+  invocation_index=0;
   for(i=0;i<iterations;i++) {
-    rumboot_printf("Starting iteration %d\n",i);
+    
+    if(turn_index==0)
+      rumboot_printf("Starting invocation %d\n",invocation_index);
+    
+    rumboot_printf("Loading Data for invocation %d, Cube %d (Iteration %d)\n",invocation_index,turn_index,i);
     
 	fn_base_it_nmb(fn_in, fn_in_base, i);
     fn_base_it_nmb(fn_cfg, fn_cfg_base, i);
@@ -358,12 +364,13 @@ int main() {
       res_ptr = res_data_first;
       in_data_ptr = in_data_first;
       for(int j=k; j<=i; j++) { // Iterate From The Batch Start To The Current Iteration
-        rumboot_printf("Comparing iteration %d: res=0x%x, etalon=0x%x, %d bytes\n",j,(uint32_t)res_ptr,(uint32_t)etalon[j], res_metrics->s);
+        rumboot_printf("Comparing invocation %d, Cube %d (Iteration %d): res=0x%x, etalon=0x%x, %d bytes\n",invocation_index,j-k,j,
+                                                                (uint32_t)res_ptr,(uint32_t)etalon[j], res_metrics->s);
         
         if(nu_bitwise_compare(res_ptr,etalon[j],res_metrics->s) == 0)
-          rumboot_printf("Iteration %d PASSED\n",j);
+          rumboot_printf("Invocation %d, Cube %d (Iteration %d) PASSED\n",invocation_index,j-k,j);
         else {
-          rumboot_printf("Test FAILED at iteration %d\n",j);
+          rumboot_printf("Test FAILED at invocation %d, Cube %0d (Iteration %d)\n",invocation_index,j-k,j);
           nu_vpe_interpret_mismatch(&cfg,res_ptr,etalon[j],in_data_ptr,op0,op1,op2,res_metrics->s,res_metrics->C);
           return 1;
         }
@@ -379,6 +386,9 @@ int main() {
     res_data_prev = res_data;
     
     turn_index = last_turn ? 0 : turn_index+1;
+    
+    if(last_turn)
+      invocation_index++;
   }
   
   return 0;
