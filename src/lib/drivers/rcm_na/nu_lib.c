@@ -2118,7 +2118,7 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wCi  , wbase + NU_PPE_DATA_C_IN          );
   iowrite32(cfg->wWo  , wbase + NU_PPE_DATA_W_OUT         );
   iowrite32(cfg->wHo  , wbase + NU_PPE_DATA_H_OUT         );
-  iowrite32(cfg->wCo  , wbase + NU_PPE_DATA_C_OUT         );
+  //iowrite32(cfg->wCo  , wbase + NU_PPE_DATA_C_OUT         );
   iowrite32(cfg->wOpM , wbase + NU_PPE_OP_MODE            );
   iowrite32(cfg->wK   , wbase + NU_PPE_KERNEL             );
   iowrite32(cfg->wKWr , wbase + NU_PPE_RECIP_KERNEL_W     );
