@@ -526,8 +526,13 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     ADD_VPE_COUPLED_TEST_LOOP(vpe_16_op2_c2  main_vpe_16_op2_c2 )
   
     # Tests on VPE::NORM
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_8_0_op0_norm       main_vpe_8_0_op0_norm      )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_14_0_op1_norm      main_vpe_14_0_op1_norm     )
+    foreach(round_macro IN ITEMS 
+      DOWN     TOWARDSZERO     UP     AWAYFROMZERO     HALFDOWN     HALFTOWARDSZERO     NEAREST     HALFAWAYFROMZERO
+    )
+      ADD_VPE_COUPLED_TEST_LOOP(vpe_8_0_op0_norm_ROUND_${round_macro}       main_vpe_8_0_op0_norm_ROUND_${round_macro}      )
+      ADD_VPE_COUPLED_TEST_LOOP(vpe_14_0_op1_norm_ROUND_${round_macro}      main_vpe_14_0_op1_norm_ROUND_${round_macro}     )
+    endforeach() # round_macro
+
     ADD_VPE_COUPLED_TEST_LOOP(vpe_8_1_op0_norm_rnd   main_vpe_8_1_op0_norm_rnd  )
     ADD_VPE_COUPLED_TEST_LOOP(vpe_14_1_op1_norm_rnd  main_vpe_14_1_op1_norm_rnd )
     ADD_VPE_COUPLED_TEST_LOOP(vpe_20_0_op2_norm      main_vpe_20_0_op2_norm     )
