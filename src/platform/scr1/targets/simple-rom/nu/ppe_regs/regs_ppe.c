@@ -375,13 +375,13 @@
 		rumboot_printf("resw34 error\n");}
 		else 
 		{resw34=0;}
-	
+	/*
 	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
 		{resw35 =1;
 		rumboot_printf("resw35 error\n");}
 		else 
 		{resw35=0;}
-	
+	*/
 	if ((0x00000000) != (ioread32(wbase + NU_PPE_OP_MODE)& 0x01030703))
 		{resw36 =1;
 		rumboot_printf("resw36error\n");}
@@ -479,7 +479,7 @@
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
 				resw18 || resw19 || resw20  || resw21 || resw22 || resw23 || resw24 || resw25 ||
 				resw26 || resw27 || resw28 || resw29 || resw30 || resw31 || resw32 || resw33 ||
-				resw34 ||resw35 || resw36 || resw37 || resw38 || resw39 || resw40 || resw41 ||
+				resw34 /*||resw35 */|| resw36 || resw37 || resw38 || resw39 || resw40 || resw41 ||
 				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 || resw48 || resw49 || resw50 || resw51; 
 	   		
 	res = resr  || resw;
@@ -498,15 +498,16 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 		  res13,res14,res15,res16,res17,res18,res19,res20,res21,res22,res23,res24,res25;
 	  int resw0,resw3,resw4,resw5,resw6,resw7,resw8,resw9,resw10,resw11,resw12,
 		  resw13,resw14,resw15,resw16,resw17,resw18,resw19,/*resw20,*/resw21,resw22,resw23,resw24,
-		  resw25,resw26,resw27,resw28,resw29,resw30,resw31,resw32,resw33,resw34, resw35,resw36,
+		  resw25,resw26,resw27,resw28,resw29,resw30,resw31,resw32,resw33,resw34,/* resw35,*/resw36,
 		  resw37, resw38, resw39, resw40,resw41,resw42,resw43,resw44,resw45, resw46, resw47;
 
 	  int resr;
 	  int resw;
 	  
 	  int32_t tmpr;
+	  int32_t tmpx;
 	  tmpr = data;
-	  
+		
 	    iowrite32((0x00000000), rbase + NU_PPE_OP_ENABLE);
 		if ((0x00000000)  !=(ioread32(rbase +NU_PPE_OP_ENABLE)& 0x00000001)) 	
 		{res0 =1;
@@ -898,23 +899,29 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_W_OUT )& 0x000001FFF))
 		{resw33 =1;
 		rumboot_printf("resw33 error\n");}
+		//rumboot_printf("data_resw33 ==%x\n",(ioread32(wbase + NU_PPE_DATA_W_OUT)) );}
+		
 		else 
-		{resw33=0;}
+		{resw33=0;
+		rumboot_printf("data_resw33 ==%x\n",(ioread32(wbase + NU_PPE_DATA_W_OUT)) );}
 	
-		iowrite32(tmpr,wbase +  NU_PPE_DATA_H_OUT);
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_H_OUT);		
 	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_H_OUT)& 0x000001FFF))
 		{resw34 =1;
 		rumboot_printf("resw34 error\n");}
+		
 		else 
-		{resw34=0;}
-	
-		iowrite32(tmpr,wbase +  NU_PPE_DATA_C_OUT);
-	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
-		{resw35 =1;
-		rumboot_printf("resw35 error\n");}
+		{resw34=0;
+		rumboot_printf("data_resw34_y ==%x\n",(ioread32(wbase + NU_PPE_DATA_H_OUT)) );
+		}
+	/*
+	if ((0x000001003) != (ioread32(wbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
+		{resw35 =1;	
+		rumboot_printf("resw35_x error\n");
+		rumboot_printf("data_resw35 ==%x\n",(ioread32(wbase + NU_PPE_DATA_C_OUT)) );}
 		else 
 		{resw35=0;}
-	
+	*/
 		iowrite32(tmpr,wbase +  NU_PPE_OP_MODE);
 	if ((tmpr & 0x01030703) != (ioread32(wbase + NU_PPE_OP_MODE)& 0x01030703))
 		{resw36 =1;
@@ -1006,7 +1013,7 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
 				resw18 || resw19 || /*resw20 || */ resw21 || resw22 || resw23 || resw24 || resw25 ||
 				resw26 || resw27 || resw28 || resw29 || resw30 || resw31 || resw32 || resw33 ||
-				resw34 ||resw35 || resw36 ||resw37 ||resw38 || resw39 || resw40 || resw41 ||
+				resw34 /*||resw35*/ || resw36 ||resw37 ||resw38 || resw39 || resw40 || resw41 ||
 				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 ; 
 	   		
 	res = resr  || resw;
