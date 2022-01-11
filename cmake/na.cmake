@@ -886,6 +886,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     add_rumboot_target(
         CONFIGURATION ROM
         NAME MPE_1
+        TESTGROUP mpe_test
         FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
     )
   endif()
@@ -1965,6 +1966,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
+        TESTGROUP mpe_test
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
         CFLAGS -DDONT_USE_PPE=1
         PREPCMD 
@@ -1987,6 +1989,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
+        TESTGROUP mpe_test
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
@@ -2044,6 +2047,7 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     add_rumboot_target(
       CONFIGURATION ROM
       NAME MPE_PERFORMANCE
+      TESTGROUP mpe_test
       FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
       PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
       IRUN_FLAGS ${NA_RM_PLUSARGS}
