@@ -64,27 +64,49 @@ struct ddr_lookup_entry {
 };
 
 static struct ddr_lookup_entry lookups[] = {
-    { "mt41k256m8_1600", &mt41k256m8_1600},
-    { "mt41k256m8_1066", &mt41k256m8_1066},
-    { "mt41j512m8_1066", &mt41j512m8_1066},
-    { "jedec_ddr3_4g_x16_1333h_cl9_1333", &jedec_ddr3_4g_x16_1333h_cl9_1333},
-    { "jedec_ddr3_4g_x16_1333h_cl10_1333", &jedec_ddr3_4g_x16_1333h_cl10_1333},
+    { "mt41k256m8:1600", &mt41k256m8_1600},
+    { "mt41k256m8:1066", &mt41k256m8_1066},
+    { "mt41j512m8:1066", &mt41j512m8_1066},
+    { "jedec_ddr3_4g_x16_1333h_cl9:1333", &jedec_ddr3_4g_x16_1333h_cl9_1333},
+    { "jedec_ddr3_4g_x16_1333h_cl10:1333", &jedec_ddr3_4g_x16_1333h_cl10_1333},
     {}
 };
 
-int ddrlib_find_memtype(const char *type)
+int ddrlib_find_memtype(const char *type, uint32_t speed)
 {
+    char tmp[128];
+    sprintf(tmp, "%s:%u", type, speed);
     int i = 0;
     int configs_amount = sizeof(lookups)/sizeof(lookups[0]);
     
     for (i = 0; i < configs_amount; i++) {
         // rumboot_printf("    lookups[%d].name %s\n", i, lookups[i].name);
-        if (strcmp(lookups[i].name, type) == 0)
+        if (strcmp(lookups[i].name, tmp) == 0)
             return i;
     }
     
     return -1;
 }
+
+
+static size_t ddr_estimate_size(uintptr_t emix_base)
+{
+    #define MASK0 0x12345678
+    #define MASK1 0x87654321
+
+    uintptr_t pos = 16;
+    iowrite32(MASK0, emix_base);
+    while (pos < (1 * 1024 * 1024 * 1024)) {
+        if (MASK0 == ioread32(emix_base + pos)) {
+            iowrite32(MASK1, emix_base);
+            if (MASK1 == ioread32(emix_base + pos)) {
+                return pos;
+            }
+        }
+        pos = pos << 1;
+    }
+    return (1 * 1024 * 1024 * 1024);
+} 
 
 static void ddr_simple_check (uint32_t emix_base)
 {
@@ -96,13 +118,15 @@ static void ddr_simple_check (uint32_t emix_base)
         iowrite32 (0x11223344, emix_base);
         rdata = ioread32 (emix_base);
         if (rdata == 0x11223344)
-            rumboot_printf("    INFO: DDR 0x%x very very simple test Ok\n", emix_base);
+            rumboot_printf("INFO: DDR 0x%x very very simple test Ok\n", emix_base);
         else
-            rumboot_printf("    ERROR: DDR 0x%x does not work  0x%x != 0x%x\n", emix_base, rdata, 0x11223344);
+            rumboot_printf("ERROR: DDR 0x%x does not work  0x%x != 0x%x\n", emix_base, rdata, 0x11223344);
     }
     else
-        rumboot_printf("    ERROR: DDR 0x%x does not work  0x%x != 0x%x\n", emix_base, rdata, 0x12345678);
-    
+        rumboot_printf("ERROR: DDR 0x%x does not work  0x%x != 0x%x\n", emix_base, rdata, 0x12345678);
+
+    size_t size = ddr_estimate_size(emix_base);
+    rumboot_printf("INFO: Detected %d MiB of DDR\n", size / 1024 / 1024);
 }
 
 
@@ -110,12 +134,13 @@ static void ddr_simple_check (uint32_t emix_base)
 //  This function must be called after ddr_init (or smth similar)
 //  It prepares required value of SDRAM for work, if ECC is On
 //-----------------------------------------------------------------------------
-void ddr_enable_ecc (uint32_t DDRx_BASE, uint32_t SDRAM_start_addr, uint32_t SDRAM_size)
+void ddr_enable_ecc (uint32_t DDRx_BASE, uint32_t SDRAM_start_addr)
 {
     uint32_t rdata;
-    
-    rumboot_printf ("    Note: DDR ECC is On. SDRAM will be prepared...");
-    
+
+    size_t size = ddr_estimate_size(SDRAM_start_addr);
+    rumboot_printf ("DDR: ECC enabled, clearing %u MiBs of DDR\n", size / 1024 / 1024);
+
     //  Enable ECC
     rdata = ioread32 (DDRx_BASE + DENALI_CTL_81);
     iowrite32 (rdata | (1 << 8), DDRx_BASE + DENALI_CTL_81);
@@ -125,14 +150,15 @@ void ddr_enable_ecc (uint32_t DDRx_BASE, uint32_t SDRAM_start_addr, uint32_t SDR
     rdata = ioread32 (DDRx_BASE + DENALI_CTL_82);
     iowrite32 (rdata | (1 << 24), DDRx_BASE + DENALI_CTL_82);
     
-    for (uint32_t i = 0; i < SDRAM_size; i+=4)
-        iowrite32 (0x00000000, SDRAM_start_addr + i);
+    bzero(SDRAM_start_addr, size);
+
+    //for (uint32_t i = 0; i < SDRAM_size; i+=4)
+    //    iowrite32 (0x00000000, SDRAM_start_addr + i);
     
     //  Enable ECC checks in Write transactions
     rdata = ioread32 (DDRx_BASE + DENALI_CTL_82);
     iowrite32 (rdata & 0x00FFFFFF, DDRx_BASE + DENALI_CTL_82);
     
-    rumboot_printf ("Ok\n");
 }
 
 
@@ -199,7 +225,6 @@ int ddr_do_init (int slot, int memtype, int speed, int ecc)
     uintptr_t DDRx_BASE; 
     
     uint32_t emix_base;
-    
     switch (slot) {
         case 0:
             DDRx_BASE = DDR0_BASE;
@@ -224,9 +249,10 @@ int ddr_do_init (int slot, int memtype, int speed, int ecc)
     }
 
     lookups[memtype].init(DDRx_BASE);
-    
-    if (ecc != 0)
-        ddr_enable_ecc (DDRx_BASE, emix_base, 0x40000000);
+
+    if (ecc)
+        ddr_enable_ecc (DDRx_BASE, emix_base);
+
 
     uint32_t timer_cntr = 0;
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)

@@ -56,10 +56,13 @@ struct ddr_data
 {
     int slot;
     int identifier;
+    int memtest;
     uint32_t speed;
     uint32_t ecc;
-    uint32_t turn_on;
+    char name[32];
 };
+
+
 
 #define fill_hex(nm)                                 \
         if (strcmp(name, #nm) == 0)                  \
@@ -189,35 +192,34 @@ int exit_handler(void *user, const char *section,
 
 
 extern int ddr_do_init (int slot, int identifier, int speed, int ecc);
-extern int ddrlib_find_memtype (const char *type);
+extern int ddrlib_find_memtype (const char *type, uint32_t speed);
 
 int ddr_handler(void *user, const char *section,
                  const char *name, const char *value,
                  int lineno)
 {
     struct ddr_data *data = user;
+    int slot;
+
+    if (sscanf(name, "slot[%d]", &slot) && strstr(name, "name"))
+        strncpy(data[slot].name, value, ARRAY_SIZE(data[slot].name));
+
+    if (sscanf(name, "slot[%d]", &slot) && strstr(name, "speed"))
+        data[slot].speed = strtoul(value, NULL, 10);
+
+    if (sscanf(name, "slot[%d]", &slot) && strstr(name, "ecc"))
+        data[slot].ecc = strtoul(value, NULL, 10);
+
+    if (sscanf(name, "slot[%d]", &slot) && strstr(name, "memtest"))
+        data[slot].memtest = strtoul(value, NULL, 10);
     
-    if (sscanf(name, "slot[%d]", &(data->slot)))
-        data->identifier = ddrlib_find_memtype(value);
-    
-    if (strcmp(name, "speed") == 0)
-        data->speed = strtoul(value, NULL, 10);
-    
-    if (strcmp(name, "ecc") == 0)
-        data->ecc = strtoul(value, NULL, 16);
-    
+    /*
     if (strcmp(name, "turn_on") == 0) {
         data->turn_on = strtoul(value, NULL, 16);
         
         if (data->turn_on) {
             if (data->identifier != -1) {
-                rumboot_printf("  DDR turn ON: slot %d  memory type id %d  speed %d  ecc %d\n", data->slot, data->identifier, data->speed, data->ecc);
-                // rumboot_printf("    DDR slot %d\n", data->slot);
-                // rumboot_printf("    DDR identifier %d\n", data->identifier);
-                // rumboot_printf("    DDR speed %d\n", data->speed);
-                // rumboot_printf("    DDR ecc %d\n", data->ecc);
-                // rumboot_printf("    DDR turn_on %d\n", data->turn_on);
-                
+                rumboot_printf("DDR: slot %d  memory %s  speed %d  ecc %d\n", data->slot, data->name, data->speed, data->ecc);
                 int ret = ddr_do_init(data->slot, data->identifier, data->speed, data->ecc);
                 if (ret) {
                         rumboot_printf("    DDR initialisation of slot %d type %s failed\n", data->slot, value);
@@ -227,15 +229,36 @@ int ddr_handler(void *user, const char *section,
                 return 1;
             }
             else
-                rumboot_printf("  ERROR: unknown DDR memory type\n");
+                rumboot_printf("ERROR: unknown DDR memory type\n");
         }
         else
-            rumboot_printf("  DDR slot %d turn OFF\n", data->slot);
+            rumboot_printf("DDR slot %d turn OFF\n", data->slot);
     }
-        
+*/
         
         
 }
+
+void ddr_apply(void *user)
+{        
+        struct ddr_data *data = user;
+        int slot; 
+        for (slot=0; slot<2; slot++) {
+                data[slot].name[31] = 0x0;
+                if (strcmp(data[slot].name, "disabled") == 0) {
+                        rumboot_printf("DDR: slot %d is disabled\n", slot);
+                        continue;
+                }
+                int id = ddrlib_find_memtype(data[slot].name, data[slot].speed);
+
+                if (id >= 0) {
+                        rumboot_printf("DDR: slot %d memory %s (%d) speed %d ecc %s\n", slot, data[slot].name, id, data[slot].speed, data[slot].ecc ? "enabled" : "disabled");
+                        int ret = ddr_do_init(slot, id, data[slot].speed, data[slot].ecc);
+                } else {
+                        rumboot_printf("DDR: slot %d contains invalid name: %s, skipping\n", slot, data[slot].name);
+                }
+        }
+};
 
 struct sectionfilter filters[] = {
     {
@@ -260,7 +283,7 @@ struct sectionfilter filters[] = {
     {
         .section = "DDR",
         .handler = ddr_handler,
-        .apply = NULL,
+        .apply = ddr_apply,
     },
     {/* Sentinel */},
 };
@@ -272,11 +295,9 @@ int theini_handler(void *user, const char *section,
                    const char *name, const char *value,
                    int lineno)
 {
-        //rumboot_printf("[%s] : %s=%s\n", section, name, value);
 
         if (!strlen(prevsection) || strcmp(prevsection, section) != 0)
         {
-                bzero(user, USERDATA_LEN);
                 if (strlen(prevsection))
                 {
                         //rumboot_printf("Finished parsing section: %s\n", prevsection);
@@ -285,7 +306,7 @@ int theini_handler(void *user, const char *section,
                 {
                         curfilter->apply(user);
                 }
-
+                bzero(user, USERDATA_LEN);
                 if (strlen(section) > MAX_SECTION_LEN)
                 {
                         rumboot_platform_panic("Section name %d too long\n", section);
