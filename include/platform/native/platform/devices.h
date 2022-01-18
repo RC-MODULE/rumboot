@@ -3,6 +3,8 @@
 #include <stdint.h>
 
 extern uintptr_t DUT_BASE;
+#define NPE_BASE DUT_BASE
+#define NU_CPDMAC_ASM_BASE 0
 
  /**
   * \defgroup platform_native_register_map Register Map
