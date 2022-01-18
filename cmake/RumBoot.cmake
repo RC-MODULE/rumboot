@@ -227,6 +227,10 @@ macro(generate_stuff_for_target product)
       install(TARGETS ${product} RUNTIME DESTINATION rumboot/binaries)
   endif()
 
+  add_custom_target(
+    ${product}.all ALL
+  )    
+
   set(_outfiles )
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
       list (FIND TARGET_FEATURES "ROMAPIGEN" _romapigen)
@@ -283,11 +287,7 @@ macro(generate_stuff_for_target product)
         install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot/binaries)
         install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot/binaries)
       endif()
-
-      add_custom_target(
-        ${product}.all ALL
-        DEPENDS ${_outfiles} utils
-      )    
+      add_dependencies(${product}.all ${_outfiles})
   else()
     add_custom_command(
       TARGET ${product}
@@ -295,6 +295,8 @@ macro(generate_stuff_for_target product)
       COMMENT "Adding image header to ${product}"
     )
   endif()
+
+  add_dependencies(${product}.all utils)
 
   if (NOT ${TARGET_BOOTROM} STREQUAL "" AND NOT ${TARGET_BOOTROM} MATCHES ":")
     add_dependencies(${product}.all ${bootrom})
@@ -412,7 +414,6 @@ function(add_rumboot_target)
 
   generate_product_name(product ${TARGET_PREFIX}-${TARGET_NAME})
   generate_product_name(bootrom ${TARGET_BOOTROM}.all)
-
   if (TARGET_VARIABLE)
     set(${TARGET_VARIABLE} ${PROJECT_BINARY_DIR}/${product} PARENT_SCOPE)
   endif()
@@ -574,23 +575,39 @@ function(add_rumboot_target)
         if (f STREQUAL "SELF")
           list(APPEND _load ${PROJECT_BINARY_DIR}/${product}.bin)
         else()
-          list(APPEND _load ${PROJECT_BINARY_DIR}/${f}.bin)
-        endif()        
+          foreach(candidate ${PROJECT_BINARY_DIR}/${f}.bin ${PROJECT_BINARY_DIR}/${f} ${f})
+            if (EXISTS ${candidate})
+              list(APPEND _load ${candidate})
+              break()
+            endif()        
+          endforeach()
+        endif()
     endforeach()
 
     string(REPLACE ";" "," _load "${_load}")
     string(REPLACE "TARGET_LOAD_" "" mem ${mem})
     set(_plusargs "${_plusargs};+${mem}=${_load}")      
     endforeach()
-
+  
     if (NOT ${RUMBOOT_PLATFORM} MATCHES "native")
       set(_suffix ".bin")
     else()
       set(_suffix "")
     endif()
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/runners)
+
+    foreach(arg ${TARGET_IRUN_FLAGS})
+      set(_plusargs "${_plusargs};-A;${arg}")      
+    endforeach()
+
     string(REPLACE ";" " " _plusargs "${_plusargs}")
-    file(WRITE ${PROJECT_BINARY_DIR}/runners/${product} "${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-tools/rumboot_xrun.py -f ${product}${_suffix} ${_plusargs} $* \${RUMBOOT_TESTING_ARGS}")
+
+    if (NOT "${TARGET_PREPCMD}" STREQUAL "")
+      string(REPLACE ";" " " TARGET_PREPCMD "${TARGET_PREPCMD}")
+    endif()
+    
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/test-runner.sh.in ${PROJECT_BINARY_DIR}/runners/${product})
+    
     if(CHMOD_PROG)
       execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/runners/${product})
     endif()
