@@ -64,7 +64,7 @@ function(gen_chain_spl var name s1 s2)
   set(${var} ${SPL_CHAIN_EXEC} PARENT_SCOPE)
 endfunction()
 
-
+include(${CMAKE_SOURCE_DIR}/cmake/na.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
@@ -79,11 +79,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES common/tools/print-heaps.c
   )
 
+
   add_rumboot_target(
     CONFIGURATION NATIVE
     FILES scr1/targets/load_bin_example/hello_load_bin.c
-    IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
+    LOAD 
+      myfile ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
   )
+
+  
+  if (XILINX_FPGA_PROTO)
+    na_testsuite_init()
+    na_testsuite_add_npe_tests("NATIVE")
+    #na_testsuite_add_vpe_tests("NATIVE")
+  endif()
 
   ############# BOOTROM UNIT TESTS #############
   file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c)
