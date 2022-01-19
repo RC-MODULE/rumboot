@@ -30,9 +30,6 @@ rumboot_add_configuration(
 
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-    rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
-
-    rumboot_add_external_project(externals/py_mpe_test)
 
     add_rumboot_target(
         CONFIGURATION ROM
@@ -84,6 +81,26 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ############ Separate file for Neuro Accelerator ###############
     ################################################################
     include(${CMAKE_SOURCE_DIR}/cmake/na.cmake)
+    if(DUT STREQUAL "NPE")
+      na_testsuite_init()
+      na_testsuite_add_npe_tests("ROM")
+    endif()
+
+    if(DUT STREQUAL "MPE")
+      na_testsuite_init()
+      na_testsuite_add_mpe_tests("ROM")
+    endif()
+
+    if(DUT STREQUAL "PPE")
+      na_testsuite_init()
+      na_testsuite_add_ppe_tests("ROM")
+    endif()
+
+    if(DUT STREQUAL "VPE")
+      na_testsuite_init()
+      na_testsuite_add_vpe_tests("ROM")
+    endif()
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
@@ -94,11 +111,6 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/quad_spi.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/lava_demonstrator.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/nu_cpdmac_lib.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/nu_lib.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/nu_test_lib.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
