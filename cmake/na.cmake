@@ -632,7 +632,6 @@ endforeach()
 endmacro()  
 
 macro(ADD_VPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
-message("==> ${name}, ${rm_bin_name}")
 add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
