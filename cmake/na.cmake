@@ -876,21 +876,21 @@ macro(na_testsuite_add_npe_tests CONF)
   ################################
   ### MPE Tests
   ### FixMe: Duplication? 
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_2 TRUNC0)
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_3 TRUNC0)
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_4 TRUNC0)
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_5 TRUNC0)
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_6 TRUNC0)
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_7 TRUNC0)
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_8 TRUNC0) # mu int8 test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_9 TRUNC0) # mu int16 test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_10 TRUNC0) # mu fp16 test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_11 TRUNC0) # mu fp16 NaN test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_12 TRUNC16) # mu fp16 inf test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_13 TRUNC0) # mu+acc int8 test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_14 TRUNC0) # mu+acc int16 test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_15 TRUNC0) # mu int norm test
-  #ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_2 TRUNC0)
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_3 TRUNC0)
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_4 TRUNC0)
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_5 TRUNC0)
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_6 TRUNC0)
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_7 TRUNC0)
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_8 TRUNC0) # mu int8 test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_9 TRUNC0) # mu int16 test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_10 TRUNC0) # mu fp16 test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_11 TRUNC0) # mu fp16 NaN test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_12 TRUNC16) # mu fp16 inf test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_13 TRUNC0) # mu+acc int8 test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_14 TRUNC0) # mu+acc int16 test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_15 TRUNC0) # mu int norm test
+  ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
   
             ###
           add_rumboot_target(
@@ -990,7 +990,6 @@ macro(na_testsuite_add_npe_tests CONF)
 
   na_testsuite_add_vpe_tests(${CONF})
   na_testsuite_add_ppe_tests(${CONF})
-  na_testsuite_add_mpe_tests(${CONF})
 endmacro()
 
 
@@ -1983,64 +1982,23 @@ macro(na_testsuite_add_ppe_tests CONF)
   ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
   #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
 
-  ADD_PPE_EXPER_TEST(${CONF} PPE_2  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_3  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_4  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_5  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_6  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_7  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_8  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_9  NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_10 NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_11 NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_12 NotShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_13 ShowPerf)
-  ADD_PPE_EXPER_TEST(${CONF} PPE_14 NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_2  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_3  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_4  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_5  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_6  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_7  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_8  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_9  NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_10 NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_11 NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_12 NotShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_13 ShowPerf)
+  # ADD_PPE_EXPER_TEST(${CONF} PPE_14 NotShowPerf)
 
 
 endmacro()
 
 
 
-
-macro(na_testsuite_add_mpe_tests CONF)
-  _na_init_variables("MPE")
-  set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
-  set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
-
-  if(NOT DEFINED MPE_TEST_SHEETS_DIR)
-    if(EXISTS ${CMAKE_SOURCE_DIR}/../../MPE)
-      set (MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../../MPE)
-    elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/MPE)
-      set (MPE_TEST_SHEETS_DIR ${EXPERIMENT_STAGE_2_DIR}/MPE)
-    elseif(EXISTS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
-      set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
-    else()
-      #FixMe: Where should the test dir be?
-      #message(FATAL_ERROR "MPE_TEST_SHEETS_DIR test binaries not found")
-      message(WARNING "MPE_TEST_SHEETS_DIR test binaries not found")
-      endif()
-  endif()
-  message ("MPE_TEST_SHEETS_DIR = ${MPE_TEST_SHEETS_DIR}")
-
-
-  ADD_MPE_DEMO_TEST(${CONF} MPE_1 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_2 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_3 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_4 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_5 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_6 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_10 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_11 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_14 No)
-  ADD_MPE_DEMO_TEST(${CONF} MPE_16 SHOW_PERF)
-
-  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_7 test) # mu int8 test
-  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_8 test) # mu int16 test
-  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_9 test) # mu fp16 test
-  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_12 test) # mu+acc int8 test
-  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_13 test) # mu+acc int16 test
-  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_15 test) # mu+acc fp16 test
-
-endmacro()
 
