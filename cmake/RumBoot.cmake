@@ -227,10 +227,6 @@ macro(generate_stuff_for_target product)
       install(TARGETS ${product} RUNTIME DESTINATION rumboot/binaries)
   endif()
 
-  add_custom_target(
-    ${product}.all ALL
-  )    
-
   set(_outfiles )
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
       list (FIND TARGET_FEATURES "ROMAPIGEN" _romapigen)
@@ -287,7 +283,6 @@ macro(generate_stuff_for_target product)
         install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot/binaries)
         install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot/binaries)
       endif()
-      add_dependencies(${product}.all ${_outfiles})
   else()
     add_custom_command(
       TARGET ${product}
@@ -295,6 +290,11 @@ macro(generate_stuff_for_target product)
       COMMENT "Adding image header to ${product}"
     )
   endif()
+
+  add_custom_target(
+    ${product}.all ALL
+    DEPENDS ${_outfiles}
+  )    
 
   add_dependencies(${product}.all utils)
 
