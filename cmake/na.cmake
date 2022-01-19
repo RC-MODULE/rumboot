@@ -1,5 +1,15 @@
+#TODO:
+# - Вычистить останки EXPERIMENT_STAGE_XXXXX из кода
+# - Директории PPE_EXPER_DIR & MPE_TEST_SHEETS_DIR. Из-за них не будет работать standalone сборка№
 
-if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUAL "NPE")
+
+macro(na_testsuite_init)
+  rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
+  rumboot_add_external_project(externals/py_mpe_test)
+endmacro()
+
+macro(_na_init_variables DUT)
+  set(MISALIGN_COUNT 0)
   # Extract The First Letter Of The DUT (We Pass It As A Define Into c-code)
   string(SUBSTRING "${DUT}" 0 1 DUT_LETTER)
   set(DUT_LETTER_QUOTED '${DUT_LETTER}')
@@ -278,1695 +288,32 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     set(RM_LOGFILE npe_rm.log)
   endif()
 
-  ##################################################################
-  ############# VPE_TESTS general settings and macros ##############
-  ##################################################################
-  if(DUT STREQUAL "VPE" OR DUT STREQUAL "NPE")
-    # For The Misaligned Malloc In VPE DMA Tests
-    set(MISALIGN_COUNT 0)
-    macro(misalign_increment)
-      if(MISALIGN_COUNT STREQUAL 15)
-        set(MISALIGN_COUNT 1)
-      else()
-        MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
-      endif()
-    endmacro()
+endmacro()
+
+macro(misalign_increment)
+if(MISALIGN_COUNT STREQUAL 15)
+  set(MISALIGN_COUNT 1)
+else()
+  MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
+endif()
+endmacro()
+
+
+# Tests Without RM
+macro(ADD_NPE_SIMPLE_TEST CONF name filename)
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES ${filename}
+  )
+endmacro()
 
-    macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      misalign_increment()
-      set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
-      foreach(IntMisalign ${MISALIGN})
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1 -DDUT=${DUT_LETTER_QUOTED}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endforeach()
-    endmacro()
-
-    macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      misalign_increment()
-      set(MISALIGN 0 ${MISALIGN_COUNT})
-      foreach(IntMisalign ${MISALIGN})
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_tight_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endforeach()
-    endmacro()
-  
-    macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN name rm_bin_name axi_len)
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len} -DDUT=${DUT_LETTER_QUOTED}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-    endmacro()
-    
-    macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA name rm_bin_name)
-      misalign_increment()
-      set(MISALIGN 0 ${MISALIGN_COUNT})
-      foreach(IntMisalign ${MISALIGN})
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endforeach()
-    endmacro()
-    
-    macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA name rm_bin_name)
-      misalign_increment()
-      set(MISALIGN 0 ${MISALIGN_COUNT})
-      foreach(IntMisalign ${MISALIGN})
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endforeach()
-    endmacro()  
-    
-  endif() # DUT STREQUAL VPE OR NPE
-
-  if(DUT STREQUAL "VPE")
-    add_rumboot_target(
-      CONFIGURATION ROM
-        NAME VPE_1
-        FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
-    )
-
-    if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
-        if(NOT DEFINED EXPERIMENT_STAGE_2_DIR)
-          set(EXPERIMENT_STAGE_2_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2)
-        endif()
-        message("EXPERIMENT_STAGE_2_DIR = ${EXPERIMENT_STAGE_2_DIR}")
-
-
-        if(NOT DEFINED VPE_BINARIES_ROOT)
-          if(EXISTS ${CMAKE_SOURCE_DIR}/../../VPE)
-            set(VPE_BINARIES_ROOT ${CMAKE_SOURCE_DIR}/../../VPE)
-          elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/VPE)
-            set(VPE_BINARIES_ROOT ${EXPERIMENT_STAGE_2_DIR}/VPE)
-          else()
-            message(FATAL_ERROR "VPE_BINARIES_ROOT test binaries Directory not found")
-          endif()
-        endif()
-        message("VPE_BINARIES_ROOT = ${VPE_BINARIES_ROOT}")
-    endif() #### EXPERIMENT_STAGE_2_SUB_1
-
-    macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-    endmacro()
-
-    macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS name rm_bin_name)
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-    endmacro()
-  
-    if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
-        macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS name bin_dir)
-            add_rumboot_target(
-                CONFIGURATION ROM
-                NAME ${name}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-                CFLAGS -DFORCE_VPE_WDMA_EN=1
-                PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            )
-        endmacro()
-    endif() #### EXPERIMENT_STAGE_2_SUB_1
-  
-    macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL name rm_bin_name)
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-    endmacro()
-
-    if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
-        macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL name bin_dir)
-            add_rumboot_target(
-                CONFIGURATION ROM
-                NAME ${name}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-                CFLAGS -DFORCE_VPE_WDMA_EN=1
-                PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            )
-        endmacro()
-
-        macro(ADD_VPE_FROM_BINARY_TEST_LOOP name bin_dir)
-            add_rumboot_target(
-                CONFIGURATION ROM
-                NAME ${name}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-                PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            )
-        endmacro()
-
-        macro(ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA name bin_dir)
-            add_rumboot_target(
-                CONFIGURATION ROM
-                NAME ${name}
-                CFLAGS -DFORCE_VPE_WDMA_EN=1
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-                PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            )
-        endmacro()
-    endif() #### EXPERIMENT_STAGE_2_SUB_1
-
-    ##################################################################
-    ########################### VPE_TESTS ############################
-    ##################################################################
-    # Tests on VPE::RELU
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_9_0_op0_relu_int32  main_vpe_9_0_op0_relu_int32  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32 ) 
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_9_1_op0_relu_fp32   main_vpe_9_1_op0_relu_fp32   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_15_1_op1_relu_fp32  main_vpe_15_1_op1_relu_fp32  )
-  
-    # Tests on VPE::DEMUX::C3 pipeline mode-flow
-    foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_3_c3_IN_INT32_${out_macro}  main_vpe_3_c3_IN_INT32_${out_macro} )
-    endforeach()
-    foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_3_c3_IN_FP32_${out_macro}   main_vpe_3_c3_IN_FP32_${out_macro}  )
-    endforeach()
-
-    # Test on VPE::DEMUX OVERFLOW COUNTERS TESTS PIPELINE MODE-FLOW
-    foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_overflow_counters_IN_INT32_${out_macro}  main_overflow_counters_IN_INT32_${out_macro} )
-    endforeach()
-    foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_overflow_counters_IN_FP32_${out_macro}   main_overflow_counters_IN_FP32_${out_macro}  )
-    endforeach()
-    # не получилос(((
-    # add_rumboot_target(
-    #   CONFIGURATION ROM
-    #   FEATURES NOCODE
-    #   TESTGROUP vpe_overflow_counters-group
-    #   LOAD vpe_overflow_counters_IN_INT32_OUT_INT8,vpe_overflow_counters_IN_INT32_OUT_INT16
-    #   # LOAD rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT8,rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT16
-    #   NAME vpe_overflow_counters
-    # )
-
-    # Tests on VPE::InputConverters
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_18_op2_c1  main_vpe_18_op2_c1 )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_16_op2_c2  main_vpe_16_op2_c2 )
-  
-    # Tests on VPE::NORM
-    foreach(round_macro IN ITEMS 
-      DOWN     TOWARDSZERO     UP     AWAYFROMZERO     HALFDOWN     HALFTOWARDSZERO     NEAREST     HALFAWAYFROMZERO
-    )
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_8_0_op0_norm_ROUND_${round_macro}       main_vpe_8_0_op0_norm_ROUND_${round_macro}      )
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_14_0_op1_norm_ROUND_${round_macro}      main_vpe_14_0_op1_norm_ROUND_${round_macro}     )
-    endforeach() # round_macro
-
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_8_1_op0_norm_rnd   main_vpe_8_1_op0_norm_rnd  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_14_1_op1_norm_rnd  main_vpe_14_1_op1_norm_rnd )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_20_0_op2_norm      main_vpe_20_0_op2_norm     )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_20_1_op2_norm_rnd  main_vpe_20_1_op2_norm_rnd )
-
-    # Tests on VPE::LSHIFT
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_4_op0_lshift   main_vpe_4_op0_lshift  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_10_op1_lshift  main_vpe_10_op1_lshift )
-
-    # Tests on VPE::Formater
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_6_0_op0_f_int   main_vpe_6_0_op0_f_int  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_12_0_op1_f_int  main_vpe_12_0_op1_f_int )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_6_1_op0_f_fp    main_vpe_6_1_op0_f_fp   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_12_1_op1_f_fp   main_vpe_12_1_op1_f_fp  )
-  
-    # Tests on VPE::ALU
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_0_op0_alu_int8_low      main_vpe_5_0_op0_alu_int8_low      )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_1_op0_alu_int8_middle   main_vpe_5_1_op0_alu_int8_middle   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_2_op0_alu_int8_high     main_vpe_5_2_op0_alu_int8_high     )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_3_op0_alu_int16_low     main_vpe_5_3_op0_alu_int16_low     )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_4_op0_alu_int16_middle  main_vpe_5_4_op0_alu_int16_middle  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_5_op0_alu_int16_high    main_vpe_5_5_op0_alu_int16_high    )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_5_6_op0_alu_fp32          main_vpe_5_6_op0_alu_fp32          )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_0_op1_alu_int8_low     main_vpe_11_0_op1_alu_int8_low     )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_1_op1_alu_int8_middle  main_vpe_11_1_op1_alu_int8_middle  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_2_op1_alu_int8_high    main_vpe_11_2_op1_alu_int8_high    )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_3_op1_alu_int16_low    main_vpe_11_3_op1_alu_int16_low    )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_4_op1_alu_int16_middle main_vpe_11_4_op1_alu_int16_middle )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_5_op1_alu_int16_high   main_vpe_11_5_op1_alu_int16_high   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_11_6_op1_alu_fp32         main_vpe_11_6_op1_alu_fp32         )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_17_0_op2_alu_int8_low     main_vpe_17_0_op2_alu_int8_low     )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_17_1_op2_alu_int8_high    main_vpe_17_1_op2_alu_int8_high    )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_17_2_op2_alu_int16_low    main_vpe_17_2_op2_alu_int16_low    )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_17_3_op2_alu_int16_high   main_vpe_17_3_op2_alu_int16_high   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_17_4_op2_alu_fp32         main_vpe_17_4_op2_alu_fp32         )
-
-    # Tests on VPE::MUL
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_7_0_op0_mul_int16   main_vpe_7_0_op0_mul_int16  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_7_1_op0_mul_int8    main_vpe_7_1_op0_mul_int8   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_7_2_op0_mul_fp32    main_vpe_7_2_op0_mul_fp32   )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_13_0_op1_mul_int16  main_vpe_13_0_op1_mul_int16 )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_13_1_op1_mul_int8   main_vpe_13_1_op1_mul_int8  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_13_2_op1_mul_fp32   main_vpe_13_2_op1_mul_fp32  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_19_0_op2_mul_int16  main_vpe_19_0_op2_mul_int16 )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_19_1_op2_mul_int8   main_vpe_19_1_op2_mul_int8  )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_19_2_op2_mul_fp32   main_vpe_19_2_op2_mul_fp32  )
-
-    # Tests on VPE::OP2::LUT
-    foreach(in_macro IN ITEMS IN_INT32 IN_FP32)
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut_${in_macro}              main_vpe_21_0_lut_${in_macro}              ) # VPE_21
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition_${in_macro}     main_vpe_21_1_lut_addition_${in_macro}     ) # VPE_21_addition
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range_${in_macro} main_vpe_21_2_lut_out_of_range_${in_macro} ) # VPE_21_out_of_range
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_${in_macro}       main_vpe_21_3_lut_offset_${in_macro}       ) # VPE_21_offset
-      foreach(mirror_type IN ITEMS 0 1)
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} ) # VPE_21_offset. mirror mode
-      endforeach()
-    endforeach()
-
-    # Test on VPE block's together work 
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_22_op0_together   main_vpe_22_op0_together   ) # VPE_22
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_23_op1_together   main_vpe_23_op1_together   ) # VPE_23
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_24_op2_together   main_vpe_24_op2_together   ) # VPE_24
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_25_op012_together main_vpe_25_op012_together ) # VPE_25
-
-    # Test on VPE ???
-    ADD_VPE_COUPLED_TEST_CONTROL_CONS(vpe_27_0_control_cons main_vpe_27_0_control_cons   ) # VPE_27
-    ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL(vpe_27_1_control_par main_vpe_27_1_control_par ) # VPE_27
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
-
-    # Test on VPE special cases
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
-
-  endif()  # if(DUT STREQUAL "VPE")
-
-  ###################################################################
-  ############### VPE_TESTS adapted for NPE assembly ################
-  ###################################################################
-  if(DUT STREQUAL "VPE" OR DUT STREQUAL "NPE")
-    add_rumboot_target(
-        CONFIGURATION ROM
-        NAME VPE_1
-        FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
-    )  
-    
-    # Tests on VPE DMA
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_1   main_vpe_2_dma_int8 1  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_3  main_vpe_2_dma_int16 3 )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
-    
-    # Tests on VPE::Formater
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
-    
-    # Tests on VPE::LSHIFT
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
-    
-    # Tests on VPE::InputConverters
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
-  
-    # Tests on VPE::DEMUX::C3 TESTS MEM MODE
-    foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
-      foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
-      endforeach()
-    endforeach()
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
-  
-    # Tests on VPE::RELU
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
-
-    # Tests on VPE::NORM
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
-  
-
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-          ##
-      # Tests on VPE channel mode
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
-    
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int )
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int )
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_fp  main_vpe_op0_vec_ex_fp  )
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_fp  main_vpe_op1_vec_ex_fp  )
-          ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif()
-
-    # Tests on VPE dma
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int8_dma  main_vpe_2_dma_int8  )
-
-    # Tests on VPE::ALU
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
-
-    # Tests on VPE::MUL
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
-  
-
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-          ##
-      # Tests on VPE channel mode
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
-          ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif()
-
-    #Tests on VPE::OP2::LUT in context NPE
-    foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
-      foreach(mirror_type IN ITEMS 0 1)
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
-      endforeach()
-    endforeach()
-
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-          ##
-      # Tests on VPE+PPE channel mode ???
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
-      ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
-          ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif()
-
-    # Test on VPE block's together work 
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
-    
-    # Test on VPE ???
-    ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
-    ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
-    
-    # Tests on VPE ???
-    #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_dma  main_vpe_26_autonom )
-    #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom_nowdma_dma main_vpe_26_autonom        ) # VPE_26  ?????????????
-    #ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_28_perf_dma           main_28_perf               ) # VPE_28  ?????????????
-
-    # Tests on VPE batch-mode
-    # foreach(number_testcase RANGE 1 4)
-    #   add_rumboot_target(
-    #     CONFIGURATION ROM
-    #     NAME vpe_batch_mode_${number_testcase}
-    #     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
-    #     CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-    #     PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-    #     IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-    #     SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${number_testcase}
-    #   )
-    # endforeach()
-
-    # Tests on VPE batch-mode for int-type
-    foreach(in IN ITEMS IN_INT8 IN_INT16)
-      foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
-        foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
-          foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
-            foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-              foreach(number_testcase RANGE 1 4)
-                add_rumboot_target(
-                  CONFIGURATION ROM
-                  NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
-                  CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-                  PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-                  IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-                  SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                )
-              endforeach()
-            endforeach()
-          endforeach()
-        endforeach()
-      endforeach()
-    endforeach()
-
-    # Tests on VPE batch-mode for fp-type
-    foreach(out IN ITEMS OUT_INT16 OUT_FP16)
-      foreach(number_testcase RANGE 1 4)
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
-          CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-          PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-          SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        )
-      endforeach()
-    endforeach()
-
-    # Какие-то переименования ???
-    if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
-      ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(VPE_2_0 VPE_2/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(VPE_2_1 VPE_2/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_9_0 VPE_9/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_15_0 VPE_15/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_9_1 VPE_9/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_15_1 VPE_15/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_3 VPE_3)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_18 VPE_18)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_16 VPE_16)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_8_0 VPE_8/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_14_0 VPE_14/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_8_1 VPE_8/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_14_1 VPE_14/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_20_0 VPE_20/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_20_1 VPE_20/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_4 VPE_4)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_10 VPE_10)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_6_0 VPE_6/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_12_0 VPE_12/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_6_1 VPE_6/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_12_1 VPE_12/1)
-     
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_0 VPE_5/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_1 VPE_5/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_2 VPE_5/2)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_3 VPE_5/3)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_4 VPE_5/4)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_5 VPE_5/5)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_6 VPE_5/6)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_0 VPE_11/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_1 VPE_11/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_2 VPE_11/2)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_3 VPE_11/3)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_4 VPE_11/4)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_5 VPE_11/5)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_6 VPE_11/6)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_0 VPE_17/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_1 VPE_17/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_2 VPE_17/2)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_3 VPE_17/3)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_4 VPE_17/4)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_7_0 VPE_7/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_7_1 VPE_7/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_7_2 VPE_7/2)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_13_0 VPE_13/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_13_1 VPE_13/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_13_2 VPE_13/2)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_19_0 VPE_19/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_19_1 VPE_19/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_19_2 VPE_19/2)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_21_0 VPE_21/0)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_21_1 VPE_21/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_22 VPE_22)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_23 VPE_23)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_24 VPE_24)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_25 VPE_25)
-      ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS(VPE_27_0 VPE_27/0)
-      ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL(VPE_27_1 VPE_27/1)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_26 VPE_26)
-      ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_28 VPE_28)
-    endif() #### EXPERIMENT_STAGE_2_SUB_1
-  endif()  # if(DUT STREQUAL "VPE" OR "NPE")
-
-
-  if(DUT STREQUAL "NPE")
-    add_rumboot_target(
-        CONFIGURATION ROM
-        NAME NPE_1
-        FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
-    )
-    add_rumboot_target(
-        CONFIGURATION ROM
-        NAME MPE_1
-        TESTGROUP mpe_test
-        FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
-    )
-  endif()
-
-  ##################################################################
-  ############# PPE_TESTS general settings and macros ##############
-  ##################################################################
-  if(DUT STREQUAL "PPE" OR DUT STREQUAL "NPE")
-
-    if(NOT DEFINED NU_SEED)
-      set(NU_SEED 1)
-    endif()
-
-    if(NOT DEFINED NU_IT_NMB)
-      set(NU_IT_NMB 32)
-    endif()
-
-    set (i8_max   "--pool_meth 1 --data_type 0")
-    set (i16_max  "--pool_meth 1 --data_type 1")
-    set (fp16_max "--pool_meth 1 --data_type 2")
-
-    set (i8_min   "--pool_meth 2 --data_type 0")
-    set (i16_min  "--pool_meth 2 --data_type 1")
-    set (fp16_min "--pool_meth 2 --data_type 2")
-
-    set (i8_avg   "--pool_meth 0 --data_type 0")
-    set (i16_avg  "--pool_meth 0 --data_type 1")
-    set (fp16_avg "--pool_meth 0 --data_type 2")
-
-    macro (ADD_PPE_TESTS name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
-
-      set (TST_NMB 1)
-      set (name "${name_in}")
-      set (Sh_is_1 "--set_Sh 1 --Sh 1")
-      set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
-
-      if (EXPERIMENT_STAGE_2_SUB_2)
-        string(REPLACE "ppe_i8_max_ml"    "PPE_2_i8_max_ml"     name  ${name})
-        string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name  ${name})
-        string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name  ${name})
-        string(REPLACE "ppe_i8_min_ml"    "PPE_5_i8_min_ml"     name  ${name})
-        string(REPLACE "ppe_i16_min_ml"   "PPE_6_i16_min_ml"    name  ${name})
-        string(REPLACE "ppe_fp16_min_ml"  "PPE_7_fp16_min_ml"   name  ${name})
-        string(REPLACE "ppe_i8_avg_ml"    "PPE_8_i8_avg_ml"     name  ${name})
-        string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name  ${name})
-        string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name  ${name})
-
-        if (${name} STREQUAL "PPE_10_fp16_avg_ml")
-          set (TST_NMB 1)
-        else()
-          set (TST_NMB 0)
-        endif()
-
-      endif()
-
-      foreach(i RANGE ${TST_NMB})
-
-        if (i EQUAL TST_NMB)
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
-
-          string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name  ${name})
-        else()
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
-        endif()
-
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}_${i}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
-
-          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
-
-          CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-
-        if (i EQUAL TST_NMB)
-          math (EXPR NU_SEED "${NU_SEED} + 1")
-        endif()
-      endforeach()
-    endmacro()
-
-    set (w1_128_k1_16_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w1_128_k1_16_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w1_128_k1_16_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w1_128_k1_1_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w1_128_k1_1_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w1_128_k1_1_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w1_128_k15_15_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w1_128_k15_15_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w1_128_k15_15_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w1_128_k16_16_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w1_128_k16_16_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w1_128_k16_16_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w1_128_k16_32_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w1_128_k16_32_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w1_128_k16_32_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w1_128_k32_48_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w1_128_k32_48_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w1_128_k32_48_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w1_128_k48_64_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w1_128_k48_64_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w1_128_k48_64_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w1_128_k64_80_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w1_128_k64_80_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w1_128_k64_80_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w1_128_k80_96_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w1_128_k80_96_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w1_128_k80_96_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w1_128_k96_112_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w1_128_k96_112_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w1_128_k96_112_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w1_128_k112_128_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w1_128_k112_128_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w1_128_k112_128_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w1_128_k128_128_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w1_128_k128_128_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w1_128_k128_128_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w1_128_k128_256_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w1_128_k128_256_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w1_128_k128_256_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w1_128_k256_288_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w1_128_k256_288_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w1_128_k256_288_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-    set (w128_128_k1_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w128_128_k1_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w128_128_k1_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w128_128_k1_1_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w128_128_k1_1_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w128_128_k1_1_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w128_128_k15_15_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w128_128_k15_15_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w128_128_k15_15_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w128_128_k16_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w128_128_k16_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w128_128_k16_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w128_128_k16_32_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w128_128_k16_32_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w128_128_k16_32_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w128_128_k32_48_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w128_128_k32_48_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w128_128_k32_48_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w128_128_k48_64_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w128_128_k48_64_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w128_128_k48_64_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w128_128_k64_80_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w128_128_k64_80_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w128_128_k64_80_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w128_128_k80_96_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w128_128_k80_96_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w128_128_k80_96_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w128_128_k96_112_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w128_128_k96_112_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w128_128_k96_112_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w128_128_k112_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w128_128_k112_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w128_128_k112_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w128_128_k128_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w128_128_k128_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w128_128_k128_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w128_128_k128_256_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w128_128_k128_256_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w128_128_k128_256_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w128_128_k256_288_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w128_128_k256_288_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w128_128_k256_288_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-    set (w129_129_k1_16_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w129_129_k1_16_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w129_129_k1_16_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w129_129_k1_1_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w129_129_k1_1_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w129_129_k1_1_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w129_129_k15_15_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w129_129_k15_15_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w129_129_k15_15_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w129_129_k16_16_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w129_129_k16_16_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w129_129_k16_16_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w129_129_k16_32_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w129_129_k16_32_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w129_129_k16_32_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w129_129_k32_48_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w129_129_k32_48_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w129_129_k32_48_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w129_129_k48_64_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w129_129_k48_64_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w129_129_k48_64_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w129_129_k64_80_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w129_129_k64_80_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w129_129_k64_80_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w129_129_k80_96_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w129_129_k80_96_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w129_129_k80_96_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w129_129_k96_112_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w129_129_k96_112_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w129_129_k96_112_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w129_129_k112_128_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w129_129_k112_128_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w129_129_k112_128_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w129_129_k128_128_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w129_129_k128_128_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w129_129_k128_128_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w129_129_k128_256_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w129_129_k128_256_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w129_129_k128_256_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w129_129_k256_288_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w129_129_k256_288_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w129_129_k256_288_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-    set (w128_256_k1_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w128_256_k1_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w128_256_k1_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w128_256_k1_1_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w128_256_k1_1_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w128_256_k1_1_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w128_256_k15_15_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w128_256_k15_15_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w128_256_k15_15_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w128_256_k16_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w128_256_k16_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w128_256_k16_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w128_256_k16_32_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w128_256_k16_32_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w128_256_k16_32_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w128_256_k32_48_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w128_256_k32_48_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w128_256_k32_48_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w128_256_k48_64_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w128_256_k48_64_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w128_256_k48_64_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w128_256_k64_80_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w128_256_k64_80_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w128_256_k64_80_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w128_256_k80_96_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w128_256_k80_96_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w128_256_k80_96_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w128_256_k96_112_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w128_256_k96_112_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w128_256_k96_112_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w128_256_k112_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w128_256_k112_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w128_256_k112_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w128_256_k128_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w128_256_k128_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w128_256_k128_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w128_256_k128_256_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w128_256_k128_256_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w128_256_k128_256_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w128_256_k256_288_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w128_256_k256_288_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w128_256_k256_288_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-    set (w255_255_k1_16_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w255_255_k1_16_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w255_255_k1_16_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w255_255_k1_1_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w255_255_k1_1_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w255_255_k1_1_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w255_255_k15_15_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w255_255_k15_15_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w255_255_k15_15_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w255_255_k16_16_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w255_255_k16_16_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w255_255_k16_16_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w255_255_k16_32_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w255_255_k16_32_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w255_255_k16_32_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w255_255_k32_48_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w255_255_k32_48_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w255_255_k32_48_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w255_255_k48_64_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w255_255_k48_64_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w255_255_k48_64_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w255_255_k64_80_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w255_255_k64_80_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w255_255_k64_80_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w255_255_k80_96_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w255_255_k80_96_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w255_255_k80_96_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w255_255_k96_112_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w255_255_k96_112_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w255_255_k96_112_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w255_255_k112_128_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w255_255_k112_128_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w255_255_k112_128_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w255_255_k128_128_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w255_255_k128_128_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w255_255_k128_128_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w255_255_k128_256_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w255_255_k128_256_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w255_255_k128_256_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w255_255_k256_288_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w255_255_k256_288_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w255_255_k256_288_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-    set (w256_256_k1_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w256_256_k1_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w256_256_k1_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w256_256_k1_1_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w256_256_k1_1_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w256_256_k1_1_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w256_256_k15_15_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w256_256_k15_15_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w256_256_k15_15_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w256_256_k16_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w256_256_k16_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w256_256_k16_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w256_256_k16_32_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w256_256_k16_32_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w256_256_k16_32_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w256_256_k32_48_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w256_256_k32_48_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w256_256_k32_48_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w256_256_k48_64_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w256_256_k48_64_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w256_256_k48_64_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w256_256_k64_80_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w256_256_k64_80_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w256_256_k64_80_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w256_256_k80_96_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w256_256_k80_96_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w256_256_k80_96_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w256_256_k96_112_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w256_256_k96_112_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w256_256_k96_112_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w256_256_k112_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w256_256_k112_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w256_256_k112_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w256_256_k128_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w256_256_k128_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w256_256_k128_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w256_256_k128_256_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w256_256_k128_256_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w256_256_k128_256_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w256_256_k256_288_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w256_256_k256_288_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w256_256_k256_288_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-    set (w256_288_k1_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-    set (w256_288_k1_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-    set (w256_288_k1_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-    set (w256_288_k1_1_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-    set (w256_288_k1_1_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-    set (w256_288_k1_1_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-    set (w256_288_k15_15_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-    set (w256_288_k15_15_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-    set (w256_288_k15_15_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-    set (w256_288_k16_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-    set (w256_288_k16_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-    set (w256_288_k16_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-    set (w256_288_k16_32_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-    set (w256_288_k16_32_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-    set (w256_288_k16_32_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-    set (w256_288_k32_48_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-    set (w256_288_k32_48_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-    set (w256_288_k32_48_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-    set (w256_288_k48_64_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-    set (w256_288_k48_64_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-    set (w256_288_k48_64_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-    set (w256_288_k64_80_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-    set (w256_288_k64_80_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-    set (w256_288_k64_80_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-    set (w256_288_k80_96_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-    set (w256_288_k80_96_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-    set (w256_288_k80_96_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-    set (w256_288_k96_112_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-    set (w256_288_k96_112_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-    set (w256_288_k96_112_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-    set (w256_288_k112_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-    set (w256_288_k112_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-    set (w256_288_k112_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-    set (w256_288_k128_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-    set (w256_288_k128_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-    set (w256_288_k128_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-    set (w256_288_k128_256_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-    set (w256_288_k128_256_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-    set (w256_288_k128_256_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-    set (w256_288_k256_288_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-    set (w256_288_k256_288_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-    set (w256_288_k256_288_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-
-    set (vpe_ppe_wkh_comb
-      w1_128_k1_16_h1_1
-      w1_128_k1_16_h2_2
-      w1_128_k1_16_h2_16
-      w1_128_k1_1_h1_1
-      w1_128_k1_1_h2_2
-      w1_128_k1_1_h2_16
-      w1_128_k15_15_h1_1
-      w1_128_k15_15_h2_2
-      w1_128_k15_15_h2_16
-      w1_128_k16_16_h1_1
-      w1_128_k16_16_h2_2
-      w1_128_k16_16_h2_16
-      w1_128_k16_32_h1_1
-      w1_128_k16_32_h2_2
-      w1_128_k16_32_h2_16
-      w1_128_k32_48_h1_1
-      w1_128_k32_48_h2_2
-      w1_128_k32_48_h2_16
-      w1_128_k48_64_h1_1
-      w1_128_k48_64_h2_2
-      w1_128_k48_64_h2_16
-      w1_128_k64_80_h1_1
-      w1_128_k64_80_h2_2
-      w1_128_k64_80_h2_16
-      w1_128_k80_96_h1_1
-      w1_128_k80_96_h2_2
-      w1_128_k80_96_h2_16
-      w1_128_k96_112_h1_1
-      w1_128_k96_112_h2_2
-      w1_128_k96_112_h2_16
-      w1_128_k112_128_h1_1
-      w1_128_k112_128_h2_2
-      w1_128_k112_128_h2_16
-      w1_128_k128_128_h1_1
-      w1_128_k128_128_h2_2
-      w1_128_k128_128_h2_16
-      w1_128_k128_256_h1_1
-      w1_128_k128_256_h2_2
-      w1_128_k128_256_h2_16
-      w1_128_k256_288_h1_1
-      w1_128_k256_288_h2_2
-      w1_128_k256_288_h2_16
-      w128_128_k1_16_h1_1
-      w128_128_k1_16_h2_2
-      w128_128_k1_16_h2_16
-      w128_128_k1_1_h1_1
-      w128_128_k1_1_h2_2
-      w128_128_k1_1_h2_16
-      w128_128_k15_15_h1_1
-      w128_128_k15_15_h2_2
-      w128_128_k15_15_h2_16
-      w128_128_k16_16_h1_1
-      w128_128_k16_16_h2_2
-      w128_128_k16_16_h2_16
-      w128_128_k16_32_h1_1
-      w128_128_k16_32_h2_2
-      w128_128_k16_32_h2_16
-      w128_128_k32_48_h1_1
-      w128_128_k32_48_h2_2
-      w128_128_k32_48_h2_16
-      w128_128_k48_64_h1_1
-      w128_128_k48_64_h2_2
-      w128_128_k48_64_h2_16
-      w128_128_k64_80_h1_1
-      w128_128_k64_80_h2_2
-      w128_128_k64_80_h2_16
-      w128_128_k80_96_h1_1
-      w128_128_k80_96_h2_2
-      w128_128_k80_96_h2_16
-      w128_128_k96_112_h1_1
-      w128_128_k96_112_h2_2
-      w128_128_k96_112_h2_16
-      w128_128_k112_128_h1_1
-      w128_128_k112_128_h2_2
-      w128_128_k112_128_h2_16
-      w128_128_k128_128_h1_1
-      w128_128_k128_128_h2_2
-      w128_128_k128_128_h2_16
-      w128_128_k128_256_h1_1
-      w128_128_k128_256_h2_2
-      w128_128_k128_256_h2_16
-      w128_128_k256_288_h1_1
-      w128_128_k256_288_h2_2
-      w128_128_k256_288_h2_16
-      w129_129_k1_16_h1_1
-      w129_129_k1_16_h2_2
-      w129_129_k1_16_h2_16
-      w129_129_k1_1_h1_1
-      w129_129_k1_1_h2_2
-      w129_129_k1_1_h2_16
-      w129_129_k15_15_h1_1
-      w129_129_k15_15_h2_2
-      w129_129_k15_15_h2_16
-      w129_129_k16_16_h1_1
-      w129_129_k16_16_h2_2
-      w129_129_k16_16_h2_16
-      w129_129_k16_32_h1_1
-      w129_129_k16_32_h2_2
-      w129_129_k16_32_h2_16
-      w129_129_k32_48_h1_1
-      w129_129_k32_48_h2_2
-      w129_129_k32_48_h2_16
-      w129_129_k48_64_h1_1
-      w129_129_k48_64_h2_2
-      w129_129_k48_64_h2_16
-      w129_129_k64_80_h1_1
-      w129_129_k64_80_h2_2
-      w129_129_k64_80_h2_16
-      w129_129_k80_96_h1_1
-      w129_129_k80_96_h2_2
-      w129_129_k80_96_h2_16
-      w129_129_k96_112_h1_1
-      w129_129_k96_112_h2_2
-      w129_129_k96_112_h2_16
-      w129_129_k112_128_h1_1
-      w129_129_k112_128_h2_2
-      w129_129_k112_128_h2_16
-      w129_129_k128_128_h1_1
-      w129_129_k128_128_h2_2
-      w129_129_k128_128_h2_16
-      w129_129_k128_256_h1_1
-      w129_129_k128_256_h2_2
-      w129_129_k128_256_h2_16
-      w129_129_k256_288_h1_1
-      w129_129_k256_288_h2_2
-      w129_129_k256_288_h2_16
-      w128_256_k1_16_h1_1
-      w128_256_k1_16_h2_2
-      w128_256_k1_16_h2_16
-      w128_256_k1_1_h1_1
-      w128_256_k1_1_h2_2
-      w128_256_k1_1_h2_16
-      w128_256_k15_15_h1_1
-      w128_256_k15_15_h2_2
-      w128_256_k15_15_h2_16
-      w128_256_k16_16_h1_1
-      w128_256_k16_16_h2_2
-      w128_256_k16_16_h2_16
-      w128_256_k16_32_h1_1
-      w128_256_k16_32_h2_2
-      w128_256_k16_32_h2_16
-      w128_256_k32_48_h1_1
-      w128_256_k32_48_h2_2
-      w128_256_k32_48_h2_16
-      w128_256_k48_64_h1_1
-      w128_256_k48_64_h2_2
-      w128_256_k48_64_h2_16
-      w128_256_k64_80_h1_1
-      w128_256_k64_80_h2_2
-      w128_256_k64_80_h2_16
-      w128_256_k80_96_h1_1
-      w128_256_k80_96_h2_2
-      w128_256_k80_96_h2_16
-      w128_256_k96_112_h1_1
-      w128_256_k96_112_h2_2
-      w128_256_k96_112_h2_16
-      w128_256_k112_128_h1_1
-      w128_256_k112_128_h2_2
-      w128_256_k112_128_h2_16
-      w128_256_k128_128_h1_1
-      w128_256_k128_128_h2_2
-      w128_256_k128_128_h2_16
-      w128_256_k128_256_h1_1
-      w128_256_k128_256_h2_2
-      w128_256_k128_256_h2_16
-      w128_256_k256_288_h1_1
-      w128_256_k256_288_h2_2
-      w128_256_k256_288_h2_16
-      w255_255_k1_16_h1_1
-      w255_255_k1_16_h2_2
-      w255_255_k1_16_h2_16
-      w255_255_k1_1_h1_1
-      w255_255_k1_1_h2_2
-      w255_255_k1_1_h2_16
-      w255_255_k15_15_h1_1
-      w255_255_k15_15_h2_2
-      w255_255_k15_15_h2_16
-      w255_255_k16_16_h1_1
-      w255_255_k16_16_h2_2
-      w255_255_k16_16_h2_16
-      w255_255_k16_32_h1_1
-      w255_255_k16_32_h2_2
-      w255_255_k16_32_h2_16
-      w255_255_k32_48_h1_1
-      w255_255_k32_48_h2_2
-      w255_255_k32_48_h2_16
-      w255_255_k48_64_h1_1
-      w255_255_k48_64_h2_2
-      w255_255_k48_64_h2_16
-      w255_255_k64_80_h1_1
-      w255_255_k64_80_h2_2
-      w255_255_k64_80_h2_16
-      w255_255_k80_96_h1_1
-      w255_255_k80_96_h2_2
-      w255_255_k80_96_h2_16
-      w255_255_k96_112_h1_1
-      w255_255_k96_112_h2_2
-      w255_255_k96_112_h2_16
-      w255_255_k112_128_h1_1
-      w255_255_k112_128_h2_2
-      w255_255_k112_128_h2_16
-      w255_255_k128_128_h1_1
-      w255_255_k128_128_h2_2
-      w255_255_k128_128_h2_16
-      w255_255_k128_256_h1_1
-      w255_255_k128_256_h2_2
-      w255_255_k128_256_h2_16
-      w255_255_k256_288_h1_1
-      w255_255_k256_288_h2_2
-      w255_255_k256_288_h2_16
-      w256_256_k1_16_h1_1
-      w256_256_k1_16_h2_2
-      w256_256_k1_16_h2_16
-      w256_256_k1_1_h1_1
-      w256_256_k1_1_h2_2
-      w256_256_k1_1_h2_16
-      w256_256_k15_15_h1_1
-      w256_256_k15_15_h2_2
-      w256_256_k15_15_h2_16
-      w256_256_k16_16_h1_1
-      w256_256_k16_16_h2_2
-      w256_256_k16_16_h2_16
-      w256_256_k16_32_h1_1
-      w256_256_k16_32_h2_2
-      w256_256_k16_32_h2_16
-      w256_256_k32_48_h1_1
-      w256_256_k32_48_h2_2
-      w256_256_k32_48_h2_16
-      w256_256_k48_64_h1_1
-      w256_256_k48_64_h2_2
-      w256_256_k48_64_h2_16
-      w256_256_k64_80_h1_1
-      w256_256_k64_80_h2_2
-      w256_256_k64_80_h2_16
-      w256_256_k80_96_h1_1
-      w256_256_k80_96_h2_2
-      w256_256_k80_96_h2_16
-      w256_256_k96_112_h1_1
-      w256_256_k96_112_h2_2
-      w256_256_k96_112_h2_16
-      w256_256_k112_128_h1_1
-      w256_256_k112_128_h2_2
-      w256_256_k112_128_h2_16
-      w256_256_k128_128_h1_1
-      w256_256_k128_128_h2_2
-      w256_256_k128_128_h2_16
-      w256_256_k128_256_h1_1
-      w256_256_k128_256_h2_2
-      w256_256_k128_256_h2_16
-      w256_256_k256_288_h1_1
-      w256_256_k256_288_h2_2
-      w256_256_k256_288_h2_16
-      w256_288_k1_16_h1_1
-      w256_288_k1_16_h2_2
-      w256_288_k1_16_h2_16
-      w256_288_k1_1_h1_1
-      w256_288_k1_1_h2_2
-      w256_288_k1_1_h2_16
-      w256_288_k15_15_h1_1
-      w256_288_k15_15_h2_2
-      w256_288_k15_15_h2_16
-      w256_288_k16_16_h1_1
-      w256_288_k16_16_h2_2
-      w256_288_k16_16_h2_16
-      w256_288_k16_32_h1_1
-      w256_288_k16_32_h2_2
-      w256_288_k16_32_h2_16
-      w256_288_k32_48_h1_1
-      w256_288_k32_48_h2_2
-      w256_288_k32_48_h2_16
-      w256_288_k48_64_h1_1
-      w256_288_k48_64_h2_2
-      w256_288_k48_64_h2_16
-      w256_288_k64_80_h1_1
-      w256_288_k64_80_h2_2
-      w256_288_k64_80_h2_16
-      w256_288_k80_96_h1_1
-      w256_288_k80_96_h2_2
-      w256_288_k80_96_h2_16
-      w256_288_k96_112_h1_1
-      w256_288_k96_112_h2_2
-      w256_288_k96_112_h2_16
-      w256_288_k112_128_h1_1
-      w256_288_k112_128_h2_2
-      w256_288_k112_128_h2_16
-      w256_288_k128_128_h1_1
-      w256_288_k128_128_h2_2
-      w256_288_k128_128_h2_16
-      w256_288_k128_256_h1_1
-      w256_288_k128_256_h2_2
-      w256_288_k128_256_h2_16
-      w256_288_k256_288_h1_1
-      w256_288_k256_288_h2_2
-      w256_288_k256_288_h2_16
-    )
-
-    macro (ADD_VPE_PPE_TESTS_OLD name rm_bin_name ShowPerf LBS RM_CFG_PARAM)
-
-      set(TST_NMB 1)
-
-      foreach(i RANGE ${TST_NMB})
-
-        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type ${i}")
-
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}_${i}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
-
-          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
-
-          CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-
-        if (i EQUAL TST_NMB)
-          math (EXPR NU_SEED "${NU_SEED} + 1")
-        endif()
-      endforeach()
-    endmacro()
-
-    macro (ADD_VPE_PPE_TESTS name_in RM_CFG_PARAM)
-
-      set (ShowPerf "NotShowPerf")
-      set (TST_NMB 3)
-
-      foreach(i RANGE ${TST_NMB})
-
-        if (i EQUAL 0)
-          set (name "${name_in}_LIN_8b")
-          set (rm_bin_name "main_vpe_ppe")
-          set (LBS "LIN")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-        elseif (i EQUAL 1)
-          set (name "${name_in}_LIN_16b")
-          set (rm_bin_name "main_vpe_ppe")
-          set (LBS "LIN")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-        elseif (i EQUAL 2)
-          set (name "${name_in}_BOX_8b")
-          set (rm_bin_name "main_vpe_ppe_box")
-          set (LBS "BOX")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-        elseif (i EQUAL 3)
-          set (name "${name_in}_BOX_16b")
-          set (rm_bin_name "main_vpe_ppe_box")
-          set (LBS "BOX")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-        endif()
-
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
-
-          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
-
-          CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-
-        if (i EQUAL TST_NMB)
-          math (EXPR NU_SEED "${NU_SEED} + 1")
-        endif()
-
-      endforeach()
-    endmacro()
-
-    macro (ADD_VPE_PPE_WKH_COMB test_list_name)
-
-      set (ShowPerf "NotShowPerf")
-      set (i 0)
-
-      foreach(name_in ${${test_list_name}})
-
-        math (EXPR j "${i} % 4")
-        math (EXPR i "${i} + 1")
-
-        set (RM_CFG_PARAM ${${name_in}})
-
-        if (j EQUAL 0)
-          set (name "vpe_ppe_${name_in}_LIN_8b")
-          set (rm_bin_name "main_vpe_ppe")
-          set (LBS "LIN")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-        elseif (j EQUAL 1)
-          set (name "vpe_ppe_${name_in}_LIN_16b")
-          set (rm_bin_name "main_vpe_ppe")
-          set (LBS "LIN")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-        elseif (j EQUAL 2)
-          set (name "vpe_ppe_${name_in}_BOX_8b")
-          set (rm_bin_name "main_vpe_ppe_box")
-          set (LBS "BOX")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-        elseif (j EQUAL 3)
-          set (name "vpe_ppe_${name_in}_BOX_16b")
-          set (rm_bin_name "main_vpe_ppe_box")
-          set (LBS "BOX")
-          set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-        endif()
-
-        if (EXPERIMENT_STAGE_2_SUB_2)
-          if (${name} MATCHES "_8b")
-            set (name "NA_3_${name}")
-          endif()
-          if (${name} MATCHES "_16b")
-            set (name "NA_4_${name}")
-          endif()
-        endif()
-     
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
-      
-          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
-      
-          CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-      
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      
-        if (j EQUAL 3)
-          math (EXPR NU_SEED "${NU_SEED} + 1")
-        endif()
-      
-      endforeach()
-    endmacro()
-
-    macro (ADD_VPE_PPE_WKH_COMB_ALL test_list_name)
-
-      set (ShowPerf "NotShowPerf")
-      set (TST_NMB 3)
-      set (i 0)
-
-      foreach(name_in ${${test_list_name}})
-        foreach(i RANGE ${TST_NMB})
-
-          if (i EQUAL 0)
-            set (name "vpe_ppe_${name_in}_LIN_8b")
-            set (rm_bin_name "main_vpe_ppe")
-            set (LBS "LIN")
-            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-          elseif (i EQUAL 1)
-            set (name "vpe_ppe_${name_in}_LIN_16b")
-            set (rm_bin_name "main_vpe_ppe")
-            set (LBS "LIN")
-            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-          elseif (i EQUAL 2)
-            set (name "vpe_ppe_${name_in}_BOX_8b")
-            set (rm_bin_name "main_vpe_ppe_box")
-            set (LBS "BOX")
-            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-          elseif (i EQUAL 3)
-            set (name "vpe_ppe_${name_in}_BOX_16b")
-            set (rm_bin_name "main_vpe_ppe_box")
-            set (LBS "BOX")
-            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-          endif()
-
-          add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
-
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
-
-            CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-          )
-
-          if (i EQUAL TST_NMB)
-            math (EXPR NU_SEED "${NU_SEED} + 1")
-            set (i 0)
-          endif()
-
-        endforeach()
-      endforeach()
-    endmacro()
-
-    if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
-      if(NOT DEFINED PPE_EXPER_DIR)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
-          set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
-        elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/PPE)
-          set(PPE_EXPER_DIR ${EXPERIMENT_STAGE_2_DIR}/PPE/)
-        else()
-          message(FATAL_ERROR "PPE_EXPER_DIR test binaries Directory not found")
-        endif()
-      endif()
-      message("PPE_EXPER_DIR = ${PPE_EXPER_DIR}")
-
-      macro(ADD_PPE_EXPER_TEST name ShowPerf)
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
-          PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
-          CFLAGS -D${ShowPerf}
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-        )
-      endmacro()
-    endif()  ### EXPERIMENT_STAGE_2_SUB_1
-  endif() # DUT STREQUAL PPE
-  ##################################################################
-  ########################### PPE_TESTS ############################
-  ##################################################################
-  if(DUT STREQUAL "PPE" OR DUT STREQUAL "NPE")
-    add_rumboot_target(
-        CONFIGURATION ROM
-        NAME PPE_1
-        FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
-    )
-
-    ADD_PPE_TESTS(ppe_i8_max_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_max})
-    ADD_PPE_TESTS(ppe_i16_max_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_max})
-    ADD_PPE_TESTS(ppe_fp16_max_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_max})
-
-    ADD_PPE_TESTS(ppe_i8_min_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_min})
-    ADD_PPE_TESTS(ppe_i16_min_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_min})
-    ADD_PPE_TESTS(ppe_fp16_min_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_min})
-
-    ADD_PPE_TESTS(ppe_i8_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_avg})
-    ADD_PPE_TESTS(ppe_i16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_avg})
-    ADD_PPE_TESTS(ppe_fp16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_avg})
-
-    #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w129_129_k32_48_h2_2_l  main_vpe_ppe      NotShowPerf LIN ${w129_129_k32_48_h2_2} )
-    #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w129_129_k32_48_h2_2_b  main_vpe_ppe_box  NotShowPerf BOX ${w129_129_k32_48_h2_2} )
-    #ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h1_1 ${w1_128_k1_16_h1_1})
-
-    ADD_VPE_PPE_WKH_COMB(vpe_ppe_wkh_comb)
-    #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
-
-  endif()
-
-  if(DUT STREQUAL "PPE")
-    if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ###
-        ADD_PPE_EXPER_TEST(PPE_2  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_3  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_4  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_5  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_6  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_7  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_8  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_9  NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_10 NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_11 NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_12 NotShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_13 ShowPerf)
-        ADD_PPE_EXPER_TEST(PPE_14 NotShowPerf)
-    endif() ### EXPERIMENT_STAGE_2_SUB_1
-  endif() # if(DUT STREQUAL "PPE")
-
-  ###################################################################
-  ############# MPE_TESTS general settings and macros ###############
-  ###################################################################
-  if(DUT STREQUAL "MPE")
-    set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
-    set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
-
-    if(NOT DEFINED MPE_TEST_SHEETS_DIR)
-      if(EXISTS ${CMAKE_SOURCE_DIR}/../../MPE)
-        set (MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../../MPE)
-      elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/MPE)
-        set (MPE_TEST_SHEETS_DIR ${EXPERIMENT_STAGE_2_DIR}/MPE)
-      elseif(EXISTS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
-        set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
-      else()
-        message(FATAL_ERROR "MPE_TEST_SHEETS_DIR test binaries not found")
-      endif()
-    endif()
-    message ("MPE_TEST_SHEETS_DIR = ${MPE_TEST_SHEETS_DIR}")
-
-    macro (ADD_MPE_DEMO_TEST mpe_demo_test_name show_perf)
-      set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${mpe_demo_test_name}
-        FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
-        CFLAGS -D${show_perf}
-        PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        TIMEOUT_CTEST 10000
-      )
-    endmacro()
-
-    ###################################################################
-    ########################### MPE_TESTS #############################
-    ###################################################################
-    ADD_MPE_DEMO_TEST(MPE_1 No)
-    ADD_MPE_DEMO_TEST(MPE_2 No)
-    ADD_MPE_DEMO_TEST(MPE_3 No)
-    ADD_MPE_DEMO_TEST(MPE_4 No)
-    ADD_MPE_DEMO_TEST(MPE_5 No)
-    ADD_MPE_DEMO_TEST(MPE_6 No)
-    ADD_MPE_DEMO_TEST(MPE_10 No)
-    ADD_MPE_DEMO_TEST(MPE_11 No)
-    ADD_MPE_DEMO_TEST(MPE_14 No)
-    ADD_MPE_DEMO_TEST(MPE_16 SHOW_PERF)
-
-    macro (ADD_MPE_COUPLED_TEST_LOOP name rm_bin_name)
-      set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
-      foreach(i RANGE 0 15)
-        set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${name}/${rm_bin_name}_${i}/mpe_arrays_r.txt)
-        set(ADD_MPE_COUPLED_TEST_LOOP_ARGS ${ADD_MPE_COUPLED_TEST_LOOP_ARGS} &&
-        ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file}.${i} ${NA_TEST_in_file}.${i} ${NA_TEST_warr_file}.${i} ${NA_TEST_etalon_file}.${i} < ${MPE_TEST_SHEET})
-      endforeach()
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_mpe.c
-        PREPCMD ${ADD_MPE_COUPLED_TEST_LOOP_ARGS}
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-        TIMEOUT_CTEST 10000
-      )
-    endmacro()
-
-    ADD_MPE_COUPLED_TEST_LOOP(MPE_7 test) # mu int8 test
-    ADD_MPE_COUPLED_TEST_LOOP(MPE_8 test) # mu int16 test
-    ADD_MPE_COUPLED_TEST_LOOP(MPE_9 test) # mu fp16 test
-
-    ADD_MPE_COUPLED_TEST_LOOP(MPE_12 test) # mu+acc int8 test
-    ADD_MPE_COUPLED_TEST_LOOP(MPE_13 test) # mu+acc int16 test
-    ADD_MPE_COUPLED_TEST_LOOP(MPE_15 test) # mu+acc fp16 test
-  endif()  # if(DUT STREQUAL "MPE")
-
-  ###################################################################
-  ############# NPE_TESTS general settings and macros ###############
-  ###################################################################
-  if(DUT STREQUAL "NPE")
-    set(NPE_BINS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/npe)
-
-    set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/npe_mpe_stage2)
-    set(MPE_PARSE_TEST_STAGE2 ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays_stage2.pl)
-    
-    macro (ADD_MPE_SINGLE_TEST name trunc) # trunc=TRUNC0/TRUNC16
-      set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
-        CFLAGS -D${trunc}
-        PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
-    endmacro()
-    
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-          ##
-      macro (ADD_MPE_CONV_TEST name trunc) # trunc=TRUNC0/TRUNC16
-        set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}_CONV
-          FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_conv.c
-          CFLAGS -D${trunc}
-          PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
-          IRUN_FLAGS ${NA_RM_PLUSARGS}
-        )
-      endmacro()
-          ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif()
-
-      # Tests Without RM
-    macro(ADD_NPE_SIMPLE_TEST name filename)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES ${filename}
-      )
-    endmacro()
-
-    set(RM_TF_KEYS
-      --cube_TF_file=${NPE_BINS}/resnet_bins/${name}/cube.bin.0
-      --warr_TF_file=${NPE_BINS}/resnet_bins/${name}/warr.bin.0
-      --op0_TF_file=${NPE_BINS}/resnet_bins/${name}/op0.bin.0
-    )
-
-    set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
-    set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
       # Tests Use MPE+VPE (Without PPE)
-    macro(ADD_NPE_MPE_VPE_TEST name rm_bin_name)
+      macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name)
       add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION ${CONF}
         NAME ${name}
-        TESTGROUP mpe_test
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
         CFLAGS -DDONT_USE_PPE=1
         PREPCMD 
@@ -1985,11 +332,10 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
     endmacro()
 
       # Tests Use All 3 Units
-    macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
+    macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name)
       add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION ${CONF}
         NAME ${name}
-        TESTGROUP mpe_test
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
@@ -2006,135 +352,1696 @@ if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUA
       )
     endmacro()
 
+macro (ADD_MPE_CONV_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
+set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
+add_rumboot_target(
+  CONFIGURATION ${CONF}
+  NAME ${name}_CONV
+  FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_conv.c
+  CFLAGS -D${trunc}
+  PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
+  IRUN_FLAGS ${NA_RM_PLUSARGS}
+)
+endmacro()
+
+
+macro (ADD_MPE_SINGLE_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
+set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
+add_rumboot_target(
+  CONFIGURATION ${CONF}
+  NAME ${name}
+  FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
+  CFLAGS -D${trunc}
+  PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
+  IRUN_FLAGS ${NA_RM_PLUSARGS}
+)
+endmacro()
+
+
+macro (ADD_MPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
+set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
+foreach(i RANGE 0 15)
+  set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${name}/${rm_bin_name}_${i}/mpe_arrays_r.txt)
+  set(ADD_MPE_COUPLED_TEST_LOOP_ARGS ${ADD_MPE_COUPLED_TEST_LOOP_ARGS} &&
+  ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file}.${i} ${NA_TEST_in_file}.${i} ${NA_TEST_warr_file}.${i} ${NA_TEST_etalon_file}.${i} < ${MPE_TEST_SHEET})
+endforeach()
+add_rumboot_target(
+  CONFIGURATION ${CONF}
+  NAME ${name}
+  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_mpe.c
+  PREPCMD ${ADD_MPE_COUPLED_TEST_LOOP_ARGS}
+  IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+  TIMEOUT_CTEST 10000
+)
+endmacro()
+
+
+macro (ADD_MPE_DEMO_TEST CONF mpe_demo_test_name show_perf)
+  set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${mpe_demo_test_name}
+    FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
+    CFLAGS -D${show_perf}
+    PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    TIMEOUT_CTEST 10000
+  )
+endmacro()
+
+macro (ADD_VPE_PPE_WKH_COMB_ALL CONF test_list_name)
+
+set (ShowPerf "NotShowPerf")
+set (TST_NMB 3)
+set (i 0)
+
+foreach(name_in ${${test_list_name}})
+  foreach(i RANGE ${TST_NMB})
+
+    if (i EQUAL 0)
+      set (name "vpe_ppe_${name_in}_LIN_8b")
+      set (rm_bin_name "main_vpe_ppe")
+      set (LBS "LIN")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+    elseif (i EQUAL 1)
+      set (name "vpe_ppe_${name_in}_LIN_16b")
+      set (rm_bin_name "main_vpe_ppe")
+      set (LBS "LIN")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+    elseif (i EQUAL 2)
+      set (name "vpe_ppe_${name_in}_BOX_8b")
+      set (rm_bin_name "main_vpe_ppe_box")
+      set (LBS "BOX")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+    elseif (i EQUAL 3)
+      set (name "vpe_ppe_${name_in}_BOX_16b")
+      set (rm_bin_name "main_vpe_ppe_box")
+      set (LBS "BOX")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+    endif()
+
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+
+    if (i EQUAL TST_NMB)
+      math (EXPR NU_SEED "${NU_SEED} + 1")
+      set (i 0)
+    endif()
+
+  endforeach()
+endforeach()
+endmacro()
+
+macro (ADD_PPE_TESTS CONF name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
+set (TST_NMB 1)
+set (name "${name_in}")
+set (Sh_is_1 "--set_Sh 1 --Sh 1")
+set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
+
+if (EXPERIMENT_STAGE_2_SUB_2)
+  string(REPLACE "ppe_i8_max_ml"    "PPE_2_i8_max_ml"     name  ${name})
+  string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name  ${name})
+  string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name  ${name})
+  string(REPLACE "ppe_i8_min_ml"    "PPE_5_i8_min_ml"     name  ${name})
+  string(REPLACE "ppe_i16_min_ml"   "PPE_6_i16_min_ml"    name  ${name})
+  string(REPLACE "ppe_fp16_min_ml"  "PPE_7_fp16_min_ml"   name  ${name})
+  string(REPLACE "ppe_i8_avg_ml"    "PPE_8_i8_avg_ml"     name  ${name})
+  string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name  ${name})
+  string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name  ${name})
+
+  if (${name} STREQUAL "PPE_10_fp16_avg_ml")
+    set (TST_NMB 1)
+  else()
+    set (TST_NMB 0)
+  endif()
+
+endif()
+
+foreach(i RANGE ${TST_NMB})
+
+  if (i EQUAL TST_NMB)
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
+
+    string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name  ${name})
+  else()
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
+  endif()
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_${i}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+    CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
+  if (i EQUAL TST_NMB)
+    math (EXPR NU_SEED "${NU_SEED} + 1")
+  endif()
+endforeach()
+endmacro()
+
+
+macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
+misalign_increment()
+set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
+foreach(IntMisalign ${MISALIGN})
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_${IntMisalign}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1 -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endforeach()
+endmacro()
+
+
+macro(ADD_PPE_EXPER_TEST CONF name ShowPerf)
+  if(NOT DEFINED PPE_EXPER_DIR)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
+      set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
+    elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/PPE)
+      set(PPE_EXPER_DIR ${EXPERIMENT_STAGE_2_DIR}/PPE/)
+    else()
+      #FIXME: ...
+      #message(FATAL_ERROR "PPE_EXPER_DIR test binaries Directory not found")
+      message(WARNING "PPE_EXPER_DIR test binaries Directory not found")
+      endif()
+  endif()
+
+  message("PPE_EXPER_DIR = ${PPE_EXPER_DIR}")
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
+    PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
+    CFLAGS -D${ShowPerf}
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+  )
+endmacro()
+
+
+
+macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
+misalign_increment()
+set(MISALIGN 0 ${MISALIGN_COUNT})
+foreach(IntMisalign ${MISALIGN})
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_${IntMisalign}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight_${IntMisalign}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endforeach()
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN CONF name rm_bin_name axi_len)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len} -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA CONF name rm_bin_name)
+misalign_increment()
+set(MISALIGN 0 ${MISALIGN_COUNT})
+foreach(IntMisalign ${MISALIGN})
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_${IntMisalign}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endforeach()
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA CONF name rm_bin_name)
+misalign_increment()
+set(MISALIGN 0 ${MISALIGN_COUNT})
+foreach(IntMisalign ${MISALIGN})
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_${IntMisalign}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endforeach()
+endmacro()  
+
+macro(ADD_VPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
+message("==> ${name}, ${rm_bin_name}")
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+)
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS CONF name rm_bin_name)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+    CFLAGS -DFORCE_VPE_WDMA_EN=1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+)
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL CONF name rm_bin_name)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+    CFLAGS -DFORCE_VPE_WDMA_EN=1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+)
+endmacro()
+
+
+macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL CONF name bin_dir)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+    CFLAGS -DFORCE_VPE_WDMA_EN=1
+    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+)
+endmacro()
+
+macro(ADD_VPE_FROM_BINARY_TEST_LOOP CONF name bin_dir)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+)
+endmacro()
+
+macro(ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA CONF name bin_dir)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    CFLAGS -DFORCE_VPE_WDMA_EN=1
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+)
+endmacro()
+
+macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS CONF name bin_dir)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+    CFLAGS -DFORCE_VPE_WDMA_EN=1
+    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+)
+endmacro()
+
+macro (ADD_VPE_PPE_TESTS_OLD CONF name rm_bin_name ShowPerf LBS RM_CFG_PARAM)
+set(TST_NMB 1)
+
+foreach(i RANGE ${TST_NMB})
+
+  set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type ${i}")
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_${i}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
+  if (i EQUAL TST_NMB)
+    math (EXPR NU_SEED "${NU_SEED} + 1")
+  endif()
+endforeach()
+endmacro()
+
+
+macro (ADD_VPE_PPE_TESTS CONF name_in RM_CFG_PARAM)
+set (ShowPerf "NotShowPerf")
+set (TST_NMB 3)
+
+foreach(i RANGE ${TST_NMB})
+
+  if (i EQUAL 0)
+    set (name "${name_in}_LIN_8b")
+    set (rm_bin_name "main_vpe_ppe")
+    set (LBS "LIN")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+  elseif (i EQUAL 1)
+    set (name "${name_in}_LIN_16b")
+    set (rm_bin_name "main_vpe_ppe")
+    set (LBS "LIN")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+  elseif (i EQUAL 2)
+    set (name "${name_in}_BOX_8b")
+    set (rm_bin_name "main_vpe_ppe_box")
+    set (LBS "BOX")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+  elseif (i EQUAL 3)
+    set (name "${name_in}_BOX_16b")
+    set (rm_bin_name "main_vpe_ppe_box")
+    set (LBS "BOX")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+  endif()
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
+  if (i EQUAL TST_NMB)
+    math (EXPR NU_SEED "${NU_SEED} + 1")
+  endif()
+
+endforeach()
+endmacro()
+
+macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
+
+set (ShowPerf "NotShowPerf")
+set (i 0)
+
+foreach(name_in ${${test_list_name}})
+
+  math (EXPR j "${i} % 4")
+  math (EXPR i "${i} + 1")
+
+  set (RM_CFG_PARAM ${${name_in}})
+
+  if (j EQUAL 0)
+    set (name "vpe_ppe_${name_in}_LIN_8b")
+    set (rm_bin_name "main_vpe_ppe")
+    set (LBS "LIN")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+  elseif (j EQUAL 1)
+    set (name "vpe_ppe_${name_in}_LIN_16b")
+    set (rm_bin_name "main_vpe_ppe")
+    set (LBS "LIN")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+  elseif (j EQUAL 2)
+    set (name "vpe_ppe_${name_in}_BOX_8b")
+    set (rm_bin_name "main_vpe_ppe_box")
+    set (LBS "BOX")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+  elseif (j EQUAL 3)
+    set (name "vpe_ppe_${name_in}_BOX_16b")
+    set (rm_bin_name "main_vpe_ppe_box")
+    set (LBS "BOX")
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+  endif()
+
+  if (EXPERIMENT_STAGE_2_SUB_2)
+    if (${name} MATCHES "_8b")
+      set (name "NA_3_${name}")
+    endif()
+    if (${name} MATCHES "_16b")
+      set (name "NA_4_${name}")
+    endif()
+  endif()
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
+  if (j EQUAL 3)
+    math (EXPR NU_SEED "${NU_SEED} + 1")
+  endif()
+
+endforeach()
+endmacro()
+
+macro(na_testsuite_add_npe_tests CONF)
+  _na_init_variables("NPE")
+
+  set(NPE_BINS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/npe)
+  set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/npe_mpe_stage2)
+  set(MPE_PARSE_TEST_STAGE2 ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays_stage2.pl)
+  set(RM_TF_KEYS
+  --cube_TF_file=${NPE_BINS}/resnet_bins/${name}/cube.bin.0
+  --warr_TF_file=${NPE_BINS}/resnet_bins/${name}/warr.bin.0
+  --op0_TF_file=${NPE_BINS}/resnet_bins/${name}/op0.bin.0
+  )
+
+  set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
+  set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
+
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME NPE_1
+    FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+  )
+
+  ################################
+  ### MPE Tests
+  ### FixMe: Duplication? 
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_2 TRUNC0)
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_3 TRUNC0)
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_4 TRUNC0)
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_5 TRUNC0)
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_6 TRUNC0)
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_7 TRUNC0)
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_8 TRUNC0) # mu int8 test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_9 TRUNC0) # mu int16 test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_10 TRUNC0) # mu fp16 test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_11 TRUNC0) # mu fp16 NaN test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_12 TRUNC16) # mu fp16 inf test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_13 TRUNC0) # mu+acc int8 test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_14 TRUNC0) # mu+acc int16 test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_15 TRUNC0) # mu int norm test
+  #ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
   
-    ###################################################################
-    ########################### NPE_TESTS #############################
-    ###################################################################
-
-      ################################
-      ### MPE Tests
-    ADD_MPE_SINGLE_TEST(MPE_2 TRUNC0)
-    ADD_MPE_SINGLE_TEST(MPE_3 TRUNC0)
-    ADD_MPE_SINGLE_TEST(MPE_4 TRUNC0)
-    ADD_MPE_SINGLE_TEST(MPE_5 TRUNC0)
-    ADD_MPE_SINGLE_TEST(MPE_6 TRUNC0)
-    ADD_MPE_SINGLE_TEST(MPE_7 TRUNC0)
-
-    ADD_MPE_SINGLE_TEST(MPE_8 TRUNC0) # mu int8 test
-    ADD_MPE_SINGLE_TEST(MPE_9 TRUNC0) # mu int16 test
-    ADD_MPE_SINGLE_TEST(MPE_10 TRUNC0) # mu fp16 test
-    ADD_MPE_SINGLE_TEST(MPE_11 TRUNC0) # mu fp16 NaN test
-    ADD_MPE_SINGLE_TEST(MPE_12 TRUNC16) # mu fp16 inf test
-    ADD_MPE_SINGLE_TEST(MPE_13 TRUNC0) # mu+acc int8 test
-    ADD_MPE_SINGLE_TEST(MPE_14 TRUNC0) # mu+acc int16 test
-    ADD_MPE_SINGLE_TEST(MPE_15 TRUNC0) # mu int norm test
-    ADD_MPE_SINGLE_TEST(MPE_16 TRUNC16) # mu+acc fp16 test
-
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-          ###
-      add_rumboot_target(
-          CONFIGURATION ROM
-          NAME RESNET
-          FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
-          PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
+            ###
+          add_rumboot_target(
+            CONFIGURATION ${CONF}
+            NAME RESNET
+            FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
+            PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
+            IRUN_FLAGS ${NA_RM_PLUSARGS}
+          )
+    
+          ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
+              ## NOT EXPERIMENT_STAGE_2_SUB_2
+    
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME MPE_PERFORMANCE
+          FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
+          PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
           IRUN_FLAGS ${NA_RM_PLUSARGS}
+        )
+    
+          ################################
+          ### Control Unit Tests
+        set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME NA_7 #na_cu_mpe_vpe
+          FILES scr1/targets/simple-rom/nu/na_cu/cu_dpnd_mpe_vpe.c
+          PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics ${CU_TEST_DIR}/etalon.bin ${CU_TEST_DIR}/etalon.bin.metrics -t .
+          IRUN_FLAGS +in_arr=in_arr.bin
+                     +metrics_in_arr=in_arr.bin.metrics
+                     +etalon_arr=etalon.bin
+                     +metrics_etalon_arr=etalon.bin.metrics
+        )
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME NA_8 #na_cu_buffers
+          FILES scr1/targets/simple-rom/nu/na_cu/cu_buffers.c
+          PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics -t .
+          IRUN_FLAGS +in_arr=in_arr.bin
+                     +metrics_in_arr=in_arr.bin.metrics
+        )
+    
+          ##########################################
+          ## NPE Reg Test
+        ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
+    
+          ##########################################
+          ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
+        foreach(label RANGE 25 48)  # Int16
+          ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+        endforeach()
+        foreach(label RANGE 49 72)  # Int8
+          ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+        endforeach()
+    
+          foreach(label RANGE 1 24)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+          endforeach()
+          foreach(label RANGE 25 72)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
+          endforeach()
+          foreach(label RANGE 1 48)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
+          endforeach()
+    
+          ##################################
+          ## Direct Complex Tests On Important Cube Sizes
+        foreach(label RANGE 49 72)
+          ADD_NPE_COMPLEX_TEST(${CONF} NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+        endforeach()
+        foreach(label RANGE 25 48)
+          ADD_NPE_COMPLEX_TEST(${CONF} NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+        endforeach()
+    
+          ###################################
+          ## Some Other Direct Tests
+          foreach(label RANGE 1 24)
+            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+          endforeach()
+          foreach(label RANGE 1 48)
+            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE)
+          endforeach()
+    
+          ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16)
+          
+          ###################################################################
+          # Resnet-test 
+          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE) # LAYER0_MPE
+          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN) # LAYER0_MPE_BN
+          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU) # LAYER0_MPE_BN_RELU
+          ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE) # LAYER0_MPE_BN_RELU_PPE
+          ###################################################################
+    
+
+  na_testsuite_add_vpe_tests(${CONF})
+  na_testsuite_add_ppe_tests(${CONF})
+  na_testsuite_add_mpe_tests(${CONF})
+endmacro()
+
+
+macro(na_testsuite_add_vpe_tests CONF)
+  _na_init_variables("VPE")
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME VPE_1
+      FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
+  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_9_0_op0_relu_int32  main_vpe_9_0_op0_relu_int32  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32 ) 
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_9_1_op0_relu_fp32   main_vpe_9_1_op0_relu_fp32   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_15_1_op1_relu_fp32  main_vpe_15_1_op1_relu_fp32  )
+
+  # Tests on VPE::DEMUX::C3 pipeline mode-flow
+  foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_3_c3_IN_INT32_${out_macro}  main_vpe_3_c3_IN_INT32_${out_macro} )
+  endforeach()
+  foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_3_c3_IN_FP32_${out_macro}   main_vpe_3_c3_IN_FP32_${out_macro}  )
+  endforeach()
+
+  # Test on VPE::DEMUX OVERFLOW COUNTERS TESTS PIPELINE MODE-FLOW
+  foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_overflow_counters_IN_INT32_${out_macro}  main_overflow_counters_IN_INT32_${out_macro} )
+  endforeach()
+  foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_overflow_counters_IN_FP32_${out_macro}   main_overflow_counters_IN_FP32_${out_macro}  )
+  endforeach()
+  # не получилос(((
+  # add_rumboot_target(
+  #   CONFIGURATION ${CONF}
+  #   FEATURES NOCODE
+  #   TESTGROUP vpe_overflow_counters-group
+  #   LOAD vpe_overflow_counters_IN_INT32_OUT_INT8,vpe_overflow_counters_IN_INT32_OUT_INT16
+  #   # LOAD rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT8,rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT16
+  #   NAME vpe_overflow_counters
+  # )
+
+  # Tests on VPE::InputConverters
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_18_op2_c1  main_vpe_18_op2_c1 )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_16_op2_c2  main_vpe_16_op2_c2 )
+
+  # Tests on VPE::NORM
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_8_0_op0_norm       main_vpe_8_0_op0_norm      )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_14_0_op1_norm      main_vpe_14_0_op1_norm     )
+
+  foreach(round_macro IN ITEMS 
+      DOWN     TOWARDSZERO     UP     AWAYFROMZERO     HALFDOWN     HALFTOWARDSZERO     NEAREST     HALFAWAYFROMZERO
+    )
+      ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_8_0_op0_norm_ROUND_${round_macro}       main_vpe_8_0_op0_norm_ROUND_${round_macro}      )
+      ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_14_0_op1_norm_ROUND_${round_macro}      main_vpe_14_0_op1_norm_ROUND_${round_macro}     )
+  endforeach() # round_macro
+
+
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_8_1_op0_norm_rnd   main_vpe_8_1_op0_norm_rnd  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_14_1_op1_norm_rnd  main_vpe_14_1_op1_norm_rnd )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_20_0_op2_norm      main_vpe_20_0_op2_norm     )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_20_1_op2_norm_rnd  main_vpe_20_1_op2_norm_rnd )
+
+  # Tests on VPE::LSHIFT
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_4_op0_lshift   main_vpe_4_op0_lshift  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_10_op1_lshift  main_vpe_10_op1_lshift )
+
+  # Tests on VPE::Formater
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_6_0_op0_f_int   main_vpe_6_0_op0_f_int  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_12_0_op1_f_int  main_vpe_12_0_op1_f_int )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_6_1_op0_f_fp    main_vpe_6_1_op0_f_fp   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_12_1_op1_f_fp   main_vpe_12_1_op1_f_fp  )
+
+  # Tests on VPE::ALU
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_0_op0_alu_int8_low      main_vpe_5_0_op0_alu_int8_low      )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_1_op0_alu_int8_middle   main_vpe_5_1_op0_alu_int8_middle   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_2_op0_alu_int8_high     main_vpe_5_2_op0_alu_int8_high     )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_3_op0_alu_int16_low     main_vpe_5_3_op0_alu_int16_low     )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_4_op0_alu_int16_middle  main_vpe_5_4_op0_alu_int16_middle  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_5_op0_alu_int16_high    main_vpe_5_5_op0_alu_int16_high    )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_6_op0_alu_fp32          main_vpe_5_6_op0_alu_fp32          )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_0_op1_alu_int8_low     main_vpe_11_0_op1_alu_int8_low     )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_1_op1_alu_int8_middle  main_vpe_11_1_op1_alu_int8_middle  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_2_op1_alu_int8_high    main_vpe_11_2_op1_alu_int8_high    )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_3_op1_alu_int16_low    main_vpe_11_3_op1_alu_int16_low    )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_4_op1_alu_int16_middle main_vpe_11_4_op1_alu_int16_middle )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_5_op1_alu_int16_high   main_vpe_11_5_op1_alu_int16_high   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_6_op1_alu_fp32         main_vpe_11_6_op1_alu_fp32         )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_0_op2_alu_int8_low     main_vpe_17_0_op2_alu_int8_low     )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_1_op2_alu_int8_high    main_vpe_17_1_op2_alu_int8_high    )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_2_op2_alu_int16_low    main_vpe_17_2_op2_alu_int16_low    )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_3_op2_alu_int16_high   main_vpe_17_3_op2_alu_int16_high   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_4_op2_alu_fp32         main_vpe_17_4_op2_alu_fp32         )
+
+  # Tests on VPE::MUL
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_7_0_op0_mul_int16   main_vpe_7_0_op0_mul_int16  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_7_1_op0_mul_int8    main_vpe_7_1_op0_mul_int8   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_7_2_op0_mul_fp32    main_vpe_7_2_op0_mul_fp32   )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_13_0_op1_mul_int16  main_vpe_13_0_op1_mul_int16 )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_13_1_op1_mul_int8   main_vpe_13_1_op1_mul_int8  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_13_2_op1_mul_fp32   main_vpe_13_2_op1_mul_fp32  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_19_0_op2_mul_int16  main_vpe_19_0_op2_mul_int16 )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_19_1_op2_mul_int8   main_vpe_19_1_op2_mul_int8  )
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_19_2_op2_mul_fp32   main_vpe_19_2_op2_mul_fp32  )
+
+  # Tests on VPE::OP2::LUT
+  foreach(in_macro IN ITEMS IN_INT32 IN_FP32)
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_0_lut_${in_macro}              main_vpe_21_0_lut_${in_macro}              ) # VPE_21
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_1_lut_addition_${in_macro}     main_vpe_21_1_lut_addition_${in_macro}     ) # VPE_21_addition
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_2_lut_out_of_range_${in_macro} main_vpe_21_2_lut_out_of_range_${in_macro} ) # VPE_21_out_of_range
+    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_3_lut_offset_${in_macro}       main_vpe_21_3_lut_offset_${in_macro}       ) # VPE_21_offset
+    foreach(mirror_type IN ITEMS 0 1)
+      ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} ) # VPE_21_offset. mirror mode
+    endforeach()
+  endforeach()
+
+  # Test on VPE block's together work 
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_22_op0_together   main_vpe_22_op0_together   ) # VPE_22
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_23_op1_together   main_vpe_23_op1_together   ) # VPE_23
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_24_op2_together   main_vpe_24_op2_together   ) # VPE_24
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_25_op012_together main_vpe_25_op012_together ) # VPE_25
+
+  # Test on VPE ???
+  ADD_VPE_COUPLED_TEST_CONTROL_CONS(${CONF} vpe_27_0_control_cons main_vpe_27_0_control_cons   ) # VPE_27
+  ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL(${CONF} vpe_27_1_control_par main_vpe_27_1_control_par ) # VPE_27
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_26_autonom_nowdma main_vpe_26_autonom)
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_28_perf main_28_perf) # VPE_28
+
+  # Test on VPE special cases
+  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
+
+  # Tests on VPE DMA
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_1   main_vpe_2_dma_int8 1  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_3  main_vpe_2_dma_int16 3 )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
+
+  # Tests on VPE::Formater
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
+
+  # Tests on VPE::LSHIFT
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
+
+  # Tests on VPE::InputConverters
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
+
+  # Tests on VPE::DEMUX::C3 TESTS MEM MODE
+  foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
+    foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
+    endforeach()
+  endforeach()
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
+
+  # Tests on VPE::RELU
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
+
+  # Tests on VPE::NORM
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
+
+  # Tests on VPE channel mode
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
+
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int )
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int )
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_fp  main_vpe_op0_vec_ex_fp  )
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_fp  main_vpe_op1_vec_ex_fp  )
+
+  # Tests on VPE dma
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_2_dma_int8_dma  main_vpe_2_dma_int8  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
+
+    # Tests on VPE::ALU
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
+
+    # Tests on VPE::MUL
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
+
+  # Tests on VPE channel mode
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+
+  #Tests on VPE::OP2::LUT in context NPE
+  foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
+    foreach(mirror_type IN ITEMS 0 1)
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
+    endforeach()
+  endforeach()
+
+  # Tests on VPE+PPE channel mode ???
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
+  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+
+  # Test on VPE block's together work 
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
+    
+  # Test on VPE ???
+  ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
+  ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
+
+  # Tests on VPE batch-mode for int-type
+  foreach(in IN ITEMS IN_INT8 IN_INT16)
+    foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
+      foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
+        foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
+          foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+            foreach(number_testcase RANGE 1 4)
+              add_rumboot_target(
+                CONFIGURATION ${CONF}
+                NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+              )
+            endforeach()
+          endforeach()
+        endforeach()
+      endforeach()
+    endforeach()
+  endforeach()
+
+  # Tests on VPE batch-mode for fp-type
+  foreach(out IN ITEMS OUT_INT16 OUT_FP16)
+    foreach(number_testcase RANGE 1 4)
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
       )
-
-      ADD_MPE_CONV_TEST(MPE_2 TRUNC16)
-          ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif() 
-
-    add_rumboot_target(
-      CONFIGURATION ROM
-      NAME MPE_PERFORMANCE
-      TESTGROUP mpe_test
-      FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
-      PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
-
-      ################################
-      ### Control Unit Tests
-    set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
-    add_rumboot_target(
-      CONFIGURATION ROM
-      NAME NA_7 #na_cu_mpe_vpe
-      FILES scr1/targets/simple-rom/nu/na_cu/cu_dpnd_mpe_vpe.c
-      PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics ${CU_TEST_DIR}/etalon.bin ${CU_TEST_DIR}/etalon.bin.metrics -t .
-      IRUN_FLAGS +in_arr=in_arr.bin
-                 +metrics_in_arr=in_arr.bin.metrics
-                 +etalon_arr=etalon.bin
-                 +metrics_etalon_arr=etalon.bin.metrics
-    )
-    add_rumboot_target(
-      CONFIGURATION ROM
-      NAME NA_8 #na_cu_buffers
-      FILES scr1/targets/simple-rom/nu/na_cu/cu_buffers.c
-      PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics -t .
-      IRUN_FLAGS +in_arr=in_arr.bin
-                 +metrics_in_arr=in_arr.bin.metrics
-    )
-
-      ##########################################
-      ## NPE Reg Test
-    ADD_NPE_SIMPLE_TEST(npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
-
-      ##########################################
-      ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
-    foreach(label RANGE 25 48)  # Int16
-      ADD_NPE_MPE_VPE_TEST(NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
     endforeach()
-    foreach(label RANGE 49 72)  # Int8
-      ADD_NPE_MPE_VPE_TEST(NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
-    endforeach()
+  endforeach()
 
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-        ##
-      foreach(label RANGE 1 24)
-        ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
-        ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
-      endforeach()
-      foreach(label RANGE 25 72)
-        ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
-      endforeach()
-      foreach(label RANGE 1 48)
-        ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
-        ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
-      endforeach()
-        ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif()
+  ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(${CONF} VPE_2_0 VPE_2/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(${CONF} VPE_2_1 VPE_2/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_9_0 VPE_9/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_15_0 VPE_15/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_9_1 VPE_9/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_15_1 VPE_15/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_3 VPE_3)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_18 VPE_18)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_16 VPE_16)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_8_0 VPE_8/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_14_0 VPE_14/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_8_1 VPE_8/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_14_1 VPE_14/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_20_0 VPE_20/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_20_1 VPE_20/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_4 VPE_4)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_10 VPE_10)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_6_0 VPE_6/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_12_0 VPE_12/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_6_1 VPE_6/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_12_1 VPE_12/1)
+ 
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_0 VPE_5/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_1 VPE_5/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_2 VPE_5/2)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_3 VPE_5/3)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_4 VPE_5/4)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_5 VPE_5/5)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_6 VPE_5/6)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_0 VPE_11/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_1 VPE_11/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_2 VPE_11/2)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_3 VPE_11/3)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_4 VPE_11/4)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_5 VPE_11/5)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_6 VPE_11/6)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_0 VPE_17/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_1 VPE_17/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_2 VPE_17/2)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_3 VPE_17/3)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_4 VPE_17/4)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_7_0 VPE_7/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_7_1 VPE_7/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_7_2 VPE_7/2)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_13_0 VPE_13/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_13_1 VPE_13/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_13_2 VPE_13/2)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_19_0 VPE_19/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_19_1 VPE_19/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_19_2 VPE_19/2)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_21_0 VPE_21/0)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_21_1 VPE_21/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_22 VPE_22)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_23 VPE_23)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_24 VPE_24)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_25 VPE_25)
+  ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS(${CONF} VPE_27_0 VPE_27/0)
+  ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL(${CONF} VPE_27_1 VPE_27/1)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_26 VPE_26)
+  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_28 VPE_28)
+endmacro()
 
-      ##################################
-      ## Direct Complex Tests On Important Cube Sizes
-    foreach(label RANGE 49 72)
-      ADD_NPE_COMPLEX_TEST(NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
-    endforeach()
-    foreach(label RANGE 25 48)
-      ADD_NPE_COMPLEX_TEST(NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
-    endforeach()
+macro(na_testsuite_add_ppe_tests CONF)
+  _na_init_variables("PPE")
 
-      ###################################
-      ## Some Other Direct Tests
-    if(NOT EXPERIMENT_STAGE_2_SUB_2)
-          ##
-      foreach(label RANGE 1 24)
-        ADD_NPE_COMPLEX_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
-      endforeach()
-      foreach(label RANGE 1 48)
-        ADD_NPE_COMPLEX_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE)
-      endforeach()
+  if(NOT DEFINED NU_SEED)
+    set(NU_SEED 1)
+  endif()
 
-      ADD_NPE_COMPLEX_TEST(npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16)
-      
-      ###################################################################
-      # Resnet-test 
-      ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE) # LAYER0_MPE
-      ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN) # LAYER0_MPE_BN
-      ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU) # LAYER0_MPE_BN_RELU
-      ADD_NPE_COMPLEX_TEST(resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE) # LAYER0_MPE_BN_RELU_PPE
-      ###################################################################
+  if(NOT DEFINED NU_IT_NMB)
+    set(NU_IT_NMB 32)
+  endif()
 
-         ## NOT EXPERIMENT_STAGE_2_SUB_2
-    endif()
-  endif() # if(DUT STREQUAL "NPE")
-endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
+  set (i8_max   "--pool_meth 1 --data_type 0")
+  set (i16_max  "--pool_meth 1 --data_type 1")
+  set (fp16_max "--pool_meth 1 --data_type 2")
+
+  set (i8_min   "--pool_meth 2 --data_type 0")
+  set (i16_min  "--pool_meth 2 --data_type 1")
+  set (fp16_min "--pool_meth 2 --data_type 2")
+
+  set (i8_avg   "--pool_meth 0 --data_type 0")
+  set (i16_avg  "--pool_meth 0 --data_type 1")
+  set (fp16_avg "--pool_meth 0 --data_type 2")
+
+  set (w1_128_k1_16_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w1_128_k1_16_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w1_128_k1_16_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w1_128_k1_1_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w1_128_k1_1_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w1_128_k1_1_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w1_128_k15_15_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w1_128_k15_15_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w1_128_k15_15_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w1_128_k16_16_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w1_128_k16_16_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w1_128_k16_16_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w1_128_k16_32_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w1_128_k16_32_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w1_128_k16_32_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w1_128_k32_48_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w1_128_k32_48_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w1_128_k32_48_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w1_128_k48_64_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w1_128_k48_64_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w1_128_k48_64_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w1_128_k64_80_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w1_128_k64_80_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w1_128_k64_80_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w1_128_k80_96_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w1_128_k80_96_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w1_128_k80_96_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w1_128_k96_112_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w1_128_k96_112_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w1_128_k96_112_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w1_128_k112_128_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w1_128_k112_128_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w1_128_k112_128_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w1_128_k128_128_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w1_128_k128_128_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w1_128_k128_128_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w1_128_k128_256_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w1_128_k128_256_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w1_128_k128_256_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w1_128_k256_288_h1_1 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w1_128_k256_288_h2_2 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w1_128_k256_288_h2_16 "--pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+  set (w128_128_k1_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w128_128_k1_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w128_128_k1_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w128_128_k1_1_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w128_128_k1_1_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w128_128_k1_1_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w128_128_k15_15_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w128_128_k15_15_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w128_128_k15_15_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w128_128_k16_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w128_128_k16_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w128_128_k16_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w128_128_k16_32_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w128_128_k16_32_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w128_128_k16_32_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w128_128_k32_48_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w128_128_k32_48_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w128_128_k32_48_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w128_128_k48_64_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w128_128_k48_64_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w128_128_k48_64_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w128_128_k64_80_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w128_128_k64_80_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w128_128_k64_80_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w128_128_k80_96_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w128_128_k80_96_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w128_128_k80_96_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w128_128_k96_112_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w128_128_k96_112_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w128_128_k96_112_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w128_128_k112_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w128_128_k112_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w128_128_k112_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w128_128_k128_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w128_128_k128_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w128_128_k128_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w128_128_k128_256_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w128_128_k128_256_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w128_128_k128_256_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w128_128_k256_288_h1_1 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w128_128_k256_288_h2_2 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w128_128_k256_288_h2_16 "--pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+  set (w129_129_k1_16_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w129_129_k1_16_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w129_129_k1_16_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w129_129_k1_1_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w129_129_k1_1_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w129_129_k1_1_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w129_129_k15_15_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w129_129_k15_15_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w129_129_k15_15_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w129_129_k16_16_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w129_129_k16_16_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w129_129_k16_16_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w129_129_k16_32_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w129_129_k16_32_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w129_129_k16_32_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w129_129_k32_48_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w129_129_k32_48_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w129_129_k32_48_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w129_129_k48_64_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w129_129_k48_64_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w129_129_k48_64_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w129_129_k64_80_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w129_129_k64_80_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w129_129_k64_80_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w129_129_k80_96_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w129_129_k80_96_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w129_129_k80_96_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w129_129_k96_112_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w129_129_k96_112_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w129_129_k96_112_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w129_129_k112_128_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w129_129_k112_128_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w129_129_k112_128_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w129_129_k128_128_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w129_129_k128_128_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w129_129_k128_128_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w129_129_k128_256_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w129_129_k128_256_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w129_129_k128_256_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w129_129_k256_288_h1_1 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w129_129_k256_288_h2_2 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w129_129_k256_288_h2_16 "--pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+  set (w128_256_k1_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w128_256_k1_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w128_256_k1_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w128_256_k1_1_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w128_256_k1_1_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w128_256_k1_1_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w128_256_k15_15_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w128_256_k15_15_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w128_256_k15_15_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w128_256_k16_16_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w128_256_k16_16_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w128_256_k16_16_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w128_256_k16_32_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w128_256_k16_32_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w128_256_k16_32_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w128_256_k32_48_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w128_256_k32_48_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w128_256_k32_48_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w128_256_k48_64_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w128_256_k48_64_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w128_256_k48_64_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w128_256_k64_80_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w128_256_k64_80_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w128_256_k64_80_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w128_256_k80_96_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w128_256_k80_96_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w128_256_k80_96_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w128_256_k96_112_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w128_256_k96_112_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w128_256_k96_112_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w128_256_k112_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w128_256_k112_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w128_256_k112_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w128_256_k128_128_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w128_256_k128_128_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w128_256_k128_128_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w128_256_k128_256_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w128_256_k128_256_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w128_256_k128_256_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w128_256_k256_288_h1_1 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w128_256_k256_288_h2_2 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w128_256_k256_288_h2_16 "--pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+  set (w255_255_k1_16_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w255_255_k1_16_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w255_255_k1_16_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w255_255_k1_1_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w255_255_k1_1_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w255_255_k1_1_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w255_255_k15_15_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w255_255_k15_15_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w255_255_k15_15_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w255_255_k16_16_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w255_255_k16_16_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w255_255_k16_16_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w255_255_k16_32_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w255_255_k16_32_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w255_255_k16_32_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w255_255_k32_48_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w255_255_k32_48_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w255_255_k32_48_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w255_255_k48_64_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w255_255_k48_64_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w255_255_k48_64_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w255_255_k64_80_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w255_255_k64_80_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w255_255_k64_80_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w255_255_k80_96_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w255_255_k80_96_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w255_255_k80_96_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w255_255_k96_112_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w255_255_k96_112_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w255_255_k96_112_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w255_255_k112_128_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w255_255_k112_128_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w255_255_k112_128_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w255_255_k128_128_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w255_255_k128_128_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w255_255_k128_128_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w255_255_k128_256_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w255_255_k128_256_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w255_255_k128_256_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w255_255_k256_288_h1_1 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w255_255_k256_288_h2_2 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w255_255_k256_288_h2_16 "--pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+  set (w256_256_k1_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w256_256_k1_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w256_256_k1_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w256_256_k1_1_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w256_256_k1_1_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w256_256_k1_1_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w256_256_k15_15_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w256_256_k15_15_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w256_256_k15_15_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w256_256_k16_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w256_256_k16_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w256_256_k16_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w256_256_k16_32_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w256_256_k16_32_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w256_256_k16_32_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w256_256_k32_48_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w256_256_k32_48_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w256_256_k32_48_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w256_256_k48_64_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w256_256_k48_64_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w256_256_k48_64_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w256_256_k64_80_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w256_256_k64_80_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w256_256_k64_80_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w256_256_k80_96_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w256_256_k80_96_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w256_256_k80_96_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w256_256_k96_112_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w256_256_k96_112_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w256_256_k96_112_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w256_256_k112_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w256_256_k112_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w256_256_k112_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w256_256_k128_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w256_256_k128_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w256_256_k128_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w256_256_k128_256_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w256_256_k128_256_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w256_256_k128_256_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w256_256_k256_288_h1_1 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w256_256_k256_288_h2_2 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w256_256_k256_288_h2_16 "--pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+  set (w256_288_k1_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
+  set (w256_288_k1_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
+  set (w256_288_k1_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
+  set (w256_288_k1_1_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
+  set (w256_288_k1_1_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
+  set (w256_288_k1_1_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
+  set (w256_288_k15_15_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
+  set (w256_288_k15_15_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
+  set (w256_288_k15_15_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
+  set (w256_288_k16_16_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
+  set (w256_288_k16_16_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
+  set (w256_288_k16_16_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
+  set (w256_288_k16_32_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
+  set (w256_288_k16_32_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
+  set (w256_288_k16_32_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
+  set (w256_288_k32_48_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
+  set (w256_288_k32_48_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
+  set (w256_288_k32_48_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
+  set (w256_288_k48_64_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
+  set (w256_288_k48_64_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
+  set (w256_288_k48_64_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
+  set (w256_288_k64_80_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
+  set (w256_288_k64_80_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
+  set (w256_288_k64_80_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
+  set (w256_288_k80_96_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
+  set (w256_288_k80_96_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
+  set (w256_288_k80_96_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
+  set (w256_288_k96_112_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
+  set (w256_288_k96_112_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
+  set (w256_288_k96_112_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
+  set (w256_288_k112_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
+  set (w256_288_k112_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
+  set (w256_288_k112_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
+  set (w256_288_k128_128_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
+  set (w256_288_k128_128_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
+  set (w256_288_k128_128_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
+  set (w256_288_k128_256_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
+  set (w256_288_k128_256_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
+  set (w256_288_k128_256_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
+  set (w256_288_k256_288_h1_1 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
+  set (w256_288_k256_288_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
+  set (w256_288_k256_288_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
+
+  set (vpe_ppe_wkh_comb
+    w1_128_k1_16_h1_1
+    w1_128_k1_16_h2_2
+    w1_128_k1_16_h2_16
+    w1_128_k1_1_h1_1
+    w1_128_k1_1_h2_2
+    w1_128_k1_1_h2_16
+    w1_128_k15_15_h1_1
+    w1_128_k15_15_h2_2
+    w1_128_k15_15_h2_16
+    w1_128_k16_16_h1_1
+    w1_128_k16_16_h2_2
+    w1_128_k16_16_h2_16
+    w1_128_k16_32_h1_1
+    w1_128_k16_32_h2_2
+    w1_128_k16_32_h2_16
+    w1_128_k32_48_h1_1
+    w1_128_k32_48_h2_2
+    w1_128_k32_48_h2_16
+    w1_128_k48_64_h1_1
+    w1_128_k48_64_h2_2
+    w1_128_k48_64_h2_16
+    w1_128_k64_80_h1_1
+    w1_128_k64_80_h2_2
+    w1_128_k64_80_h2_16
+    w1_128_k80_96_h1_1
+    w1_128_k80_96_h2_2
+    w1_128_k80_96_h2_16
+    w1_128_k96_112_h1_1
+    w1_128_k96_112_h2_2
+    w1_128_k96_112_h2_16
+    w1_128_k112_128_h1_1
+    w1_128_k112_128_h2_2
+    w1_128_k112_128_h2_16
+    w1_128_k128_128_h1_1
+    w1_128_k128_128_h2_2
+    w1_128_k128_128_h2_16
+    w1_128_k128_256_h1_1
+    w1_128_k128_256_h2_2
+    w1_128_k128_256_h2_16
+    w1_128_k256_288_h1_1
+    w1_128_k256_288_h2_2
+    w1_128_k256_288_h2_16
+    w128_128_k1_16_h1_1
+    w128_128_k1_16_h2_2
+    w128_128_k1_16_h2_16
+    w128_128_k1_1_h1_1
+    w128_128_k1_1_h2_2
+    w128_128_k1_1_h2_16
+    w128_128_k15_15_h1_1
+    w128_128_k15_15_h2_2
+    w128_128_k15_15_h2_16
+    w128_128_k16_16_h1_1
+    w128_128_k16_16_h2_2
+    w128_128_k16_16_h2_16
+    w128_128_k16_32_h1_1
+    w128_128_k16_32_h2_2
+    w128_128_k16_32_h2_16
+    w128_128_k32_48_h1_1
+    w128_128_k32_48_h2_2
+    w128_128_k32_48_h2_16
+    w128_128_k48_64_h1_1
+    w128_128_k48_64_h2_2
+    w128_128_k48_64_h2_16
+    w128_128_k64_80_h1_1
+    w128_128_k64_80_h2_2
+    w128_128_k64_80_h2_16
+    w128_128_k80_96_h1_1
+    w128_128_k80_96_h2_2
+    w128_128_k80_96_h2_16
+    w128_128_k96_112_h1_1
+    w128_128_k96_112_h2_2
+    w128_128_k96_112_h2_16
+    w128_128_k112_128_h1_1
+    w128_128_k112_128_h2_2
+    w128_128_k112_128_h2_16
+    w128_128_k128_128_h1_1
+    w128_128_k128_128_h2_2
+    w128_128_k128_128_h2_16
+    w128_128_k128_256_h1_1
+    w128_128_k128_256_h2_2
+    w128_128_k128_256_h2_16
+    w128_128_k256_288_h1_1
+    w128_128_k256_288_h2_2
+    w128_128_k256_288_h2_16
+    w129_129_k1_16_h1_1
+    w129_129_k1_16_h2_2
+    w129_129_k1_16_h2_16
+    w129_129_k1_1_h1_1
+    w129_129_k1_1_h2_2
+    w129_129_k1_1_h2_16
+    w129_129_k15_15_h1_1
+    w129_129_k15_15_h2_2
+    w129_129_k15_15_h2_16
+    w129_129_k16_16_h1_1
+    w129_129_k16_16_h2_2
+    w129_129_k16_16_h2_16
+    w129_129_k16_32_h1_1
+    w129_129_k16_32_h2_2
+    w129_129_k16_32_h2_16
+    w129_129_k32_48_h1_1
+    w129_129_k32_48_h2_2
+    w129_129_k32_48_h2_16
+    w129_129_k48_64_h1_1
+    w129_129_k48_64_h2_2
+    w129_129_k48_64_h2_16
+    w129_129_k64_80_h1_1
+    w129_129_k64_80_h2_2
+    w129_129_k64_80_h2_16
+    w129_129_k80_96_h1_1
+    w129_129_k80_96_h2_2
+    w129_129_k80_96_h2_16
+    w129_129_k96_112_h1_1
+    w129_129_k96_112_h2_2
+    w129_129_k96_112_h2_16
+    w129_129_k112_128_h1_1
+    w129_129_k112_128_h2_2
+    w129_129_k112_128_h2_16
+    w129_129_k128_128_h1_1
+    w129_129_k128_128_h2_2
+    w129_129_k128_128_h2_16
+    w129_129_k128_256_h1_1
+    w129_129_k128_256_h2_2
+    w129_129_k128_256_h2_16
+    w129_129_k256_288_h1_1
+    w129_129_k256_288_h2_2
+    w129_129_k256_288_h2_16
+    w128_256_k1_16_h1_1
+    w128_256_k1_16_h2_2
+    w128_256_k1_16_h2_16
+    w128_256_k1_1_h1_1
+    w128_256_k1_1_h2_2
+    w128_256_k1_1_h2_16
+    w128_256_k15_15_h1_1
+    w128_256_k15_15_h2_2
+    w128_256_k15_15_h2_16
+    w128_256_k16_16_h1_1
+    w128_256_k16_16_h2_2
+    w128_256_k16_16_h2_16
+    w128_256_k16_32_h1_1
+    w128_256_k16_32_h2_2
+    w128_256_k16_32_h2_16
+    w128_256_k32_48_h1_1
+    w128_256_k32_48_h2_2
+    w128_256_k32_48_h2_16
+    w128_256_k48_64_h1_1
+    w128_256_k48_64_h2_2
+    w128_256_k48_64_h2_16
+    w128_256_k64_80_h1_1
+    w128_256_k64_80_h2_2
+    w128_256_k64_80_h2_16
+    w128_256_k80_96_h1_1
+    w128_256_k80_96_h2_2
+    w128_256_k80_96_h2_16
+    w128_256_k96_112_h1_1
+    w128_256_k96_112_h2_2
+    w128_256_k96_112_h2_16
+    w128_256_k112_128_h1_1
+    w128_256_k112_128_h2_2
+    w128_256_k112_128_h2_16
+    w128_256_k128_128_h1_1
+    w128_256_k128_128_h2_2
+    w128_256_k128_128_h2_16
+    w128_256_k128_256_h1_1
+    w128_256_k128_256_h2_2
+    w128_256_k128_256_h2_16
+    w128_256_k256_288_h1_1
+    w128_256_k256_288_h2_2
+    w128_256_k256_288_h2_16
+    w255_255_k1_16_h1_1
+    w255_255_k1_16_h2_2
+    w255_255_k1_16_h2_16
+    w255_255_k1_1_h1_1
+    w255_255_k1_1_h2_2
+    w255_255_k1_1_h2_16
+    w255_255_k15_15_h1_1
+    w255_255_k15_15_h2_2
+    w255_255_k15_15_h2_16
+    w255_255_k16_16_h1_1
+    w255_255_k16_16_h2_2
+    w255_255_k16_16_h2_16
+    w255_255_k16_32_h1_1
+    w255_255_k16_32_h2_2
+    w255_255_k16_32_h2_16
+    w255_255_k32_48_h1_1
+    w255_255_k32_48_h2_2
+    w255_255_k32_48_h2_16
+    w255_255_k48_64_h1_1
+    w255_255_k48_64_h2_2
+    w255_255_k48_64_h2_16
+    w255_255_k64_80_h1_1
+    w255_255_k64_80_h2_2
+    w255_255_k64_80_h2_16
+    w255_255_k80_96_h1_1
+    w255_255_k80_96_h2_2
+    w255_255_k80_96_h2_16
+    w255_255_k96_112_h1_1
+    w255_255_k96_112_h2_2
+    w255_255_k96_112_h2_16
+    w255_255_k112_128_h1_1
+    w255_255_k112_128_h2_2
+    w255_255_k112_128_h2_16
+    w255_255_k128_128_h1_1
+    w255_255_k128_128_h2_2
+    w255_255_k128_128_h2_16
+    w255_255_k128_256_h1_1
+    w255_255_k128_256_h2_2
+    w255_255_k128_256_h2_16
+    w255_255_k256_288_h1_1
+    w255_255_k256_288_h2_2
+    w255_255_k256_288_h2_16
+    w256_256_k1_16_h1_1
+    w256_256_k1_16_h2_2
+    w256_256_k1_16_h2_16
+    w256_256_k1_1_h1_1
+    w256_256_k1_1_h2_2
+    w256_256_k1_1_h2_16
+    w256_256_k15_15_h1_1
+    w256_256_k15_15_h2_2
+    w256_256_k15_15_h2_16
+    w256_256_k16_16_h1_1
+    w256_256_k16_16_h2_2
+    w256_256_k16_16_h2_16
+    w256_256_k16_32_h1_1
+    w256_256_k16_32_h2_2
+    w256_256_k16_32_h2_16
+    w256_256_k32_48_h1_1
+    w256_256_k32_48_h2_2
+    w256_256_k32_48_h2_16
+    w256_256_k48_64_h1_1
+    w256_256_k48_64_h2_2
+    w256_256_k48_64_h2_16
+    w256_256_k64_80_h1_1
+    w256_256_k64_80_h2_2
+    w256_256_k64_80_h2_16
+    w256_256_k80_96_h1_1
+    w256_256_k80_96_h2_2
+    w256_256_k80_96_h2_16
+    w256_256_k96_112_h1_1
+    w256_256_k96_112_h2_2
+    w256_256_k96_112_h2_16
+    w256_256_k112_128_h1_1
+    w256_256_k112_128_h2_2
+    w256_256_k112_128_h2_16
+    w256_256_k128_128_h1_1
+    w256_256_k128_128_h2_2
+    w256_256_k128_128_h2_16
+    w256_256_k128_256_h1_1
+    w256_256_k128_256_h2_2
+    w256_256_k128_256_h2_16
+    w256_256_k256_288_h1_1
+    w256_256_k256_288_h2_2
+    w256_256_k256_288_h2_16
+    w256_288_k1_16_h1_1
+    w256_288_k1_16_h2_2
+    w256_288_k1_16_h2_16
+    w256_288_k1_1_h1_1
+    w256_288_k1_1_h2_2
+    w256_288_k1_1_h2_16
+    w256_288_k15_15_h1_1
+    w256_288_k15_15_h2_2
+    w256_288_k15_15_h2_16
+    w256_288_k16_16_h1_1
+    w256_288_k16_16_h2_2
+    w256_288_k16_16_h2_16
+    w256_288_k16_32_h1_1
+    w256_288_k16_32_h2_2
+    w256_288_k16_32_h2_16
+    w256_288_k32_48_h1_1
+    w256_288_k32_48_h2_2
+    w256_288_k32_48_h2_16
+    w256_288_k48_64_h1_1
+    w256_288_k48_64_h2_2
+    w256_288_k48_64_h2_16
+    w256_288_k64_80_h1_1
+    w256_288_k64_80_h2_2
+    w256_288_k64_80_h2_16
+    w256_288_k80_96_h1_1
+    w256_288_k80_96_h2_2
+    w256_288_k80_96_h2_16
+    w256_288_k96_112_h1_1
+    w256_288_k96_112_h2_2
+    w256_288_k96_112_h2_16
+    w256_288_k112_128_h1_1
+    w256_288_k112_128_h2_2
+    w256_288_k112_128_h2_16
+    w256_288_k128_128_h1_1
+    w256_288_k128_128_h2_2
+    w256_288_k128_128_h2_16
+    w256_288_k128_256_h1_1
+    w256_288_k128_256_h2_2
+    w256_288_k128_256_h2_16
+    w256_288_k256_288_h1_1
+    w256_288_k256_288_h2_2
+    w256_288_k256_288_h2_16
+  )
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME PPE_1
+    FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
+  )
+
+  ADD_PPE_TESTS(${CONF} ppe_i8_max_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_max})
+  ADD_PPE_TESTS(${CONF} ppe_i16_max_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_max})
+  ADD_PPE_TESTS(${CONF} ppe_fp16_max_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_max})
+
+  ADD_PPE_TESTS(${CONF} ppe_i8_min_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_min})
+  ADD_PPE_TESTS(${CONF} ppe_i16_min_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_min})
+  ADD_PPE_TESTS(${CONF} ppe_fp16_min_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_min})
+
+  ADD_PPE_TESTS(${CONF} ppe_i8_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_avg})
+  ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_avg})
+  ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_avg})
+
+  #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w129_129_k32_48_h2_2_l  main_vpe_ppe      NotShowPerf LIN ${w129_129_k32_48_h2_2} )
+  #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w129_129_k32_48_h2_2_b  main_vpe_ppe_box  NotShowPerf BOX ${w129_129_k32_48_h2_2} )
+  #ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h1_1 ${w1_128_k1_16_h1_1})
+
+  ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
+  #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
+
+  ADD_PPE_EXPER_TEST(${CONF} PPE_2  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_3  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_4  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_5  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_6  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_7  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_8  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_9  NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_10 NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_11 NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_12 NotShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_13 ShowPerf)
+  ADD_PPE_EXPER_TEST(${CONF} PPE_14 NotShowPerf)
+
+
+endmacro()
+
+
+
+
+macro(na_testsuite_add_mpe_tests CONF)
+  _na_init_variables("MPE")
+  set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
+  set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
+
+  if(NOT DEFINED MPE_TEST_SHEETS_DIR)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/../../MPE)
+      set (MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../../MPE)
+    elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/MPE)
+      set (MPE_TEST_SHEETS_DIR ${EXPERIMENT_STAGE_2_DIR}/MPE)
+    elseif(EXISTS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
+      set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
+    else()
+      #FixMe: Where should the test dir be?
+      #message(FATAL_ERROR "MPE_TEST_SHEETS_DIR test binaries not found")
+      message(WARNING "MPE_TEST_SHEETS_DIR test binaries not found")
+      endif()
+  endif()
+  message ("MPE_TEST_SHEETS_DIR = ${MPE_TEST_SHEETS_DIR}")
+
+
+  ADD_MPE_DEMO_TEST(${CONF} MPE_1 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_2 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_3 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_4 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_5 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_6 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_10 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_11 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_14 No)
+  ADD_MPE_DEMO_TEST(${CONF} MPE_16 SHOW_PERF)
+
+  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_7 test) # mu int8 test
+  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_8 test) # mu int16 test
+  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_9 test) # mu fp16 test
+  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_12 test) # mu+acc int8 test
+  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_13 test) # mu+acc int16 test
+  ADD_MPE_COUPLED_TEST_LOOP(${CONF} MPE_15 test) # mu+acc fp16 test
+
+endmacro()
+
