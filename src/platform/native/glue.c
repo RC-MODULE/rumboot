@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <rumboot/platform.h>
 #include <rumboot/boot.h>
+#include <rumboot/timer.h>
 #include <rumboot/bootsrc/file.h>
 #include <getopt.h>
 #include <unistd.h>
@@ -22,6 +23,7 @@
 #include <unistd.h>
 #include <rumboot/bitswapper.h>
 #include <platform/devices.h>
+#include <time.h>
 
 int g_argc = 0;
 static int ipc_id;
@@ -53,10 +55,15 @@ void my_handler(int signum)
         }
 }
 
+
 /* Platform-specific glue */
+static uint64_t _boottime;
 uint32_t rumboot_platform_get_uptime()
 {
-        return 0;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        uint32_t  ret = (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000) - _boottime;
+        return ret;
 }
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
@@ -141,7 +148,7 @@ uintptr_t DUT_BASE;
 
 void rumboot_platform_setup()
 {
-
+        _boottime = rumboot_platform_get_uptime();
         signal(SIGUSR1, my_handler);
         signal(SIGUSR2, my_handler);
         FILE *fd = fopen("/proc/self/cmdline", "r");
@@ -307,7 +314,13 @@ int ngetc()
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
-        return(ngetc());
+        uint32_t start = rumboot_platform_get_uptime();
+        while (rumboot_platform_get_uptime() - start < timeout_us) {
+                int ret = ngetc();
+                if (ret >= 0)
+                        return ret;
+        }
+        return -1;
 }
 
 
