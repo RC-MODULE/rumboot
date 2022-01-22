@@ -3,11 +3,6 @@
 # - Директории PPE_EXPER_DIR & MPE_TEST_SHEETS_DIR. Из-за них не будет работать standalone сборка№
 
 
-macro(na_testsuite_init)
-  rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
-  rumboot_add_external_project(externals/py_mpe_test)
-endmacro()
-
 macro(_na_init_variables DUT)
   set(MISALIGN_COUNT 0)
   # Extract The First Letter Of The DUT (We Pass It As A Define Into c-code)
@@ -297,6 +292,14 @@ else()
   MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
 endif()
 endmacro()
+
+
+macro(na_testsuite_init DUT)
+  rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
+  rumboot_add_external_project(externals/py_mpe_test)
+  _na_init_variables(${DUT})
+endmacro()
+
 
 
 # Tests Without RM
@@ -852,8 +855,6 @@ endforeach()
 endmacro()
 
 macro(na_testsuite_add_npe_tests CONF)
-  _na_init_variables("NPE")
-
   set(NPE_BINS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/npe)
   set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/npe_mpe_stage2)
   set(MPE_PARSE_TEST_STAGE2 ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays_stage2.pl)
@@ -994,7 +995,6 @@ endmacro()
 
 
 macro(na_testsuite_add_vpe_tests CONF)
-  _na_init_variables("VPE")
   add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME VPE_1
@@ -1343,7 +1343,6 @@ macro(na_testsuite_add_vpe_tests CONF)
 endmacro()
 
 macro(na_testsuite_add_ppe_tests CONF)
-  _na_init_variables("PPE")
 
   if(NOT DEFINED NU_SEED)
     set(NU_SEED 1)

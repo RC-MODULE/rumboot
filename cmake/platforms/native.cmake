@@ -89,7 +89,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   
   if (XILINX_FPGA_PROTO)
-    na_testsuite_init()
+    na_testsuite_init("NPE")
     na_testsuite_add_npe_tests("NATIVE")
     #na_testsuite_add_vpe_tests("NATIVE")
   endif()

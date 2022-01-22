@@ -82,22 +82,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ################################################################
     include(${CMAKE_SOURCE_DIR}/cmake/na.cmake)
     if(DUT STREQUAL "NPE")
-      na_testsuite_init()
+      na_testsuite_init(${DUT})
       na_testsuite_add_npe_tests("ROM")
     endif()
 
     if(DUT STREQUAL "MPE")
-      na_testsuite_init()
+      na_testsuite_init(${DUT})
       na_testsuite_add_mpe_tests("ROM")
     endif()
 
     if(DUT STREQUAL "PPE")
-      na_testsuite_init()
+      na_testsuite_init(${DUT})
       na_testsuite_add_ppe_tests("ROM")
     endif()
 
     if(DUT STREQUAL "VPE")
-      na_testsuite_init()
+      na_testsuite_init(${DUT})
       na_testsuite_add_vpe_tests("ROM")
     endif()
 
