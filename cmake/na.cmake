@@ -993,13 +993,8 @@ macro(na_testsuite_add_npe_tests CONF)
   na_testsuite_add_ppe_tests(${CONF})
 endmacro()
 
-
-macro(na_testsuite_add_vpe_tests CONF)
-  add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME VPE_1
-      FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
-  )
+  # Тесты в окру*ении, где только VPE (они не идут на сборке)
+macro(na_testsuite_add_vpe_unit_tests CONF)
   ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_9_0_op0_relu_int32  main_vpe_9_0_op0_relu_int32  )
   ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32 ) 
   ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_9_1_op0_relu_fp32   main_vpe_9_1_op0_relu_fp32   )
@@ -1118,6 +1113,16 @@ macro(na_testsuite_add_vpe_tests CONF)
 
   # Test on VPE special cases
   ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
+
+
+endmacro()
+
+macro(na_testsuite_add_vpe_tests CONF)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME VPE_1
+      FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
+  )
 
   # Tests on VPE DMA
   ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )

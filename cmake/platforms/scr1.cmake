@@ -87,8 +87,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endif()
 
     if(DUT STREQUAL "MPE")
-      na_testsuite_init(${DUT})
-      na_testsuite_add_mpe_tests("ROM")
+      message(FATAL_ERROR "MPE DUT is not supported now")
+      #na_testsuite_init(${DUT})
+      #na_testsuite_add_mpe_tests("ROM")
     endif()
 
     if(DUT STREQUAL "PPE")
@@ -98,7 +99,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     if(DUT STREQUAL "VPE")
       na_testsuite_init(${DUT})
-      na_testsuite_add_vpe_tests("ROM")
+      na_testsuite_add_vpe_unit_tests("ROM")
     endif()
 
 endmacro()
