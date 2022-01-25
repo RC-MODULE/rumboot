@@ -679,6 +679,7 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  VRA    = %d \n",cfg->ma_config.VRA)  ;
     rumboot_printf("  NR     = %d \n",cfg->ma_config.NR)   ;
     rumboot_printf("  D_BIAS = %d \n",cfg->ma_config.D_BIAS);
+    rumboot_printf("  D_NULL = %d \n",cfg->ma_config.D_NULL);
     
   nu_mpe_print_ConfigDMAMPE(& (cfg->dma_d_config), "D");
   nu_mpe_print_ConfigDMAMPE(& (cfg->dma_w_config), "W");
@@ -1441,6 +1442,7 @@ void nu_mpe_load_ma_config_from_table_row(ConfigMAMPE* cfg, uint32_t** ptr_) {
   cfg->VRA=(uint16_t) *ptr;ptr++;
   cfg->NR=(uint8_t) *ptr;ptr++;
   cfg->D_BIAS=(uint8_t) *ptr;ptr++;
+  cfg->D_NULL=(uint32_t) *ptr;ptr++;
   
   *ptr_=ptr;
 }
@@ -1612,6 +1614,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->ma_config. VRA   = 0;
   cfg->ma_config. NR    = 0x7F;
   cfg->ma_config. D_BIAS= 1;
+  cfg->ma_config. D_NULL= 0xFF;
   */
   
   //////////////////////////////
@@ -1816,6 +1819,7 @@ void nu_mpe_ma_setup(uintptr_t base, ConfigMPE* cfg) {
   iowrite32(cfg->ma_config. VRA         ,base + MPE_COMMON_VRA);
   iowrite32(cfg->ma_config. NR          ,base + MPE_COMMON_NR);
   iowrite32(cfg->ma_config. D_BIAS      ,base + MPE_COMMON_D_BIAS);
+  iowrite32(cfg->ma_config. D_NULL      ,base + MPE_NULL);
   
   temp = cfg->dt == DataType_Fp16 ? 3 :
          cfg->dt == DataType_Int16? 2 :
@@ -1824,8 +1828,6 @@ void nu_mpe_ma_setup(uintptr_t base, ConfigMPE* cfg) {
   
   temp = (cfg->rnd_size << 0) | (cfg->sat_en << 8) | (cfg->rnd_mode << 16);
   iowrite32(temp, base + MPE_COMMON_NORM_PARAM);
-  // iowrite32(0xFF, base + MPE_NULL);
-  
 }
 
 

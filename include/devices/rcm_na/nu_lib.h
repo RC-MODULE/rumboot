@@ -182,6 +182,7 @@
     uint16_t VRA  ;
     uint8_t NR   ;
     uint8_t D_BIAS;
+    uint32_t D_NULL;
   }ConfigMAMPE;
   
   typedef struct ConfigRDDMAMPEBias {
