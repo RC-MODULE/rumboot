@@ -1001,10 +1001,10 @@ void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config) {
   iowrite32(dma_config->dma_frag_last_size  , base_ + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
   iowrite32(dma_config->dma_frag_size       , base_ + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
   iowrite32(dma_config->dma_xyz_drct        , base_ + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(dma_config->dma_box_st_size_x   , base_ + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
+  iowrite32(/*dma_config->dma_box_st_size_x*/ (128/(dma_config->dma_bsize+1))/**(dma_config->dma_bsize+1)*/ - 1    , base_ + NU_VPE_DMA_BOX_ST_SIZE_X       ) ; // IMPROVE IT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   iowrite32(dma_config->dma_box_st_size_y   , base_ + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
   iowrite32(dma_config->dma_box_st_size_z   , base_ + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(dma_config->dma_box_size_x      , base_ + NU_VPE_DMA_BOX_SIZE_X          ) ;
+  iowrite32(/*dma_config->dma_box_size_x*/    (128/(dma_config->dma_bsize+1))/**(dma_config->dma_bsize+1)*/ - 1    , base_ + NU_VPE_DMA_BOX_SIZE_X          ) ;   // IMPROVE IT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   iowrite32(dma_config->dma_box_size_y      , base_ + NU_VPE_DMA_BOX_SIZE_Y          ) ;
   iowrite32(dma_config->dma_box_size_z      , base_ + NU_VPE_DMA_BOX_SIZE_Z          ) ;
   iowrite32(dma_config->dma_box_offset_x    , base_ + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
@@ -1027,13 +1027,14 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
 
   iowrite32(cfg->wdma_config.dma_cube_size_c-1, base + NU_VPE + NU_VPE_CUBE_SIZE_C );                             // is it right to use wdma params here?
-  iowrite32(cfg->wdma_config.dma_cube_size_w * (cfg->wdma_config.dma_bsize+1) - 1, base + NU_VPE + NU_VPE_CUBE_SIZE_W );  // is it right to use wdma params here?
+  iowrite32(cfg->wdma_config.dma_cube_size_w-1, base + NU_VPE + NU_VPE_CUBE_SIZE_W );  // * (cfg->wdma_config.dma_bsize+1) - 1, base + NU_VPE + NU_VPE_CUBE_SIZE_W );  // is it right to use wdma params here?
   iowrite32(cfg->wdma_config.dma_cube_size_h-1, base + NU_VPE + NU_VPE_CUBE_SIZE_H );                             // is it right to use wdma params here?
   
   if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
   else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
   else                                                                                       tmp_type = DataType_Int8  ;
   tmp_data = (1<<30) | (1<<29) | (1<<28) |   // All Counters On
+             ((cfg->wdma_config.dma_bsize) << 20) |   // why wdma&&&& maybe rdma????  -1
              (cfg->out_data_type << 16) | 
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |
              ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |
@@ -1161,10 +1162,10 @@ void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, Cub
       dma_cfg->dma_border_x       = (metrics->W - 1) * dma_cfg->dma_stride_x                  ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
       dma_cfg->dma_border_y       = (metrics->H - 1) * dma_cfg->dma_stride_y                  ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
       
-      dma_cfg->dma_box_st_size_x  = 128    - 1 ;
+      dma_cfg->dma_box_st_size_x  = (128/(dma_cfg->dma_bsize+1))*(dma_cfg->dma_bsize+1) - 1 ;
       dma_cfg->dma_box_st_size_y  = 1      - 1 ;
       dma_cfg->dma_box_st_size_z  = 128/16 - 1 ;
-      dma_cfg->dma_box_size_x     = 128    - 1 ;
+      dma_cfg->dma_box_size_x     = (128/(dma_cfg->dma_bsize+1))*(dma_cfg->dma_bsize+1) - 1 ;
       dma_cfg->dma_box_size_y     = 1      - 1 ;
       dma_cfg->dma_box_size_z     = 128/16 - 1 ;
       dma_cfg->dma_box_offset_x   = 0 ;

@@ -113,7 +113,7 @@ int nu_vpe_update_batch_parameters(ConfigVPE* cfg, bool second_turn, bool last_t
   cfg->    wdma_config.dma_bsize++;
   
   if(last_turn) {
-    cfg->cube_size = (cfg->cube_size+1) * (cfg->wdma_config.dma_bsize+1) - 1;
+    cfg->cube_size = (cfg->cube_size+1) /** (cfg->wdma_config.dma_bsize+1)*/ - 1;  // IMPROVE IT!!!
   }
   
   return 0;
