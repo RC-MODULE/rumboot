@@ -266,10 +266,14 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
 
   void nu_vpe_print_RoundMode(RoundMode mode, char* name) {
     static char* RoundModeNames[]= {
-      "HalfAwayFromZero",
-      "Nearest",
       "Down",
-      "Up"
+      "TowardsZero",
+      "Up",
+      "AwayFromZero",
+      "HalfDown",
+      "HalfTowardsZero",
+      "Nearest", // Half Up
+      "HalfAwayFromZero"
     };
 
     rumboot_printf("  %s = %s \n", name, RoundModeNames[(int) mode] );
