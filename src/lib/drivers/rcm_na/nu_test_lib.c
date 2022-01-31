@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include <devices/rcm_na/nu_lib.h> 
+#include <devices/rcm_na/nu_test_lib.h> 
 
 int nu_get_heap_id() {
   return 1;  // CHECK // fix this by define when compile under other platform than scr1
@@ -22,6 +23,28 @@ int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg) {
   
   nu_vpe_load_config(cfg, cfg_bin);  // Move The VPE Settings From Binary To Struct
   rumboot_free((void*) cfg_bin);
+  return 0;
+}
+
+int nu_vpe_load_array_of_cfg(int heap_id, ConfigVPE* array_of_cfg, int num) {
+  uint32_t *cfg_bin;
+  uint32_t *cfg_bin_i;
+  ConfigVPE* cfg_i;
+  
+  cfg_i = array_of_cfg;
+  
+  cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_VPE_CFG_PARAMS_NUM*sizeof(uint32_t)*num,sizeof(uint32_t));
+  if(cfg_bin==NULL)
+    return 1;
+  rumboot_platform_request_file("cfg_file_tag", (uintptr_t)cfg_bin);
+  
+  cfg_bin_i = cfg_bin;
+  for(int i=0;i<num;i++) {
+    nu_vpe_load_config(cfg_i, cfg_bin_i);
+    cfg_i += 1;
+    cfg_bin_i += NU_VPE_CFG_PARAMS_NUM;
+  }
+  rumboot_free((void*)cfg_bin);
   return 0;
 }
 
@@ -152,6 +175,26 @@ VectorMetrics* nu_load_vec_metrics(int heap_id, char* file_tag) {
   
   rumboot_platform_request_file(file_tag,(uintptr_t)m);
   return m;
+}
+
+CubeMetrics* nu_load_array_of_cube_metrics(int heap_id, char* file_tag, int num) {
+  CubeMetrics* m;
+  m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics)*num,sizeof(int32_t));
+  if(m==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)m);
+  return m;
+}
+
+VectorMetrics* nu_load_array_of_vec_metrics(int heap_id, char* file_tag, int num) {
+  VectorMetrics* m;
+  m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(VectorMetrics)*num,sizeof(int32_t));
+  if(m==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t) m);
+  return 0;
 }
 
 MPECmdMetrics* nu_mpe_load_cmd_metrics(int heap_id) {
@@ -317,6 +360,73 @@ void* nu_mpe_malloc_res(int heap_id,CubeMetrics* metrics) {
   
   memset(res,0xA5,metrics->s);
   return res;
+}
+
+
+void* nu_malloc_array_of_cubes(int heap_id,CubeMetrics* array_of_metrics,int num,int* size) {
+  void* aoc;
+  
+  *size=0;
+  for(int i=0;i<num;i++) {
+    *size += array_of_metrics[i].s;
+  }
+  
+  aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,16/*Dont Know*/);
+  if(aoc==NULL)
+    return NULL;
+  
+  return aoc;
+}
+
+void* nu_malloc_array_of_vecs(int heap_id,VectorMetrics* array_of_metrics,int num,int* size) {
+  void* aov;
+  
+  *size=0;
+  for(int i=0;i<num;i++) {
+    *size += array_of_metrics[i].s;
+  }
+  
+  aov = rumboot_malloc_from_heap_aligned(heap_id,*size,16);
+  if(aov == NULL)
+    return NULL;
+  
+  return aov;
+}
+
+void* nu_malloc_array_of_res(int heap_id,CubeMetrics* array_of_metrics,int num) {
+  void* aor;
+  int size;
+  
+  aor=nu_malloc_array_of_cubes(heap_id,array_of_metrics,num,&size);
+  if(aor==NULL)
+    return NULL;
+  
+  memset(aor,0xA5,size);
+  return aor;
+}
+
+void* nu_load_array_of_cubes(int heap_id,char* file_tag,CubeMetrics* array_of_metrics,int num) {
+  void* aoc;
+  int size;
+
+  aoc = nu_malloc_array_of_cubes(heap_id,array_of_metrics,num,&size);
+  if(aoc==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)aoc);
+  return aoc;
+}
+
+void* nu_load_array_of_vecs(int heap_id,char* file_tag,VectorMetrics* array_of_metrics,int num) {
+  void* aov;
+  int size;
+  
+  aov = nu_malloc_array_of_vecs(heap_id,array_of_metrics,num,&size);
+  if(aov==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t) aov);
+  return aov;
 }
 
 void* nu_vpe_load_etalon(int heap_id,CubeMetrics* metrics) {
@@ -507,6 +617,203 @@ void* nu_vpe_load_op2_misaligned_by_tags(int heap_id, ConfigOp2* cfg, char* metr
   
   return NULL;
 }
+
+int nu_vpe_load_arrays_of_op_metrics(
+  int heap_id, 
+  OpArrayDescriptor* op0_array_desc,
+  OpArrayDescriptor* op1_array_desc,
+  OpArrayDescriptor* op2_array_desc,
+  ConfigVPE* array_of_cfg, 
+  int num
+) {
+  
+  op0_array_desc->num_cubes=0;
+  op0_array_desc->num_vecs=0;
+  op0_array_desc->num_luts=0;
+  op1_array_desc->num_cubes=0;
+  op1_array_desc->num_vecs=0;
+  op1_array_desc->num_luts=0;
+  op2_array_desc->num_cubes=0;
+  op2_array_desc->num_vecs=0;
+  op2_array_desc->num_luts=0;
+  
+    // For Each Configuration
+  for(int i=0;i<num;i++) {
+    
+      // Calculate The Size Of OP0 Metrics Arrays
+    if(array_of_cfg[i].op0_en==Enable_En) {
+      
+      if( (array_of_cfg[i].op0_config.alu_en==Enable_En && array_of_cfg[i].op0_config.alu_mode==Mode_Element) ||
+          (array_of_cfg[i].op0_config.mux_en==Enable_En && array_of_cfg[i].op0_config.mux_mode==Mode_Element) )  {
+            op0_array_desc->num_cubes++;
+      }
+      if( (array_of_cfg[i].op0_config.alu_en==Enable_En && array_of_cfg[i].op0_config.alu_mode==Mode_Channel) ||
+          (array_of_cfg[i].op0_config.mux_en==Enable_En && array_of_cfg[i].op0_config.mux_mode==Mode_Channel) )  {
+            op0_array_desc->num_vecs++;
+      }
+    }
+      
+      // Calculate The Size Of OP1 Metrics Arrays
+    if(array_of_cfg[i].op1_en==Enable_En) {
+      if( (array_of_cfg[i].op1_config.alu_en==Enable_En && array_of_cfg[i].op1_config.alu_mode==Mode_Element) ||
+          (array_of_cfg[i].op1_config.mux_en==Enable_En && array_of_cfg[i].op1_config.mux_mode==Mode_Element) )  {
+            op1_array_desc->num_cubes++;
+      }
+      if( (array_of_cfg[i].op1_config.alu_en==Enable_En && array_of_cfg[i].op1_config.alu_mode==Mode_Channel) ||
+          (array_of_cfg[i].op1_config.mux_en==Enable_En && array_of_cfg[i].op1_config.mux_mode==Mode_Channel) )  {
+            op1_array_desc->num_vecs++;
+      }
+    }
+      
+      // Calculate The Size Of OP2 Metrics Arrays
+    if(array_of_cfg[i].op2_en==Enable_En) {
+      if( (array_of_cfg[i].op2_config.alu_en==Enable_En && array_of_cfg[i].op2_config.alu_mode==Mode_Element) ||
+          (array_of_cfg[i].op2_config.mux_en==Enable_En && array_of_cfg[i].op2_config.mux_mode==Mode_Element) )  {
+            op2_array_desc->num_cubes++;
+      }
+      if( (array_of_cfg[i].op2_config.alu_en==Enable_En && array_of_cfg[i].op2_config.alu_mode==Mode_Channel) ||
+          (array_of_cfg[i].op2_config.mux_en==Enable_En && array_of_cfg[i].op2_config.mux_mode==Mode_Channel) )  {
+            op2_array_desc->num_vecs++;
+      }
+      
+      if( array_of_cfg[i].op2_config.lut_en==Enable_En ) {
+        op2_array_desc->num_luts++;
+      }
+    }
+    
+  }
+  
+    
+    // Allocate The OPx Metrics Arrays
+  if(op0_array_desc->num_cubes != 0) {
+    op0_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id, op0_array_desc->num_cubes * sizeof(CubeMetrics), sizeof(uint32_t));
+    if(op0_array_desc->array_of_cube_metrics==NULL) return -1;
+  }
+  if(op1_array_desc->num_cubes != 0) {
+    op1_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id, op1_array_desc->num_cubes * sizeof(CubeMetrics), sizeof(uint32_t));
+    if(op1_array_desc->array_of_cube_metrics==NULL) return -1;
+  }
+  if(op2_array_desc->num_cubes != 0) {
+    op2_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id, op2_array_desc->num_cubes * sizeof(CubeMetrics), sizeof(uint32_t));
+    if(op2_array_desc->array_of_cube_metrics==NULL) return -1;
+  }
+  
+  if(op0_array_desc->num_vecs != 0) {
+    op0_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id, op0_array_desc->num_vecs * sizeof(VectorMetrics), sizeof(uint32_t));
+    if(op0_array_desc->array_of_vec_metrics==NULL) return -1;
+  }
+  if(op1_array_desc->num_vecs != 0) {
+    op1_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id, op1_array_desc->num_vecs * sizeof(VectorMetrics), sizeof(uint32_t));
+    if(op1_array_desc->array_of_vec_metrics==NULL) return -1;
+  }
+  if(op2_array_desc->num_vecs != 0) {
+    op2_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id, op2_array_desc->num_vecs * sizeof(VectorMetrics), sizeof(uint32_t));
+    if(op2_array_desc->array_of_vec_metrics==NULL) return -1;
+  }
+  
+  if(op2_array_desc->num_luts != 0) {
+    op2_array_desc->array_of_lut1_metrics= rumboot_malloc_from_heap_aligned(heap_id, op2_array_desc->num_luts * sizeof(VectorMetrics), sizeof(uint32_t));
+    op2_array_desc->array_of_lut2_metrics= rumboot_malloc_from_heap_aligned(heap_id, op2_array_desc->num_luts * sizeof(VectorMetrics), sizeof(uint32_t));
+    if(op2_array_desc->array_of_lut1_metrics==NULL || 
+       op2_array_desc->array_of_lut2_metrics==NULL) return -1;
+  }
+  
+    // Read Files
+  if(op0_array_desc->num_cubes != 0) 
+    rumboot_platform_request_file("metrics_op0_cube_tag",(uintptr_t)op0_array_desc->array_of_cube_metrics);
+  if(op1_array_desc->num_cubes != 0) 
+    rumboot_platform_request_file("metrics_op1_cube_tag",(uintptr_t)op1_array_desc->array_of_cube_metrics);
+  if(op2_array_desc->num_cubes != 0) 
+    rumboot_platform_request_file("metrics_op2_cube_tag",(uintptr_t)op2_array_desc->array_of_cube_metrics);
+  
+  if(op0_array_desc->num_vecs != 0) 
+    rumboot_platform_request_file("metrics_op0_vec_tag",(uintptr_t)op0_array_desc->array_of_vec_metrics);
+  if(op1_array_desc->num_vecs != 0) 
+    rumboot_platform_request_file("metrics_op1_vec_tag",(uintptr_t)op1_array_desc->array_of_vec_metrics);
+  if(op2_array_desc->num_vecs != 0) 
+    rumboot_platform_request_file("metrics_op2_vec_tag",(uintptr_t)op2_array_desc->array_of_vec_metrics);
+  
+   if(op2_array_desc->num_luts != 0) {
+     rumboot_platform_request_file("metrics_lut1_file_tag",(uintptr_t)op2_array_desc->array_of_lut1_metrics);
+     rumboot_platform_request_file("metrics_lut2_file_tag",(uintptr_t)op2_array_desc->array_of_lut2_metrics);
+   }
+  
+  return 0;
+}
+
+int nu_vpe_load_array_of_op_cubes(int heap_id, OpArrayDescriptor* op_array_desc,char* file_tag)  {
+  CubeMetrics* cm;
+  int size;
+  
+  cm = op_array_desc->array_of_cube_metrics;
+  size=0;
+  for(int i=0;i<op_array_desc->num_cubes;i++) {
+    size += cm[i].s;
+  }
+  
+  if(size!=0) {
+    op_array_desc->array_of_cubes = rumboot_malloc_from_heap_aligned(heap_id,size,16);
+    if(op_array_desc->array_of_cubes == NULL)
+      return -1;
+    
+    rumboot_platform_request_file(file_tag,(uintptr_t) (op_array_desc->array_of_cubes));
+  }
+  
+  return 0;
+}
+
+int nu_vpe_load_array_of_op_vecs(int heap_id, OpArrayDescriptor* op_array_desc,char* file_tag){
+  VectorMetrics* vm;
+  int size;
+  
+  vm = op_array_desc->array_of_vec_metrics;
+  size=0;
+  for(int i=0;i<op_array_desc->num_vecs;i++) {
+    size += vm[i].s;
+  }
+  
+  if(size!=0) {
+    op_array_desc->array_of_vecs = rumboot_malloc_from_heap_aligned(heap_id,size,16);
+    if(op_array_desc->array_of_vecs == NULL)
+      return -1;
+    
+    rumboot_platform_request_file(file_tag,(uintptr_t) (op_array_desc->array_of_vecs) );
+  }
+  
+  return 0;
+}
+
+int nu_vpe_load_arrays_of_ops(int heap_id, OpArrayDescriptor* op0_array_desc,OpArrayDescriptor* op1_array_desc,OpArrayDescriptor* op2_array_desc){
+  
+  if(nu_vpe_load_array_of_op_cubes(heap_id,op0_array_desc,"op0_cube_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_cubes(heap_id,op1_array_desc,"op1_cube_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_cubes(heap_id,op2_array_desc,"op2_cube_file_tag") != 0) return -1;
+  
+  if(nu_vpe_load_array_of_op_vecs(heap_id,op0_array_desc,"op0_vec_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_vecs(heap_id,op1_array_desc,"op1_vec_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_vecs(heap_id,op2_array_desc,"op2_vec_file_tag") != 0) return -1;
+  
+  if(op2_array_desc->num_luts !=0 ) {
+    op2_array_desc->array_of_lut1=nu_load_array_of_vecs(heap_id,"lut1_file_tag",op2_array_desc->array_of_lut1_metrics,op2_array_desc->num_luts);
+    if(op2_array_desc->array_of_lut1==NULL) return -1;
+    op2_array_desc->array_of_lut2=nu_load_array_of_vecs(heap_id,"lut2_file_tag",op2_array_desc->array_of_lut2_metrics,op2_array_desc->num_luts);
+    if(op2_array_desc->array_of_lut2==NULL) return -1;
+  }
+  
+  return 0;
+}
+
+VPEStatusRegs* nu_vpe_load_array_of_status_regs(int heap_id,int num) {
+  VPEStatusRegs* r;
+  
+  r = rumboot_malloc_from_heap_aligned(heap_id,sizeof(VPEStatusRegs)*num,sizeof(uint32_t));
+  if(r==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file("status_regs_file_tag",(uintptr_t)r);
+  return r;
+}
+
 
 int nu_vpe_load_status_regs_by_tag(int heap_id, VPEStatusRegs* status_regs, char* status_regs_tag){
   uint32_t* r_bin;
@@ -766,4 +1073,195 @@ char* fn_base_it_nmb (char* dst, char* src, int it_nmb) {
   //rumboot_printf("%s\n", dst);
 
   return dst;
+}
+
+
+
+void nu_vpe_init_op_array_desc(OpArrayDescriptor* desc) {
+  desc-> array_of_cube_metrics=NULL;
+  desc-> array_of_vec_metrics=NULL;
+  desc-> array_of_lut1_metrics=NULL;
+  desc-> array_of_lut2_metrics=NULL;
+  desc-> array_of_cubes=NULL;
+  desc-> array_of_vecs=NULL;
+  desc-> array_of_lut1=NULL;
+  desc-> array_of_lut2=NULL;
+  desc-> num_cubes=0;
+  desc-> num_vecs=0;
+  desc-> num_luts=0;
+}
+
+void nu_vpe_init_test_desc(VPETestDescriptor* test_desc) {
+  test_desc-> array_of_cfg=NULL;
+  
+  test_desc-> array_of_in_metrics=NULL;
+  test_desc-> array_of_res_metrics=NULL;
+  
+  test_desc-> array_of_in_data=NULL;
+  test_desc-> array_of_etalon=NULL;
+  test_desc-> array_of_res_data=NULL;
+  
+  nu_vpe_init_op_array_desc(&(test_desc->op0_array_desc));
+  nu_vpe_init_op_array_desc(&(test_desc->op1_array_desc));
+  nu_vpe_init_op_array_desc(&(test_desc->op2_array_desc));
+
+  test_desc-> array_of_status_regs_etalon=NULL;
+  
+}
+
+void nu_vpe_init_iteration_desc(VPETestDescriptor* test_desc, VPEIterationDescriptor* iteration_desc) {
+  iteration_desc->cfg      = test_desc->array_of_cfg;
+  iteration_desc->in_data  = test_desc->array_of_in_data;
+  iteration_desc->etalon   = test_desc->array_of_etalon;
+  iteration_desc->res_data = test_desc->array_of_res_data;
+  
+  iteration_desc->op0_cube = test_desc->op0_array_desc.array_of_cubes;
+  iteration_desc->op1_cube = test_desc->op1_array_desc.array_of_cubes;
+  iteration_desc->op2_cube = test_desc->op2_array_desc.array_of_cubes;
+  iteration_desc->op0_vec  = test_desc->op0_array_desc.array_of_vecs;
+  iteration_desc->op1_vec  = test_desc->op1_array_desc.array_of_vecs;
+  iteration_desc->op2_vec  = test_desc->op2_array_desc.array_of_vecs;
+  iteration_desc->lut1     = test_desc->op2_array_desc.array_of_lut1;
+  iteration_desc->lut2     = test_desc->op2_array_desc.array_of_lut2;
+  iteration_desc->op0_cube_metrics = test_desc->op0_array_desc.array_of_cube_metrics;
+  iteration_desc->op0_vec_metrics  = test_desc->op0_array_desc.array_of_vec_metrics;
+  iteration_desc->op1_cube_metrics = test_desc->op1_array_desc.array_of_cube_metrics;
+  iteration_desc->op1_vec_metrics  = test_desc->op1_array_desc.array_of_vec_metrics;
+  iteration_desc->op2_cube_metrics = test_desc->op2_array_desc.array_of_cube_metrics;
+  iteration_desc->op2_vec_metrics  = test_desc->op2_array_desc.array_of_vec_metrics;
+  iteration_desc->lut1_metrics     = test_desc->op2_array_desc.array_of_lut1_metrics;
+  iteration_desc->lut2_metrics     = test_desc->op2_array_desc.array_of_lut2_metrics;
+  
+  iteration_desc->status_regs_etalon = test_desc->array_of_status_regs_etalon;
+  
+  iteration_desc->in_metrics         = test_desc->array_of_in_metrics;
+  iteration_desc->res_metrics        = test_desc->array_of_res_metrics;
+}
+void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc) {
+  
+    // Chooses opx From opx_vec And opx_cube
+  
+  if(iteration_desc->cfg->op0_en) 
+    if( (iteration_desc->cfg->op0_config.alu_en && iteration_desc->cfg->op0_config.alu_mode==Mode_Channel) ||
+        (iteration_desc->cfg->op0_config.mux_en && iteration_desc->cfg->op0_config.mux_mode==Mode_Channel) )
+      iteration_desc->op0 = iteration_desc->op0_vec;
+    else
+      iteration_desc->op0 = iteration_desc->op0_cube;
+  else
+    iteration_desc->op0=NULL;
+  
+  if(iteration_desc->cfg->op1_en) 
+    if( (iteration_desc->cfg->op1_config.alu_en && iteration_desc->cfg->op1_config.alu_mode==Mode_Channel) ||
+        (iteration_desc->cfg->op1_config.mux_en && iteration_desc->cfg->op1_config.mux_mode==Mode_Channel) )
+      iteration_desc->op1 = iteration_desc->op1_vec;
+    else
+      iteration_desc->op1 = iteration_desc->op1_cube;
+  else
+    iteration_desc->op1=NULL;
+  
+  if(iteration_desc->cfg->op2_en) 
+    if( (iteration_desc->cfg->op2_config.alu_en && iteration_desc->cfg->op2_config.alu_mode==Mode_Channel) ||
+        (iteration_desc->cfg->op2_config.mux_en && iteration_desc->cfg->op2_config.mux_mode==Mode_Channel) )
+      iteration_desc->op2 = iteration_desc->op2_vec;
+    else
+      iteration_desc->op2 = iteration_desc->op2_cube;
+  else
+    iteration_desc->op2=NULL;
+}
+
+void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
+  desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s );
+  desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s);
+  desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s);
+  if    (desc->cfg->op0_en==Enable_En) {
+    if( (desc->cfg->op0_config.alu_en==Enable_En   &&   desc->cfg->op0_config.alu_mode==Mode_Element) ||
+        (desc->cfg->op0_config.mux_en==Enable_En   &&   desc->cfg->op0_config.mux_mode==Mode_Element) ) {
+             desc->op0_cube = (void*) ( (char*)(desc->op0_cube) + 
+                                                desc->op0_cube_metrics->s );
+             desc->op0_cube_metrics += 1;
+    }
+    if( (desc->cfg->op0_config.alu_en==Enable_En   &&   desc->cfg->op0_config.alu_mode==Mode_Channel) ||
+        (desc->cfg->op0_config.mux_en==Enable_En   &&   desc->cfg->op0_config.mux_mode==Mode_Channel) ) {
+             desc->op0_vec  = (void*) ( (char*)(desc->op0_vec ) + 
+                                                desc->op0_vec_metrics->s  );
+             desc->op0_vec_metrics  += 1;
+    }
+  }
+  if    (desc->cfg->op1_en==Enable_En) {
+    if( (desc->cfg->op1_config.alu_en==Enable_En   &&   desc->cfg->op1_config.alu_mode==Mode_Element) ||
+        (desc->cfg->op1_config.mux_en==Enable_En   &&   desc->cfg->op1_config.mux_mode==Mode_Element) ) {
+             desc->op1_cube = (void*) ( (char*)(desc->op1_cube) + 
+                                                desc->op1_cube_metrics->s );
+             desc->op1_cube_metrics += 1;
+    }
+    if( (desc->cfg->op1_config.alu_en==Enable_En   &&   desc->cfg->op1_config.alu_mode==Mode_Channel) ||
+        (desc->cfg->op1_config.mux_en==Enable_En   &&   desc->cfg->op1_config.mux_mode==Mode_Channel) ) {
+             desc->op1_vec  = (void*) ( (char*)(desc->op1_vec ) + 
+                                                desc->op1_vec_metrics->s  );
+             desc->op1_vec_metrics  += 1;
+    }
+  }
+  if    (desc->cfg->op2_en==Enable_En) {
+    if( (desc->cfg->op2_config.alu_en==Enable_En   &&   desc->cfg->op2_config.alu_mode==Mode_Element) ||
+        (desc->cfg->op2_config.mux_en==Enable_En   &&   desc->cfg->op2_config.mux_mode==Mode_Element) ) {
+             desc->op2_cube = (void*) ( (char*)(desc->op2_cube) + 
+                                                desc->op2_cube_metrics->s );
+             desc->op2_cube_metrics += 1;
+    }
+    if( (desc->cfg->op2_config.alu_en==Enable_En   &&   desc->cfg->op2_config.alu_mode==Mode_Channel) ||
+        (desc->cfg->op2_config.mux_en==Enable_En   &&   desc->cfg->op2_config.mux_mode==Mode_Channel) ) {
+             desc->op2_vec  = (void*) ( (char*)(desc->op2_vec ) + 
+                                                desc->op2_vec_metrics->s  );
+             desc->op2_vec_metrics  += 1;
+    }
+    
+    if(desc->cfg->op2_config.lut_en==Enable_En) {
+      desc->lut1 = (void*) ( (char*)(desc->lut1) + desc->lut1_metrics->s );
+      desc->lut2 = (void*) ( (char*)(desc->lut2) + desc->lut2_metrics->s );
+      desc->lut1_metrics       += 1;
+      desc->lut2_metrics       += 1;
+    }
+  }
+  
+  desc->in_metrics         += 1;
+  desc->res_metrics        += 1;
+  desc->status_regs_etalon += 1;
+  
+  desc->cfg += 1;
+}
+
+
+int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations) {
+  test_desc->array_of_cfg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
+  if(test_desc->array_of_cfg==NULL)return -1;
+  if(nu_vpe_load_array_of_cfg(heap_id, test_desc->array_of_cfg, iterations) !=0) return -1;
+  
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+  
+  if(test_desc->array_of_in_metrics  ==NULL ||
+     test_desc->array_of_res_metrics ==NULL ) return -1;
+  
+  if(nu_vpe_load_arrays_of_op_metrics(
+    heap_id,
+    &(test_desc->op0_array_desc),
+    &(test_desc->op1_array_desc),
+    &(test_desc->op2_array_desc),
+    test_desc->array_of_cfg,
+    iterations) !=0) return -1;
+  
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,"in_file_tag",    test_desc->array_of_in_metrics, iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,"etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                  test_desc->array_of_res_metrics,iterations);
+  
+  if(test_desc->array_of_in_data ==NULL || 
+     test_desc->array_of_etalon  ==NULL || 
+     test_desc->array_of_res_data==NULL ) return -1;
+  
+  if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
+  
+  test_desc->array_of_status_regs_etalon = nu_vpe_load_array_of_status_regs(heap_id,iterations);
+  if(test_desc->array_of_status_regs_etalon==NULL)return -1;
+  
+  return 0;
 }

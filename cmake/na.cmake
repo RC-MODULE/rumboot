@@ -19,16 +19,16 @@ macro(_na_init_variables DUT)
   set(NA_TEST_etalon_file etalon.bin)
   set(NA_TEST_etalon_ameba_file etalon_ameba.bin)
   set(NA_TEST_etalon_with_unused_file etalon_with_unused.bin)
-  set(NA_TEST_op0_vec_file op0.bin)
-  set(NA_TEST_op0_cube_file op0.bin)
+  set(NA_TEST_op0_vec_file op0_vec.bin)
+  set(NA_TEST_op0_cube_file op0_cube.bin)
   set(NA_TEST_op0_ameba_file op0_ameba.bin)
   set(NA_TEST_op0_with_unused_file op0_with_unused.bin)
-  set(NA_TEST_op1_vec_file op1.bin)
-  set(NA_TEST_op1_cube_file op1.bin)
+  set(NA_TEST_op1_vec_file op1_vec.bin)
+  set(NA_TEST_op1_cube_file op1_cube.bin)
   set(NA_TEST_op1_ameba_file op1_ameba.bin)
   set(NA_TEST_op1_with_unused_file op1_with_unused.bin)
-  set(NA_TEST_op2_vec_file op2.bin)
-  set(NA_TEST_op2_cube_file op2.bin)
+  set(NA_TEST_op2_vec_file op2_vec.bin)
+  set(NA_TEST_op2_cube_file op2_cube.bin)
   set(NA_TEST_op2_ameba_file op2_ameba.bin)
   set(NA_TEST_op2_with_unused_file op2_with_unused.bin)
   set(NA_TEST_lut1_file lut1.bin)
@@ -212,6 +212,9 @@ macro(_na_init_variables DUT)
 
                      +${PLUSARG_status_regs_file_tag}=${NA_TEST_status_regs_file}
                      +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
+
+                     +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file}
+                     +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
   )
   set(NA_RM_PLUSARGS_LOOP 
     +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file}
@@ -282,6 +285,8 @@ macro(_na_init_variables DUT)
   else()
     set(RM_LOGFILE npe_rm.log)
   endif()
+
+  set(MERGE_BINS_4_LONG_SCRIPT ${CMAKE_SOURCE_DIR}/scripts/merge_npe_rm_files.sh)
 
 endmacro()
 
@@ -602,6 +607,19 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN CONF name rm_bin_name axi_len
   )
 endmacro()
 
+macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endmacro()
+
+
 macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA CONF name rm_bin_name)
 misalign_increment()
 set(MISALIGN 0 ${MISALIGN_COUNT})
@@ -639,8 +657,21 @@ add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+    CFLAGS -DDUT=${DUT_LETTER_QUOTED}
     PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
     IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+)
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_LOOP_LONG CONF name rm_bin_name)
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long.c
+    CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}  || exit 1
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
 )
 endmacro()
@@ -995,25 +1026,25 @@ endmacro()
 
   # Тесты в окру*ении, где только VPE (они не идут на сборке)
 macro(na_testsuite_add_vpe_unit_tests CONF)
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_9_0_op0_relu_int32  main_vpe_9_0_op0_relu_int32  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32 ) 
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_9_1_op0_relu_fp32   main_vpe_9_1_op0_relu_fp32   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_15_1_op1_relu_fp32  main_vpe_15_1_op1_relu_fp32  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_9_0_op0_relu_int32  main_vpe_9_0_op0_relu_int32  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32 ) 
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_9_1_op0_relu_fp32   main_vpe_9_1_op0_relu_fp32   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_15_1_op1_relu_fp32  main_vpe_15_1_op1_relu_fp32  )
 
   # Tests on VPE::DEMUX::C3 pipeline mode-flow
   foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_3_c3_IN_INT32_${out_macro}  main_vpe_3_c3_IN_INT32_${out_macro} )
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_3_c3_IN_INT32_${out_macro}  main_vpe_3_c3_IN_INT32_${out_macro} )
   endforeach()
   foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_3_c3_IN_FP32_${out_macro}   main_vpe_3_c3_IN_FP32_${out_macro}  )
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_3_c3_IN_FP32_${out_macro}   main_vpe_3_c3_IN_FP32_${out_macro}  )
   endforeach()
 
   # Test on VPE::DEMUX OVERFLOW COUNTERS TESTS PIPELINE MODE-FLOW
   foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_overflow_counters_IN_INT32_${out_macro}  main_overflow_counters_IN_INT32_${out_macro} )
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_overflow_counters_IN_INT32_${out_macro}  main_overflow_counters_IN_INT32_${out_macro} )
   endforeach()
   foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_overflow_counters_IN_FP32_${out_macro}   main_overflow_counters_IN_FP32_${out_macro}  )
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_overflow_counters_IN_FP32_${out_macro}   main_overflow_counters_IN_FP32_${out_macro}  )
   endforeach()
   # не получилос(((
   # add_rumboot_target(
@@ -1026,93 +1057,93 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
   # )
 
   # Tests on VPE::InputConverters
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_18_op2_c1  main_vpe_18_op2_c1 )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_16_op2_c2  main_vpe_16_op2_c2 )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_18_op2_c1  main_vpe_18_op2_c1 )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_16_op2_c2  main_vpe_16_op2_c2 )
 
   # Tests on VPE::NORM
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_8_0_op0_norm       main_vpe_8_0_op0_norm      )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_14_0_op1_norm      main_vpe_14_0_op1_norm     )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_8_0_op0_norm       main_vpe_8_0_op0_norm      )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_14_0_op1_norm      main_vpe_14_0_op1_norm     )
 
   foreach(round_macro IN ITEMS 
       DOWN     TOWARDSZERO     UP     AWAYFROMZERO     HALFDOWN     HALFTOWARDSZERO     NEAREST     HALFAWAYFROMZERO
     )
-      ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_8_0_op0_norm_ROUND_${round_macro}       main_vpe_8_0_op0_norm_ROUND_${round_macro}      )
-      ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_14_0_op1_norm_ROUND_${round_macro}      main_vpe_14_0_op1_norm_ROUND_${round_macro}     )
+      ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_8_0_op0_norm_ROUND_${round_macro}       main_vpe_8_0_op0_norm_ROUND_${round_macro}      )
+      ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_14_0_op1_norm_ROUND_${round_macro}      main_vpe_14_0_op1_norm_ROUND_${round_macro}     )
   endforeach() # round_macro
 
 
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_8_1_op0_norm_rnd   main_vpe_8_1_op0_norm_rnd  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_14_1_op1_norm_rnd  main_vpe_14_1_op1_norm_rnd )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_20_0_op2_norm      main_vpe_20_0_op2_norm     )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_20_1_op2_norm_rnd  main_vpe_20_1_op2_norm_rnd )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_8_1_op0_norm_rnd   main_vpe_8_1_op0_norm_rnd  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_14_1_op1_norm_rnd  main_vpe_14_1_op1_norm_rnd )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_20_0_op2_norm      main_vpe_20_0_op2_norm     )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_20_1_op2_norm_rnd  main_vpe_20_1_op2_norm_rnd )
 
   # Tests on VPE::LSHIFT
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_4_op0_lshift   main_vpe_4_op0_lshift  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_10_op1_lshift  main_vpe_10_op1_lshift )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_4_op0_lshift   main_vpe_4_op0_lshift  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_10_op1_lshift  main_vpe_10_op1_lshift )
 
   # Tests on VPE::Formater
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_6_0_op0_f_int   main_vpe_6_0_op0_f_int  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_12_0_op1_f_int  main_vpe_12_0_op1_f_int )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_6_1_op0_f_fp    main_vpe_6_1_op0_f_fp   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_12_1_op1_f_fp   main_vpe_12_1_op1_f_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_6_0_op0_f_int   main_vpe_6_0_op0_f_int  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_12_0_op1_f_int  main_vpe_12_0_op1_f_int )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_6_1_op0_f_fp    main_vpe_6_1_op0_f_fp   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_12_1_op1_f_fp   main_vpe_12_1_op1_f_fp  )
 
   # Tests on VPE::ALU
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_0_op0_alu_int8_low      main_vpe_5_0_op0_alu_int8_low      )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_1_op0_alu_int8_middle   main_vpe_5_1_op0_alu_int8_middle   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_2_op0_alu_int8_high     main_vpe_5_2_op0_alu_int8_high     )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_3_op0_alu_int16_low     main_vpe_5_3_op0_alu_int16_low     )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_4_op0_alu_int16_middle  main_vpe_5_4_op0_alu_int16_middle  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_5_op0_alu_int16_high    main_vpe_5_5_op0_alu_int16_high    )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_5_6_op0_alu_fp32          main_vpe_5_6_op0_alu_fp32          )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_0_op1_alu_int8_low     main_vpe_11_0_op1_alu_int8_low     )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_1_op1_alu_int8_middle  main_vpe_11_1_op1_alu_int8_middle  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_2_op1_alu_int8_high    main_vpe_11_2_op1_alu_int8_high    )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_3_op1_alu_int16_low    main_vpe_11_3_op1_alu_int16_low    )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_4_op1_alu_int16_middle main_vpe_11_4_op1_alu_int16_middle )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_5_op1_alu_int16_high   main_vpe_11_5_op1_alu_int16_high   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_11_6_op1_alu_fp32         main_vpe_11_6_op1_alu_fp32         )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_0_op2_alu_int8_low     main_vpe_17_0_op2_alu_int8_low     )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_1_op2_alu_int8_high    main_vpe_17_1_op2_alu_int8_high    )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_2_op2_alu_int16_low    main_vpe_17_2_op2_alu_int16_low    )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_3_op2_alu_int16_high   main_vpe_17_3_op2_alu_int16_high   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_17_4_op2_alu_fp32         main_vpe_17_4_op2_alu_fp32         )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_0_op0_alu_int8_low      main_vpe_5_0_op0_alu_int8_low      )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_1_op0_alu_int8_middle   main_vpe_5_1_op0_alu_int8_middle   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_2_op0_alu_int8_high     main_vpe_5_2_op0_alu_int8_high     )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_3_op0_alu_int16_low     main_vpe_5_3_op0_alu_int16_low     )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_4_op0_alu_int16_middle  main_vpe_5_4_op0_alu_int16_middle  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_5_op0_alu_int16_high    main_vpe_5_5_op0_alu_int16_high    )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_5_6_op0_alu_fp32          main_vpe_5_6_op0_alu_fp32          )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_0_op1_alu_int8_low     main_vpe_11_0_op1_alu_int8_low     )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_1_op1_alu_int8_middle  main_vpe_11_1_op1_alu_int8_middle  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_2_op1_alu_int8_high    main_vpe_11_2_op1_alu_int8_high    )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_3_op1_alu_int16_low    main_vpe_11_3_op1_alu_int16_low    )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_4_op1_alu_int16_middle main_vpe_11_4_op1_alu_int16_middle )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_5_op1_alu_int16_high   main_vpe_11_5_op1_alu_int16_high   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_11_6_op1_alu_fp32         main_vpe_11_6_op1_alu_fp32         )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_17_0_op2_alu_int8_low     main_vpe_17_0_op2_alu_int8_low     )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_17_1_op2_alu_int8_high    main_vpe_17_1_op2_alu_int8_high    )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_17_2_op2_alu_int16_low    main_vpe_17_2_op2_alu_int16_low    )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_17_3_op2_alu_int16_high   main_vpe_17_3_op2_alu_int16_high   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_17_4_op2_alu_fp32         main_vpe_17_4_op2_alu_fp32         )
 
   # Tests on VPE::MUL
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_7_0_op0_mul_int16   main_vpe_7_0_op0_mul_int16  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_7_1_op0_mul_int8    main_vpe_7_1_op0_mul_int8   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_7_2_op0_mul_fp32    main_vpe_7_2_op0_mul_fp32   )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_13_0_op1_mul_int16  main_vpe_13_0_op1_mul_int16 )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_13_1_op1_mul_int8   main_vpe_13_1_op1_mul_int8  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_13_2_op1_mul_fp32   main_vpe_13_2_op1_mul_fp32  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_19_0_op2_mul_int16  main_vpe_19_0_op2_mul_int16 )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_19_1_op2_mul_int8   main_vpe_19_1_op2_mul_int8  )
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_19_2_op2_mul_fp32   main_vpe_19_2_op2_mul_fp32  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_7_0_op0_mul_int16   main_vpe_7_0_op0_mul_int16  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_7_1_op0_mul_int8    main_vpe_7_1_op0_mul_int8   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_7_2_op0_mul_fp32    main_vpe_7_2_op0_mul_fp32   )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_13_0_op1_mul_int16  main_vpe_13_0_op1_mul_int16 )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_13_1_op1_mul_int8   main_vpe_13_1_op1_mul_int8  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_13_2_op1_mul_fp32   main_vpe_13_2_op1_mul_fp32  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_19_0_op2_mul_int16  main_vpe_19_0_op2_mul_int16 )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_19_1_op2_mul_int8   main_vpe_19_1_op2_mul_int8  )
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_19_2_op2_mul_fp32   main_vpe_19_2_op2_mul_fp32  )
 
   # Tests on VPE::OP2::LUT
   foreach(in_macro IN ITEMS IN_INT32 IN_FP32)
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_0_lut_${in_macro}              main_vpe_21_0_lut_${in_macro}              ) # VPE_21
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_1_lut_addition_${in_macro}     main_vpe_21_1_lut_addition_${in_macro}     ) # VPE_21_addition
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_2_lut_out_of_range_${in_macro} main_vpe_21_2_lut_out_of_range_${in_macro} ) # VPE_21_out_of_range
-    ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_3_lut_offset_${in_macro}       main_vpe_21_3_lut_offset_${in_macro}       ) # VPE_21_offset
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_21_0_lut_${in_macro}              main_vpe_21_0_lut_${in_macro}              ) # VPE_21
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_21_1_lut_addition_${in_macro}     main_vpe_21_1_lut_addition_${in_macro}     ) # VPE_21_addition
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_21_2_lut_out_of_range_${in_macro} main_vpe_21_2_lut_out_of_range_${in_macro} ) # VPE_21_out_of_range
+    ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_21_3_lut_offset_${in_macro}       main_vpe_21_3_lut_offset_${in_macro}       ) # VPE_21_offset
     foreach(mirror_type IN ITEMS 0 1)
-      ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} ) # VPE_21_offset. mirror mode
+      ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} ) # VPE_21_offset. mirror mode
     endforeach()
   endforeach()
 
   # Test on VPE block's together work 
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_22_op0_together   main_vpe_22_op0_together   ) # VPE_22
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_23_op1_together   main_vpe_23_op1_together   ) # VPE_23
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_24_op2_together   main_vpe_24_op2_together   ) # VPE_24
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_25_op012_together main_vpe_25_op012_together ) # VPE_25
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_22_op0_together   main_vpe_22_op0_together   ) # VPE_22
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_23_op1_together   main_vpe_23_op1_together   ) # VPE_23
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_24_op2_together   main_vpe_24_op2_together   ) # VPE_24
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_25_op012_together main_vpe_25_op012_together ) # VPE_25
 
   # Test on VPE ???
   ADD_VPE_COUPLED_TEST_CONTROL_CONS(${CONF} vpe_27_0_control_cons main_vpe_27_0_control_cons   ) # VPE_27
   ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL(${CONF} vpe_27_1_control_par main_vpe_27_1_control_par ) # VPE_27
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_26_autonom_nowdma main_vpe_26_autonom)
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_28_perf main_28_perf) # VPE_28
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_26_autonom_nowdma main_vpe_26_autonom)
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_28_perf main_28_perf) # VPE_28
 
   # Test on VPE special cases
-  ADD_VPE_COUPLED_TEST_LOOP(${CONF} vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
+  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
 
   # Tests on VPE batch-mode for int-type
   foreach(in IN ITEMS IN_INT8 IN_INT16)
@@ -1186,47 +1217,47 @@ macro(na_testsuite_add_vpe_tests CONF)
   ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
 
   # Tests on VPE::Formater
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
 
   # Tests on VPE::LSHIFT
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
 
   # Tests on VPE::InputConverters
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
 
   # Tests on VPE::DEMUX::C3 TESTS MEM MODE
   foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
     foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
     endforeach()
   endforeach()
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
 
   # Tests on VPE::RELU
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
 
   # Tests on VPE::NORM
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
 
   # Tests on VPE channel mode
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
 
   ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int )
   ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int )
@@ -1234,55 +1265,55 @@ macro(na_testsuite_add_vpe_tests CONF)
   ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_fp  main_vpe_op1_vec_ex_fp  )
 
   # Tests on VPE dma
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_2_dma_int8_dma  main_vpe_2_dma_int8  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_2_dma_int8_dma  main_vpe_2_dma_int8  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
 
     # Tests on VPE::ALU
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
 
     # Tests on VPE::MUL
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
 
   # Tests on VPE channel mode
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
 
   #Tests on VPE::OP2::LUT in context NPE
   foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
     foreach(mirror_type IN ITEMS 0 1)
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
     endforeach()
   endforeach()
 
@@ -1293,75 +1324,15 @@ macro(na_testsuite_add_vpe_tests CONF)
   ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
 
   # Test on VPE block's together work 
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
+  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
     
   # Test on VPE ???
   ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
   ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
 
-  ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(${CONF} VPE_2_0 VPE_2/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(${CONF} VPE_2_1 VPE_2/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_9_0 VPE_9/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_15_0 VPE_15/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_9_1 VPE_9/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_15_1 VPE_15/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_3 VPE_3)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_18 VPE_18)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_16 VPE_16)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_8_0 VPE_8/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_14_0 VPE_14/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_8_1 VPE_8/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_14_1 VPE_14/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_20_0 VPE_20/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_20_1 VPE_20/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_4 VPE_4)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_10 VPE_10)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_6_0 VPE_6/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_12_0 VPE_12/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_6_1 VPE_6/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_12_1 VPE_12/1)
- 
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_0 VPE_5/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_1 VPE_5/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_2 VPE_5/2)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_3 VPE_5/3)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_4 VPE_5/4)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_5 VPE_5/5)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_5_6 VPE_5/6)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_0 VPE_11/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_1 VPE_11/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_2 VPE_11/2)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_3 VPE_11/3)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_4 VPE_11/4)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_5 VPE_11/5)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_11_6 VPE_11/6)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_0 VPE_17/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_1 VPE_17/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_2 VPE_17/2)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_3 VPE_17/3)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_17_4 VPE_17/4)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_7_0 VPE_7/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_7_1 VPE_7/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_7_2 VPE_7/2)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_13_0 VPE_13/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_13_1 VPE_13/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_13_2 VPE_13/2)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_19_0 VPE_19/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_19_1 VPE_19/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_19_2 VPE_19/2)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_21_0 VPE_21/0)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_21_1 VPE_21/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_22 VPE_22)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_23 VPE_23)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_24 VPE_24)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_25 VPE_25)
-  ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS(${CONF} VPE_27_0 VPE_27/0)
-  ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL(${CONF} VPE_27_1 VPE_27/1)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_26 VPE_26)
-  ADD_VPE_FROM_BINARY_TEST_LOOP(${CONF} VPE_28 VPE_28)
 endmacro()
 
 macro(na_testsuite_add_ppe_tests CONF)
