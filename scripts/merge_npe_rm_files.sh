@@ -183,6 +183,10 @@ fi
 
 find . -maxdepth 1 -type f -name ${NA_TEST_in_file}.\* | sort -V | xargs cat > merged.${NA_TEST_in_file} && rm ${NA_TEST_in_file}.*
 
+if compgen -G "${NA_TEST_in_ameba_file}.*" > /dev/null ; then
+find . -maxdepth 1 -type f -name ${NA_TEST_in_ameba_file}.\* | sort -V | xargs cat > merged.${NA_TEST_in_ameba_file} && rm ${NA_TEST_in_ameba_file}.*
+fi
+
 if compgen -G "${NA_TEST_warr_file}.*" > /dev/null ; then
 find . -maxdepth 1 -type f -name ${NA_TEST_warr_file}.\* | sort -V | xargs cat > merged.${NA_TEST_warr_file} && rm ${NA_TEST_warr_file}.*
 fi

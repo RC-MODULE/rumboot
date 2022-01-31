@@ -16,6 +16,7 @@ void* nu_mpe_load_cfg_lut(int heap_id);
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg);
 int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag);
 int nu_ppe_load_cfg_reg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg_file_tag);
+int nu_ppe_load_array_of_cfg(int heap_id, ConfigPPE* array_of_cfg, int num) ;
 
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag);
 WarrMetrics* nu_load_warr_metrics(int heap_id, char* file_tag);
@@ -151,7 +152,43 @@ typedef struct VPEIterationDescriptor {
 
 void nu_vpe_init_iteration_desc(VPETestDescriptor* test_desc, VPEIterationDescriptor* iteration_desc);
 void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc);
-void nu_vpe_iterate_desc(VPEIterationDescriptor* iteration_desc);
+void nu_vpe_iterate_desc(VPEIterationDescriptor* desc);
 int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations);
+
+///
+typedef struct PPETestDescriptor {
+  ConfigPPE*     array_of_cfg;
+  //~ ConfigREGPPE*  array_of_cfg_reg;
+  
+  CubeMetrics* array_of_in_metrics;
+  CubeMetrics* array_of_res_metrics;
+  
+  void *array_of_in_data;
+  void *array_of_etalon;
+  void *array_of_res_data;
+  
+  char* in_file_tag; // Crutch For Tests That Need To Overwrite This Parameter
+  
+} PPETestDescriptor;
+  
+void nu_ppe_init_test_desc(PPETestDescriptor* test_desc);
+
+
+typedef struct PPEIterationDescriptor {
+  ConfigPPE*     cfg;
+  ConfigREGPPE   cfg_reg;  // Not A Pointer!
+  
+  CubeMetrics*  in_metrics  ;
+  CubeMetrics*  res_metrics ;
+
+  void* in_data ;
+  void* etalon  ;
+  void* res_data;
+} PPEIterationDescriptor;
+
+void nu_ppe_init_iteration_desc(PPETestDescriptor* test_desc, PPEIterationDescriptor* iteration_desc);
+void nu_ppe_iterate_desc(PPEIterationDescriptor* desc);
+
+int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations);
 
 #endif

@@ -147,6 +147,28 @@ int nu_ppe_load_cfg_reg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg
   return res;
 }
 
+int nu_ppe_load_array_of_cfg(int heap_id, ConfigPPE* array_of_cfg, int num) {
+  uint32_t *cfg_bin;
+  uint32_t *cfg_bin_i;
+  ConfigPPE* cfg_i;
+  
+  cfg_i = array_of_cfg;
+  
+  cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_PPE_CFG_PARAMS_NUM*sizeof(uint32_t)*num,sizeof(uint32_t));
+  if(cfg_bin==NULL)
+    return 1;
+  rumboot_platform_request_file("cfg_ppe_file_tag", (uintptr_t)cfg_bin);
+  
+  cfg_bin_i = cfg_bin;
+  for(int i=0;i<num;i++) {
+    nu_ppe_load_config(cfg_i, cfg_bin_i);
+    cfg_i += 1;
+    cfg_bin_i += NU_PPE_CFG_PARAMS_NUM;
+  }
+  rumboot_free((void*)cfg_bin);
+  return 0;
+}
+
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag) {
   CubeMetrics* m;
   m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
@@ -1262,6 +1284,70 @@ int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations
   
   test_desc->array_of_status_regs_etalon = nu_vpe_load_array_of_status_regs(heap_id,iterations);
   if(test_desc->array_of_status_regs_etalon==NULL)return -1;
+  
+  return 0;
+}
+
+
+void nu_ppe_init_test_desc(PPETestDescriptor* test_desc) {
+  test_desc-> array_of_cfg=NULL;
+  
+  //~ test_desc-> array_of_cfg_reg=NULL;
+  
+  test_desc-> array_of_in_metrics=NULL;
+  test_desc-> array_of_res_metrics=NULL;
+  
+  test_desc-> array_of_in_data=NULL;
+  test_desc-> array_of_etalon=NULL;
+  test_desc-> array_of_res_data=NULL;
+  
+  test_desc-> in_file_tag="in_file_tag"; 
+}
+
+
+void nu_ppe_init_iteration_desc(PPETestDescriptor* test_desc, PPEIterationDescriptor* iteration_desc) {
+  iteration_desc->  cfg     = test_desc->array_of_cfg;
+  //~ iteration_desc->  cfg_reg = test_desc->array_of_cfg_reg;
+  
+  iteration_desc->  in_metrics  = test_desc->array_of_in_metrics;
+  iteration_desc->  res_metrics = test_desc->array_of_res_metrics;
+
+  iteration_desc-> in_data = test_desc->array_of_in_data;
+  iteration_desc-> etalon  = test_desc->array_of_etalon;
+  iteration_desc-> res_data= test_desc->array_of_res_data;
+  
+}
+
+void nu_ppe_iterate_desc(PPEIterationDescriptor* desc) {
+  desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s );
+  desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s);
+  desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s);
+  
+  desc->in_metrics         += 1;
+  desc->res_metrics        += 1;
+  
+  desc->cfg += 1;
+}
+
+int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations){
+  test_desc->array_of_cfg     = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)   *iterations,sizeof(uint32_t));
+  //~ test_desc->array_of_cfg_reg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
+  if(test_desc->array_of_cfg==NULL /*|| test_desc->array_of_cfg_reg==NULL*/)return -1;
+  if(nu_ppe_load_array_of_cfg(heap_id, test_desc->array_of_cfg, iterations) !=0) return -1;
+  
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+  
+  if(test_desc->array_of_in_metrics  ==NULL ||
+     test_desc->array_of_res_metrics ==NULL ) return -1;
+  
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,test_desc->in_file_tag,test_desc->array_of_in_metrics ,iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
+  
+  if(test_desc->array_of_in_data ==NULL || 
+     test_desc->array_of_etalon  ==NULL || 
+     test_desc->array_of_res_data==NULL ) return -1;
   
   return 0;
 }
