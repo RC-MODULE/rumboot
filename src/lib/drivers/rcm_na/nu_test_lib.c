@@ -100,6 +100,28 @@ void* nu_mpe_load_cfg_lut(int heap_id) { // :-( Returns A Pointer - Bahaves Not 
   return lut;
 }
 
+int nu_mpe_load_array_of_cfg(int heap_id, ConfigMPE* array_of_cfg, int num) {
+  uint32_t *cfg_bin;
+  uint32_t *cfg_bin_i;
+  ConfigMPE* cfg_i;
+  
+  cfg_i = array_of_cfg;
+  
+  cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_MPE_CFG_PARAMS_NUM*sizeof(uint32_t)*num,sizeof(uint32_t));
+  if(cfg_bin==NULL)
+    return 1;
+  rumboot_platform_request_file("cfg_mpe_file_tag", (uintptr_t)cfg_bin);
+  
+  cfg_bin_i = cfg_bin;
+  for(int i=0;i<num;i++) {
+    nu_mpe_load_config(cfg_i, cfg_bin_i);
+    cfg_i += 1;
+    cfg_bin_i += NU_MPE_CFG_PARAMS_NUM;
+  }
+  rumboot_free((void*)cfg_bin);
+  return 0;
+}
+
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg) {
   uint32_t* cfg_bin;
   
@@ -216,7 +238,17 @@ VectorMetrics* nu_load_array_of_vec_metrics(int heap_id, char* file_tag, int num
     return NULL;
   
   rumboot_platform_request_file(file_tag,(uintptr_t) m);
-  return 0;
+  return m;
+}
+
+WarrMetrics* nu_load_array_of_warr_metrics(int heap_id, char* file_tag, int num) {
+  WarrMetrics* m;
+  m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(WarrMetrics)*num,sizeof(int32_t));
+  if(m==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)m);
+  return m;
 }
 
 MPECmdMetrics* nu_mpe_load_cmd_metrics(int heap_id) {
@@ -415,6 +447,21 @@ void* nu_malloc_array_of_vecs(int heap_id,VectorMetrics* array_of_metrics,int nu
   return aov;
 }
 
+void* nu_malloc_array_of_warr(int heap_id,WarrMetrics* array_of_metrics,int num,int* size) {
+  void* aow;
+  
+  *size=0;
+  for(int i=0;i<num;i++) {
+    *size += array_of_metrics[i].s;
+  }
+  
+  aow = rumboot_malloc_from_heap_aligned(heap_id,*size,16);
+  if(aow==NULL)
+    return NULL;
+  
+  return aow;
+}
+
 void* nu_malloc_array_of_res(int heap_id,CubeMetrics* array_of_metrics,int num) {
   void* aor;
   int size;
@@ -449,6 +496,18 @@ void* nu_load_array_of_vecs(int heap_id,char* file_tag,VectorMetrics* array_of_m
   
   rumboot_platform_request_file(file_tag,(uintptr_t) aov);
   return aov;
+}
+
+void* nu_load_array_of_warr(int heap_id,char* file_tag,WarrMetrics* array_of_metrics,int num) {
+  void* aow;
+  int size;
+  
+  aow = nu_malloc_array_of_warr(heap_id,array_of_metrics,num,&size);
+  if(aow==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t) aow);
+  return aow;
 }
 
 void* nu_vpe_load_etalon(int heap_id,CubeMetrics* metrics) {
@@ -1350,4 +1409,222 @@ int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations
      test_desc->array_of_res_data==NULL ) return -1;
   
   return 0;
+}
+
+
+void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
+  test_desc-> PPE_ENABLED=Enable_En;
+  
+  test_desc-> array_of_cfg_mpe=NULL;
+  test_desc-> array_of_cfg_vpe=NULL;
+  test_desc-> array_of_cfg_ppe=NULL;
+  
+  test_desc-> array_of_warr_metrics=NULL;
+  test_desc-> array_of_in_metrics=NULL;
+  test_desc-> array_of_res_metrics=NULL;
+  
+  test_desc-> array_of_in_data=NULL;
+  test_desc-> array_of_warr=NULL;
+  test_desc-> array_of_etalon=NULL;
+  test_desc-> array_of_res_data=NULL;
+  
+  nu_vpe_init_op_array_desc(&(test_desc->op0_array_desc));
+  nu_vpe_init_op_array_desc(&(test_desc->op1_array_desc));
+  nu_vpe_init_op_array_desc(&(test_desc->op2_array_desc));
+  
+  test_desc->mpe_cfg_lut=NULL;
+
+  //~ test_desc-> array_of_status_regs_etalon=NULL;
+  
+}
+
+
+void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc) {
+  iteration_desc->PPE_ENABLED=test_desc->PPE_ENABLED;
+  
+  iteration_desc->cfg_mpe  = test_desc->array_of_cfg_mpe;
+  iteration_desc->cfg_vpe  = test_desc->array_of_cfg_vpe;
+  iteration_desc->cfg_ppe  = test_desc->array_of_cfg_ppe;
+  
+  iteration_desc->warr     = test_desc->array_of_warr;
+  iteration_desc->in_data  = test_desc->array_of_in_data;
+  iteration_desc->etalon   = test_desc->array_of_etalon;
+  iteration_desc->res_data = test_desc->array_of_res_data;
+  
+  iteration_desc->op0_cube = test_desc->op0_array_desc.array_of_cubes;
+  iteration_desc->op1_cube = test_desc->op1_array_desc.array_of_cubes;
+  iteration_desc->op2_cube = test_desc->op2_array_desc.array_of_cubes;
+  iteration_desc->op0_vec  = test_desc->op0_array_desc.array_of_vecs;
+  iteration_desc->op1_vec  = test_desc->op1_array_desc.array_of_vecs;
+  iteration_desc->op2_vec  = test_desc->op2_array_desc.array_of_vecs;
+  iteration_desc->lut1     = test_desc->op2_array_desc.array_of_lut1;
+  iteration_desc->lut2     = test_desc->op2_array_desc.array_of_lut2;
+  iteration_desc->op0_cube_metrics = test_desc->op0_array_desc.array_of_cube_metrics;
+  iteration_desc->op0_vec_metrics  = test_desc->op0_array_desc.array_of_vec_metrics;
+  iteration_desc->op1_cube_metrics = test_desc->op1_array_desc.array_of_cube_metrics;
+  iteration_desc->op1_vec_metrics  = test_desc->op1_array_desc.array_of_vec_metrics;
+  iteration_desc->op2_cube_metrics = test_desc->op2_array_desc.array_of_cube_metrics;
+  iteration_desc->op2_vec_metrics  = test_desc->op2_array_desc.array_of_vec_metrics;
+  iteration_desc->lut1_metrics     = test_desc->op2_array_desc.array_of_lut1_metrics;
+  iteration_desc->lut2_metrics     = test_desc->op2_array_desc.array_of_lut2_metrics;
+  
+  //~ iteration_desc->status_regs_etalon = test_desc->array_of_status_regs_etalon;
+  
+  iteration_desc->warr_metrics       = test_desc->array_of_warr_metrics;
+  iteration_desc->in_metrics         = test_desc->array_of_in_metrics;
+  iteration_desc->res_metrics        = test_desc->array_of_res_metrics;
+  
+}
+
+void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty Copypaste
+  
+    // Chooses opx From opx_vec And opx_cube
+  
+  if(iteration_desc->cfg_vpe->op0_en) 
+    if( (iteration_desc->cfg_vpe->op0_config.alu_en && iteration_desc->cfg_vpe->op0_config.alu_mode==Mode_Channel) ||
+        (iteration_desc->cfg_vpe->op0_config.mux_en && iteration_desc->cfg_vpe->op0_config.mux_mode==Mode_Channel) )
+      iteration_desc->op0 = iteration_desc->op0_vec;
+    else
+      iteration_desc->op0 = iteration_desc->op0_cube;
+  else
+    iteration_desc->op0=NULL;
+  
+  if(iteration_desc->cfg_vpe->op1_en) 
+    if( (iteration_desc->cfg_vpe->op1_config.alu_en && iteration_desc->cfg_vpe->op1_config.alu_mode==Mode_Channel) ||
+        (iteration_desc->cfg_vpe->op1_config.mux_en && iteration_desc->cfg_vpe->op1_config.mux_mode==Mode_Channel) )
+      iteration_desc->op1 = iteration_desc->op1_vec;
+    else
+      iteration_desc->op1 = iteration_desc->op1_cube;
+  else
+    iteration_desc->op1=NULL;
+  
+  if(iteration_desc->cfg_vpe->op2_en) 
+    if( (iteration_desc->cfg_vpe->op2_config.alu_en && iteration_desc->cfg_vpe->op2_config.alu_mode==Mode_Channel) ||
+        (iteration_desc->cfg_vpe->op2_config.mux_en && iteration_desc->cfg_vpe->op2_config.mux_mode==Mode_Channel) )
+      iteration_desc->op2 = iteration_desc->op2_vec;
+    else
+      iteration_desc->op2 = iteration_desc->op2_cube;
+  else
+    iteration_desc->op2=NULL;
+}
+
+void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
+  desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s );
+  desc->warr    = (void*) ( (char*)(desc->warr)    + desc->warr_metrics->s);
+  desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s);
+  desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s);
+  if    (desc->cfg_vpe->op0_en==Enable_En) {
+    if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Element) ||
+        (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Element) ) {
+             desc->op0_cube = (void*) ( (char*)(desc->op0_cube) + 
+                                                desc->op0_cube_metrics->s );
+             desc->op0_cube_metrics += 1;
+    }
+    if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Channel) ||
+        (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Channel) ) {
+             desc->op0_vec  = (void*) ( (char*)(desc->op0_vec ) + 
+                                                desc->op0_vec_metrics->s  );
+             desc->op0_vec_metrics  += 1;
+    }
+  }
+  if    (desc->cfg_vpe->op1_en==Enable_En) {
+    if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Element) ||
+        (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Element) ) {
+             desc->op1_cube = (void*) ( (char*)(desc->op1_cube) + 
+                                                desc->op1_cube_metrics->s );
+             desc->op1_cube_metrics += 1;
+    }
+    if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Channel) ||
+        (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Channel) ) {
+             desc->op1_vec  = (void*) ( (char*)(desc->op1_vec ) + 
+                                                desc->op1_vec_metrics->s  );
+             desc->op1_vec_metrics  += 1;
+    }
+  }
+  if    (desc->cfg_vpe->op2_en==Enable_En) {
+    if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Element) ||
+        (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Element) ) {
+             desc->op2_cube = (void*) ( (char*)(desc->op2_cube) + 
+                                                desc->op2_cube_metrics->s );
+             desc->op2_cube_metrics += 1;
+    }
+    if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Channel) ||
+        (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Channel) ) {
+             desc->op2_vec  = (void*) ( (char*)(desc->op2_vec ) + 
+                                                desc->op2_vec_metrics->s  );
+             desc->op2_vec_metrics  += 1;
+    }
+    
+    if(desc->cfg_vpe->op2_config.lut_en==Enable_En) {
+      desc->lut1 = (void*) ( (char*)(desc->lut1) + desc->lut1_metrics->s );
+      desc->lut2 = (void*) ( (char*)(desc->lut2) + desc->lut2_metrics->s );
+      desc->lut1_metrics       += 1;
+      desc->lut2_metrics       += 1;
+    }
+  }
+  
+  desc->warr_metrics       += 1;
+  desc->in_metrics         += 1;
+  desc->res_metrics        += 1;
+  //~ desc->status_regs_etalon += 1;
+  
+  desc->cfg_mpe += 1;
+  desc->cfg_vpe += 1;
+  desc->cfg_ppe += 1;
+}
+
+
+
+int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
+  test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,NU_MPE_CFG_PARAMS_NUM*sizeof(ConfigMPE)*iterations,sizeof(uint32_t));
+  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,NU_VPE_CFG_PARAMS_NUM*sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
+  if(test_desc->PPE_ENABLED==Enable_En)
+    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,NU_PPE_CFG_PARAMS_NUM*sizeof(ConfigPPE)*iterations,sizeof(uint32_t));
+  
+  if(test_desc->array_of_cfg_mpe==NULL ||
+     test_desc->array_of_cfg_vpe==NULL ||
+    (test_desc->array_of_cfg_ppe==NULL && test_desc->PPE_ENABLED==Enable_En) ) return -1;
+  
+  if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,iterations) !=0) return -1;
+  if(nu_vpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_vpe,iterations) !=0) return -1;
+  if(test_desc->PPE_ENABLED==Enable_En)
+    if(nu_ppe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_ppe,iterations) !=0) return -1;
+  
+  test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", iterations);
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+  
+  if(test_desc->array_of_in_metrics  ==NULL ||
+     test_desc->array_of_res_metrics ==NULL ||
+     test_desc->array_of_warr_metrics==NULL ) return -1;
+  
+  if(nu_vpe_load_arrays_of_op_metrics(
+    heap_id,
+    &(test_desc->op0_array_desc),
+    &(test_desc->op1_array_desc),
+    &(test_desc->op2_array_desc),
+    test_desc->array_of_cfg_vpe,
+    iterations) !=0) return -1;
+  
+  test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,iterations);
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
+  
+  if(test_desc->array_of_in_data ==NULL || 
+     test_desc->array_of_warr    ==NULL ||
+     test_desc->array_of_etalon  ==NULL || 
+     test_desc->array_of_res_data==NULL ) return -1;
+  
+  if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
+  
+  test_desc->mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
+  if(test_desc->mpe_cfg_lut==NULL)
+    return -1;
+  
+  //~ test_desc->array_of_status_regs_etalon = nu_vpe_load_array_of_status_regs(heap_id,iterations);
+  //~ if(test_desc->array_of_status_regs_etalon==NULL)return -1;
+  
+  return 0;
+  
 }

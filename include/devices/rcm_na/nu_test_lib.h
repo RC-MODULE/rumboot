@@ -12,6 +12,7 @@ int nu_vpe_load_cfg_by_tag(int heap_id, ConfigVPE* cfg, char* cfg_file_tag);
 int nu_mpe_load_cfg(int heap_id, ConfigMPE* cfg);
 int nu_mpe_load_cfg_by_tag(int heap_id, ConfigMPE* cfg, char* cfg_file_tag);
 void* nu_mpe_load_cfg_lut(int heap_id);
+int nu_mpe_load_array_of_cfg(int heap_id, ConfigMPE* array_of_cfg, int num);
 
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg);
 int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag);
@@ -23,6 +24,7 @@ WarrMetrics* nu_load_warr_metrics(int heap_id, char* file_tag);
 VectorMetrics* nu_load_vec_metrics(int heap_id, char* file_tag);
 CubeMetrics* nu_load_array_of_cube_metrics(int heap_id, char* file_tag, int num);
 VectorMetrics* nu_load_array_of_vec_metrics(int heap_id, char* file_tag, int num);
+WarrMetrics* nu_load_array_of_warr_metrics(int heap_id, char* file_tag, int num);
 MPECmdMetrics* nu_mpe_load_cmd_metrics(int heap_id);
 MPECmdMetrics* nu_mpe_load_cmd_metrics_by_tag(int heap_id, char* file_tag);
 CubeMetrics* nu_vpe_load_in_metrics(int heap_id);
@@ -35,6 +37,7 @@ WarrMetrics* nu_mpe_load_warr_metrics(int heap_id);
 void* nu_load_cube(int heap_id,char* file_tag,CubeMetrics* metrics);
 void* nu_load_array_of_cubes(int heap_id,char* file_tag,CubeMetrics* array_of_metrics,int num);
 void* nu_load_array_of_vecs(int heap_id,char* file_tag,VectorMetrics* array_of_metrics,int num);
+void* nu_load_array_of_warr(int heap_id,char* file_tag,WarrMetrics* array_of_metrics,int num);
 void* nu_load_cube_misaligned(int heap_id,char* file_tag,CubeMetrics* metrics, int misalign);
 void* nu_load_warr(int heap_id,char* file_tag,WarrMetrics* metrics);
 void* nu_load_vec(int heap_id,char* file_tag,VectorMetrics* metrics);
@@ -49,6 +52,7 @@ void* nu_mpe_malloc_res(int heap_id,CubeMetrics* metrics);
 void* nu_ppe_malloc_res(int heap_id,CubeMetrics* metrics);
 void* nu_malloc_array_of_cubes(int heap_id,CubeMetrics* array_of_metrics,int num,int* size);
 void* nu_malloc_array_of_vecs(int heap_id,VectorMetrics* array_of_metrics,int num,int* size);
+void* nu_malloc_array_of_warr(int heap_id,WarrMetrics* array_of_metrics,int num,int* size);
 void* nu_vpe_load_etalon(int heap_id,CubeMetrics* metrics);
 void* nu_mpe_load_etalon(int heap_id,CubeMetrics* metrics);
 void* nu_ppe_load_etalon(int heap_id,CubeMetrics* metrics);
@@ -190,5 +194,84 @@ void nu_ppe_init_iteration_desc(PPETestDescriptor* test_desc, PPEIterationDescri
 void nu_ppe_iterate_desc(PPEIterationDescriptor* desc);
 
 int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations);
+
+
+///
+typedef struct NPETestDescriptor {
+  Enable PPE_ENABLED;
+  
+  ConfigMPE* array_of_cfg_mpe;
+  ConfigVPE* array_of_cfg_vpe;
+  ConfigPPE* array_of_cfg_ppe;
+  
+  WarrMetrics* array_of_warr_metrics;
+  CubeMetrics* array_of_in_metrics;
+  CubeMetrics* array_of_res_metrics;
+  
+  void *array_of_in_data;
+  void *array_of_warr;
+  void *array_of_etalon;
+  void *array_of_res_data;
+  
+  OpArrayDescriptor op0_array_desc;
+  OpArrayDescriptor op1_array_desc;
+  OpArrayDescriptor op2_array_desc;
+  
+  void* mpe_cfg_lut;
+
+  //~ VPEStatusRegs* array_of_status_regs_etalon;
+}NPETestDescriptor;
+
+void nu_npe_init_test_desc(NPETestDescriptor* test_desc);
+
+
+typedef struct NPEIterationDescriptor {
+  Enable PPE_ENABLED;
+  
+  ConfigMPE* cfg_mpe;
+  ConfigVPE* cfg_vpe;
+  ConfigPPE* cfg_ppe;
+
+  ConfigREGPPE   cfg_reg_ppe;  // Not A Pointer!
+  
+  void *warr;
+  void *in_data;
+  void *etalon;
+  void *res_data;
+  void *op0_cube;
+  void *op1_cube;
+  void *op2_cube;
+  void *op0_vec;
+  void *op1_vec;
+  void *op2_vec;
+  void *op0;
+  void *op1;
+  void *op2;
+  void *lut1;
+  void *lut2;
+
+  WarrMetrics* warr_metrics;
+  CubeMetrics* in_metrics;
+  CubeMetrics* res_metrics;
+  
+  CubeMetrics  mpe_out_metrics; // Not A Pointer!
+  
+  CubeMetrics*   op0_cube_metrics;
+  VectorMetrics* op0_vec_metrics;
+  CubeMetrics*   op1_cube_metrics;
+  VectorMetrics* op1_vec_metrics;
+  CubeMetrics*   op2_cube_metrics;
+  VectorMetrics* op2_vec_metrics;
+
+  VectorMetrics* lut1_metrics;
+  VectorMetrics* lut2_metrics;
+
+  //~ VPEStatusRegs* status_regs_etalon;
+} NPEIterationDescriptor;
+
+void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc);
+void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc);
+void nu_npe_iterate_desc(NPEIterationDescriptor* desc) ;
+int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations);
 
 #endif
