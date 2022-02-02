@@ -14,6 +14,9 @@
 #define NU_MPE_DMA_PARAM_TABLE_NUM_ROWS 72
 #define NU_MPE_DMA_PARAM_TABLE_SIZE (NU_MPE_DMA_PARAM_TABLE_ROW_SIZE*4*NU_MPE_DMA_PARAM_TABLE_NUM_ROWS + 4)
 
+#define NU_VPE_LUT1_SIZE 257
+#define NU_VPE_LUT2_SIZE 65
+
   /**
   Режим работы блока
   */
@@ -606,6 +609,7 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
 void nu_vpe_run (uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
+uint32_t nu_vpe_busy(uintptr_t vpe_base);
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);

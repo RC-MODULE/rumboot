@@ -68,6 +68,10 @@ int main() {
   int heap_id;
   int i;
   int iterations;
+  LUTLoadDecision* lut_decision;
+  void* lut1_prev;
+  void* lut2_prev;
+  //~ ConfigVPE* cfg_prev;
   
   uint8_t  axi_len;
   
@@ -95,6 +99,10 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
   
+  lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
+  lut1_prev=NULL;lut2_prev=NULL;
+  //~ cfg_prev=NULL;
+  
     // Fill The Recent cfg Fields Now Because We Can
   for(i=0;i<iterations;i++) {
     rumboot_printf("Deciding DMA Configuration, Iteration %d\n",i);
@@ -115,6 +123,28 @@ int main() {
     // nu_vpe_print_config(iteration_desc.cfg);
     // nu_vpe_print_status_regs_etalon(iteration_desc.status_regs_etalon);
     
+      // Prepare The Decision What To Do With LUT On Each Iteration
+    if(iteration_desc.cfg->op2_config.lut_en==Enable_En) {
+      if(lut1_prev==NULL) {
+        lut_decision[i]=LUTLoadDecision_LoadNow;
+        lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
+      }
+      else {
+        if(nu_vpe_compare_luts(iteration_desc.lut1, iteration_desc.lut2, lut1_prev, lut2_prev) == 0) {
+          lut_decision[i]=LUTLoadDecision_DontLoad;
+        }
+        else {
+          lut_decision[i]=LUTLoadDecision_BlockThenLoad;
+          lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
+        }
+      }
+    }
+    else {
+      lut_decision[i]=LUTLoadDecision_DontLoad;
+      lut1_prev = NULL; lut2_prev = NULL;
+    }
+    
+    //~ cfg_prev = iteration_desc.cfg;
     nu_vpe_iterate_desc(&iteration_desc);
   }
   
@@ -127,7 +157,12 @@ int main() {
     nu_vpe_iteration_start(&iteration_desc);
     
       // Load LUTs If Needed
-    if(iteration_desc.cfg->op2_config.lut_en == Enable_En) {
+    if(lut_decision[i]==LUTLoadDecision_BlockThenLoad) {
+      rumboot_printf("Blocked To Load LUT\n");
+      while (nu_vpe_busy(MY_VPE_REGS_BASE)) {};
+      rumboot_printf("OK\n");
+    }
+    if(lut_decision[i]!=LUTLoadDecision_DontLoad) {
       nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
     }
     

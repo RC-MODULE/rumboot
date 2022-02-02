@@ -1348,6 +1348,26 @@ void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
   desc->cfg += 1;
 }
 
+int nu_vpe_compare_luts(void* lut1_one, void* lut2_one, void* lut1_another, void* lut2_another) {
+  uint16_t* one;
+  uint16_t* another;
+  
+  one     = (uint16_t*) lut1_one;
+  another = (uint16_t*) lut1_another;
+  for(int i=0;i<NU_VPE_LUT1_SIZE;i++) {
+    if(*one++ != *another++)
+      return 1;
+  }
+  
+  one     = (uint16_t*) lut2_one;
+  another = (uint16_t*) lut2_another;
+  for(int i=0;i<NU_VPE_LUT2_SIZE;i++) {
+    if(*one++ != *another++)
+      return 1;
+  }
+  
+  return 0;
+}
 
 int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations) {
   test_desc->array_of_cfg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*iterations,sizeof(uint32_t));

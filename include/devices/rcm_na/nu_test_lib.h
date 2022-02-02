@@ -160,6 +160,15 @@ void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc);
 void nu_vpe_iterate_desc(VPEIterationDescriptor* desc);
 int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations);
 
+// LUT Stuff (For "Tight" Tests)
+typedef enum LUTLoadDecision /*: unsigned char*/ {
+  LUTLoadDecision_DontLoad = 0,
+  LUTLoadDecision_LoadNow  = 1,
+  LUTLoadDecision_BlockThenLoad = 2
+}LUTLoadDecision;
+
+int nu_vpe_compare_luts(void* lut1_one, void* lut2_one, void* lut1_another, void* lut2_another); // Returns 0 If Equal, 1 - If Not
+
 ///
 typedef struct PPETestDescriptor {
   ConfigPPE*     array_of_cfg;

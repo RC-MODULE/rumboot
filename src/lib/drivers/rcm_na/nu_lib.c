@@ -825,8 +825,8 @@ int32_t nu_lut_log2_f(float a) {
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
   uint16_t* ptr;
   uint32_t command;
-  uint32_t lut1_size = 257; // Predefined By HW
-  uint32_t lut2_size = 65;
+  uint32_t lut1_size = NU_VPE_LUT1_SIZE; // Predefined By HW
+  uint32_t lut2_size = NU_VPE_LUT2_SIZE;
   
   command = (1<<17)|(0<<16);// NU_VPE_LUT_ACCESS_CFG - Write LUT1 From Begining
   iowrite32(command, base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);           // Write Command + Cell Address
@@ -2223,6 +2223,10 @@ void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 0) & 1) !=1) {}
     iowrite32((1<<0),vpe_base + NU_VPE + NU_VPE_INT_RESET);
   rumboot_printf("Done VPE context got.\n");
+}
+
+uint32_t nu_vpe_busy(uintptr_t vpe_base) {
+  return ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) & (1<<12); // DEV_BUSY
 }
 
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
