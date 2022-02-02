@@ -95,6 +95,7 @@ int main() {
     rumboot_printf("Starting iteration %d\n",i);
 	
     nu_vpe_iteration_start(&iteration_desc);
+    nu_vpe_print_iteration_desc(&iteration_desc);
     
       // Load LUTs If Needed
     if(iteration_desc.cfg->op2_config.lut_en == Enable_En) {

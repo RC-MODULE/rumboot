@@ -1218,6 +1218,43 @@ void nu_vpe_init_iteration_desc(VPETestDescriptor* test_desc, VPEIterationDescri
   iteration_desc->in_metrics         = test_desc->array_of_in_metrics;
   iteration_desc->res_metrics        = test_desc->array_of_res_metrics;
 }
+
+void nu_vpe_print_iteration_desc(VPEIterationDescriptor* iteration_desc) {
+  rumboot_printf("VPEIterationDescriptor:\n");
+  rumboot_printf("cfg = 0x%x\n",(uintptr_t)(iteration_desc->cfg));
+
+  rumboot_printf("in_data = 0x%x \n",(uintptr_t)(iteration_desc->in_data));
+  rumboot_printf("etalon = 0x%x \n",(uintptr_t)(iteration_desc->etalon));
+  rumboot_printf("res_data = 0x%x \n",(uintptr_t)(iteration_desc->res_data));
+  rumboot_printf("op0_cube = 0x%x \n",(uintptr_t)(iteration_desc->op0_cube));
+  rumboot_printf("op1_cube = 0x%x \n",(uintptr_t)(iteration_desc->op1_cube));
+  rumboot_printf("op2_cube = 0x%x \n",(uintptr_t)(iteration_desc->op2_cube));
+  rumboot_printf("op0_vec = 0x%x \n",(uintptr_t)(iteration_desc->op0_vec));
+  rumboot_printf("op1_vec = 0x%x \n",(uintptr_t)(iteration_desc->op1_vec));
+  rumboot_printf("op2_vec = 0x%x \n",(uintptr_t)(iteration_desc->op2_vec));
+  rumboot_printf("op0 = 0x%x \n",(uintptr_t)(iteration_desc->op0));
+  rumboot_printf("op1 = 0x%x \n",(uintptr_t)(iteration_desc->op1));
+  rumboot_printf("op2 = 0x%x \n",(uintptr_t)(iteration_desc->op2));
+  rumboot_printf("lut1 = 0x%x \n",(uintptr_t)(iteration_desc->lut1));
+  rumboot_printf("lut2 = 0x%x \n",(uintptr_t)(iteration_desc->lut2));
+
+  rumboot_printf("in_metrics = 0x%x \n",(uintptr_t)(iteration_desc->in_metrics));
+  rumboot_printf("res_metrics = 0x%x \n",(uintptr_t)(iteration_desc->res_metrics));
+  
+  rumboot_printf("op0_cube_metrics = 0x%x \n",(uintptr_t)(iteration_desc->op0_cube_metrics));
+  rumboot_printf("op0_vec_metrics = 0x%x \n",(uintptr_t)(iteration_desc->op0_vec_metrics));
+  rumboot_printf("op1_cube_metrics = 0x%x \n",(uintptr_t)(iteration_desc->op1_cube_metrics));
+  rumboot_printf("op1_vec_metrics = 0x%x \n",(uintptr_t)(iteration_desc->op1_vec_metrics));
+  rumboot_printf("op2_cube_metrics = 0x%x \n",(uintptr_t)(iteration_desc->op2_cube_metrics));
+  rumboot_printf("op2_vec_metrics = 0x%x \n",(uintptr_t)(iteration_desc->op2_vec_metrics));
+
+  rumboot_printf("lut1_metrics = 0x%x \n",(uintptr_t)(iteration_desc->lut1_metrics));
+  rumboot_printf("lut2_metrics = 0x%x \n",(uintptr_t)(iteration_desc->lut2_metrics));
+
+  rumboot_printf("status_regs_etalon = 0x%x \n",(uintptr_t)(iteration_desc->status_regs_etalon));
+  
+}
+
 void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc) {
   
     // Chooses opx From opx_vec And opx_cube

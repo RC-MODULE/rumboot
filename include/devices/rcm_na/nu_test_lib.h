@@ -155,6 +155,7 @@ typedef struct VPEIterationDescriptor {
 }VPEIterationDescriptor ;
 
 void nu_vpe_init_iteration_desc(VPETestDescriptor* test_desc, VPEIterationDescriptor* iteration_desc);
+void nu_vpe_print_iteration_desc(VPEIterationDescriptor* iteration_desc);
 void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc);
 void nu_vpe_iterate_desc(VPEIterationDescriptor* desc);
 int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations);
