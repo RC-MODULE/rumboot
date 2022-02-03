@@ -623,7 +623,7 @@ function(add_rumboot_target)
   # Native platform is special - we always do unit-testing!
   if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 AND NOT CROSS_COMPILE)
     add_test(${product} ${product})
-    extract_labels_from_source(${product} ${TARGET_FILES})
+    extract_labels_from_source(${product} ${trg})
 
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")
     if (TARGET_TIMEOUT_CTEST)
