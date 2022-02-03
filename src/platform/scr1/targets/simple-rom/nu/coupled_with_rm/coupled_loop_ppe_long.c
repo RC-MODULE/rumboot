@@ -88,22 +88,22 @@ int main() {
     nu_ppe_decide_dma_config(
       iteration_desc.cfg,
       iteration_desc.res_metrics,
-     &iteration_desc.cfg_reg,
+      iteration_desc.cfg_reg,
       flying_mode,
       iteration_desc.in_data,
       iteration_desc.res_data
     );
     
-    iteration_desc.cfg_reg.rOpEn  = 0x0;
-    iteration_desc.cfg_reg.wOpEn  = 0x0;
-    nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &iteration_desc.cfg_reg);
+    iteration_desc.cfg_reg->rOpEn  = 0x0;
+    iteration_desc.cfg_reg->wOpEn  = 0x0;
+    nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
     
-    iteration_desc.cfg_reg.wOpEn  = 0x1;
-    nu_ppe_wdma_run(MY_PPE_REGS_BASE, &iteration_desc.cfg_reg); // wdma start
+    iteration_desc.cfg_reg->wOpEn  = 0x1;
+    nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
   
     #ifdef MEMtoPPE
-    iteration_desc.cfg_reg.rOpEn  = 0x1;
-    nu_ppe_rdma_run(MY_PPE_RDMA_BASE, &iteration_desc.cfg_reg); // rdma start
+    iteration_desc.cfg_reg->rOpEn  = 0x1;
+    nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg); // rdma start
     #endif
   
     #ifdef VPEtoPPE
@@ -132,7 +132,7 @@ int main() {
     
     // Sizeof(DataCube)/(times*frequency); time measure is us, frequency measure is MHz
     // clk_cnt will be devided by frequency later
-    dtB = (iteration_desc.cfg_reg.wOpM >> 16 & 0x3) ? 0x2 : 0x1;
+    dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
     clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
   
     rumboot_printf("Comparing...\n");
@@ -141,10 +141,10 @@ int main() {
   
     if (res) {
       nu_ppe_print_config(iteration_desc.cfg);
-      nu_ppe_print_config_reg(&iteration_desc.cfg_reg);
+      nu_ppe_print_config_reg(iteration_desc.cfg_reg);
     
       //~ rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-      //~ rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
+      //~ rumboot_platform_dump_region("cfg_reg.bin", cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
     }
   
     if (!res) {

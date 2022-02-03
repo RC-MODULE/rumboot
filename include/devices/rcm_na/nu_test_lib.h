@@ -172,7 +172,7 @@ int nu_vpe_compare_luts(void* lut1_one, void* lut2_one, void* lut1_another, void
 ///
 typedef struct PPETestDescriptor {
   ConfigPPE*     array_of_cfg;
-  //~ ConfigREGPPE*  array_of_cfg_reg;
+  ConfigREGPPE*  array_of_cfg_reg;
   
   CubeMetrics* array_of_in_metrics;
   CubeMetrics* array_of_res_metrics;
@@ -190,7 +190,7 @@ void nu_ppe_init_test_desc(PPETestDescriptor* test_desc);
 
 typedef struct PPEIterationDescriptor {
   ConfigPPE*     cfg;
-  ConfigREGPPE   cfg_reg;  // Not A Pointer!
+  ConfigREGPPE*  cfg_reg;
   
   CubeMetrics*  in_metrics  ;
   CubeMetrics*  res_metrics ;
@@ -213,6 +213,8 @@ typedef struct NPETestDescriptor {
   ConfigMPE* array_of_cfg_mpe;
   ConfigVPE* array_of_cfg_vpe;
   ConfigPPE* array_of_cfg_ppe;
+  
+  ConfigREGPPE* array_of_cfg_reg_ppe;
   
   WarrMetrics* array_of_warr_metrics;
   CubeMetrics* array_of_in_metrics;
@@ -242,7 +244,7 @@ typedef struct NPEIterationDescriptor {
   ConfigVPE* cfg_vpe;
   ConfigPPE* cfg_ppe;
 
-  ConfigREGPPE   cfg_reg_ppe;  // Not A Pointer!
+  ConfigREGPPE*  cfg_reg_ppe;
   
   void *warr;
   void *in_data;

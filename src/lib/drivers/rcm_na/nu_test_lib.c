@@ -1408,7 +1408,7 @@ int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations
 void nu_ppe_init_test_desc(PPETestDescriptor* test_desc) {
   test_desc-> array_of_cfg=NULL;
   
-  //~ test_desc-> array_of_cfg_reg=NULL;
+  test_desc-> array_of_cfg_reg=NULL;
   
   test_desc-> array_of_in_metrics=NULL;
   test_desc-> array_of_res_metrics=NULL;
@@ -1423,7 +1423,7 @@ void nu_ppe_init_test_desc(PPETestDescriptor* test_desc) {
 
 void nu_ppe_init_iteration_desc(PPETestDescriptor* test_desc, PPEIterationDescriptor* iteration_desc) {
   iteration_desc->  cfg     = test_desc->array_of_cfg;
-  //~ iteration_desc->  cfg_reg = test_desc->array_of_cfg_reg;
+  iteration_desc->  cfg_reg = test_desc->array_of_cfg_reg;
   
   iteration_desc->  in_metrics  = test_desc->array_of_in_metrics;
   iteration_desc->  res_metrics = test_desc->array_of_res_metrics;
@@ -1443,12 +1443,13 @@ void nu_ppe_iterate_desc(PPEIterationDescriptor* desc) {
   desc->res_metrics        += 1;
   
   desc->cfg += 1;
+  desc->cfg_reg += 1;
 }
 
 int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations){
   test_desc->array_of_cfg     = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)   *iterations,sizeof(uint32_t));
-  //~ test_desc->array_of_cfg_reg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
-  if(test_desc->array_of_cfg==NULL /*|| test_desc->array_of_cfg_reg==NULL*/)return -1;
+  test_desc->array_of_cfg_reg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
+  if(test_desc->array_of_cfg==NULL || test_desc->array_of_cfg_reg==NULL)return -1;
   if(nu_ppe_load_array_of_cfg(heap_id, test_desc->array_of_cfg, iterations) !=0) return -1;
   
   test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
@@ -1476,6 +1477,8 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
   test_desc-> array_of_cfg_vpe=NULL;
   test_desc-> array_of_cfg_ppe=NULL;
   
+  test_desc-> array_of_cfg_reg_ppe=NULL;
+  
   test_desc-> array_of_warr_metrics=NULL;
   test_desc-> array_of_in_metrics=NULL;
   test_desc-> array_of_res_metrics=NULL;
@@ -1502,6 +1505,8 @@ void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescri
   iteration_desc->cfg_mpe  = test_desc->array_of_cfg_mpe;
   iteration_desc->cfg_vpe  = test_desc->array_of_cfg_vpe;
   iteration_desc->cfg_ppe  = test_desc->array_of_cfg_ppe;
+  
+  iteration_desc->cfg_reg_ppe = test_desc->array_of_cfg_reg_ppe;
   
   iteration_desc->warr     = test_desc->array_of_warr;
   iteration_desc->in_data  = test_desc->array_of_in_data;
@@ -1627,20 +1632,27 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
   
   desc->cfg_mpe += 1;
   desc->cfg_vpe += 1;
-  desc->cfg_ppe += 1;
+  
+  if(desc->PPE_ENABLED==Enable_En) {
+    desc->cfg_ppe += 1;
+    desc->cfg_reg_ppe += 1;
+  }
 }
 
 
 
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
-  test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,NU_MPE_CFG_PARAMS_NUM*sizeof(ConfigMPE)*iterations,sizeof(uint32_t));
-  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,NU_VPE_CFG_PARAMS_NUM*sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
-  if(test_desc->PPE_ENABLED==Enable_En)
-    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,NU_PPE_CFG_PARAMS_NUM*sizeof(ConfigPPE)*iterations,sizeof(uint32_t));
+  test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigMPE)*iterations,sizeof(uint32_t));
+  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
+  if(test_desc->PPE_ENABLED==Enable_En) {
+    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)*iterations,sizeof(uint32_t));
+    test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
+  }
   
   if(test_desc->array_of_cfg_mpe==NULL ||
      test_desc->array_of_cfg_vpe==NULL ||
-    (test_desc->array_of_cfg_ppe==NULL && test_desc->PPE_ENABLED==Enable_En) ) return -1;
+   ((test_desc->array_of_cfg_ppe==NULL || test_desc->array_of_cfg_reg_ppe==NULL) && test_desc->PPE_ENABLED==Enable_En) 
+    ) return -1;
   
   if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,iterations) !=0) return -1;
   if(nu_vpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_vpe,iterations) !=0) return -1;

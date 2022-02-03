@@ -162,7 +162,7 @@ int main() {
     if(iteration_desc.PPE_ENABLED==Enable_En)
       nu_ppe_decide_dma_config (
         iteration_desc.cfg_ppe,
-       &iteration_desc.cfg_reg_ppe,
+        iteration_desc.cfg_reg_ppe,
         iteration_desc.res_metrics,
         NULL,
         iteration_desc.res_data );
@@ -173,17 +173,17 @@ int main() {
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
     if(iteration_desc.PPE_ENABLED==Enable_En) {
       nu_ppe_print_config(iteration_desc.cfg_ppe);
-      nu_ppe_print_config_reg(&iteration_desc.cfg_reg_ppe);
+      nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
     }
     
       // Program The VPE, MPE And PPE (Single Run)
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_setup(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
     if(iteration_desc.PPE_ENABLED==Enable_En) {
-      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &iteration_desc.cfg_reg_ppe);
+      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     
-      iteration_desc.cfg_reg_ppe.wOpEn  = 0x1;  // Two Lines Needed Because nu_ppe_wdma_run Just Writes The Content Of wOpEn
-      nu_ppe_wdma_run(MY_PPE_REGS_BASE, &iteration_desc.cfg_reg_ppe);
+      iteration_desc.cfg_reg_ppe->wOpEn  = 0x1;  // Two Lines Needed Because nu_ppe_wdma_run Just Writes The Content Of wOpEn
+      nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     }
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
