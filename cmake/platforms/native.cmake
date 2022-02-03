@@ -79,16 +79,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES common/tools/print-heaps.c
   )
 
-
-  add_rumboot_target(
-    CONFIGURATION NATIVE
-    FILES scr1/targets/load_bin_example/hello_load_bin.c
-    LOAD 
-      myfile ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
-  )
-
-  
   if (XILINX_FPGA_PROTO)
+    add_rumboot_target_dir(fpga/ 
+      CONFIGURATION NATIVE
+      PREFIX fpga
+    )
+
+
+    add_rumboot_target(
+      CONFIGURATION NATIVE
+      FILES scr1/targets/load_bin_example/hello_load_bin.c
+      LOAD 
+        myfile ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
+    )
+
     na_testsuite_init("NPE")
     na_testsuite_add_npe_tests("NATIVE")
     #na_testsuite_add_vpe_tests("NATIVE")
