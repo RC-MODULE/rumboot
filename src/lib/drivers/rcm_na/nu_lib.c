@@ -2197,7 +2197,7 @@ void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* c
   rumboot_printf("Start VPE...\n");
   
   if(cfg->mark)
-    temp = temp | (1<<1) | (1<<0);  //MARKED_CNTX=1 | NEXT_CNTX=1
+   {temp = temp | 0x00000003; }//MARKED_CNTX=1 & NEXT_CNTX=1 
   else 
     temp = (temp & (~(1<<1)) ) | (1<<0);  //MARKED_CNTX=0 | NEXT_CNTX=1
   
@@ -2217,13 +2217,122 @@ void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){
   }
   // rumboot_printf("Done VPE wait.\n");
 }
-
+void nu_vpe_set_int_mask(uintptr_t vpe_base, ConfigVPE* cfg){
+	rumboot_printf("Read [%x]=%x\n",ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX));
+    if (( (ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) >> 12) & 1) ==0 )
+    iowrite32((1<<12) | (1<<8)| (1<<0) | (1<<4) |(1<<5) | (1<<6) | (1<<7) | (1<<16),vpe_base + NU_VPE + NU_VPE_INT_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
+	rumboot_printf("Writing [%x]=%x\n",ioread32(vpe_base + NU_VPE + NU_VPE_INT_MASK));
+}	
 void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Wait VPE context got...\n");
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 0) & 1) !=1) {}
-    iowrite32((1<<0),vpe_base + NU_VPE + NU_VPE_INT_RESET);
-  rumboot_printf("Done VPE context got.\n");
+    iowrite32((1<<0),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
+  rumboot_printf("Done VPE context\n");
 }
+void nu_vpe_wait_int_pause_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
+	rumboot_printf("Wait VPE context got\n");
+    while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 7) & 1) !=1) {}
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 16) & 1) !=1) {}
+    iowrite32(((1<<7) | (1<<16)),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
+  rumboot_printf("Done VPE context\n");
+}
+void nu_vpe_wait_int_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
+	rumboot_printf("Wait VPE context got\n");
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 8) & 1) !=1) {}
+    iowrite32( (1<<8),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
+  rumboot_printf("Done VPE context\n");
+}
+void nu_vpe_pause_next_cntx(uintptr_t vpe_base, ConfigVPE* cfg){
+  uint32_t temp;
+    rumboot_printf("Stop VPE begin...\n");
+	while( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) == 0x00000041) !=1) {}
+	temp = ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+//	rumboot_printf("Read [%x]=%x\n",ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX));
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}	
+	rumboot_printf("Done VPE stop\n");
+	iowrite32((0x00000061),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+}
+
+void nu_na_vpe_pause(uintptr_t npe_base ){
+  uint32_t temp;
+    rumboot_printf("Stop VPE  begin...\n");
+	//rumboot_printf("Read [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE));
+	temp = ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE);
+	iowrite32(temp | (1<<1),npe_base + NA_CU_REGS_BASE + NA_PAUSE); //vpe_pause
+//	rumboot_printf("Read [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE));
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_STATUS) >> 2) & 1) !=1) {}	
+	rumboot_printf("Done VPE stop\n");
+}
+
+void nu_vpe_dev_resume(uintptr_t vpe_base, ConfigVPE* cfg){
+  uint32_t temp;	
+    rumboot_printf(" VPE finished cube handle ...\n");
+	//iowrite32(temp | (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 4) & 1) !=1) {}	
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 6) & 1) !=1) {}	
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 0) & 1) !=1) {}
+	iowrite32(((1<<0) | (1<<4) | (1<<6)),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	rumboot_printf("Done VPE end \n");
+}
+void nu_vpe_dev_pause_resume(uintptr_t vpe_base, ConfigVPE* cfg){
+  uint32_t temp;	
+    rumboot_printf("Start after stop VPE  begin...\n");
+	iowrite32(temp | (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 7) & 1) !=1) {}
+	
+	rumboot_printf("Done VPE start after stop\n");
+}
+void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg){
+    rumboot_printf("Soft reset VPE ...\n");	
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) >> 20) & 1) !=1) {}
+	iowrite32( (1<<0),vpe_base + NU_VPE + NU_VPE_SOFT_RESET);
+	rumboot_printf("Soft reset done ...\n");	
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 16) & 1) !=1) {}
+	rumboot_printf("Done VPE soft reset passed\n");	
+}
+void nu_na_vpe_soft_reset(uintptr_t npe_base){
+    rumboot_printf("Soft NA reset VPE ...\n");	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE) >> 17) & 1) !=1) {}
+	iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET);
+	rumboot_printf("Soft reset done ...\n");	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 15) & 1) !=1) {} //IRQ_VPE_RESET_COMPL
+	rumboot_printf("Done NA VPE soft reset passed\n");
+}
+
+int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
+	  int res;	
+	for( int i =num; i< iteration;i++) {
+	if ((i != 38) & (i != 4) & (i != 7) )
+		{res = ioread32(base + 4*i);}
+		if((res != 0x00000000) & (i !=12) & (i !=18)& (i !=24) & (i !=25) & (i !=31)& (i != 17) & (i != 23) &  (i != 36) & ( i != 54)|
+		(res != 0x00000053) &( (i==12)| (i ==18)| (i ==24)) |
+		(res != 0x00000002) &( (i==25)| (i ==31)) | 
+		(((res >> 16)  != 0x00000007) & ( (i ==17) | (i ==23) | (i ==36))) | 
+		(((res >> 19)  != 0x00000000) & (i == 54))  ) {
+		rumboot_printf("res_invalid =%x\n",res);
+		rumboot_printf("addr =%x\n",(base + 4*i));
+		return  -1;
+		}
+  }
+return 0;  
+}
+int nu_regs_check(uintptr_t base, int num, int iteration) {
+	  int res;	
+	for( int i =0; i< iteration;i++) {
+		if (i != 2)
+		{res = ioread32(base + 4*i);}
+	//	{rumboot_printf("res =%x\n",res); }
+	//	rumboot_printf("addr =%x\n",(base + 4*i)); }	
+		if(((res != 0x000000000) & (i !=3)) | ((res != 0x000020000) & (i ==3)))  {
+		rumboot_printf("res_invalid =%x\n",res);
+		rumboot_printf("addr =%x\n",(base + 4*i));
+		return  -1;
+    }
+  }
+  return 0;
+}
+
 
 uint32_t nu_vpe_busy(uintptr_t vpe_base) {
   return ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) & (1<<12); // DEV_BUSY
