@@ -596,6 +596,7 @@ uint32_t nu_ppe_status_done (uintptr_t wbase);
 
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);
 void nu_ppe_wdma_run(uintptr_t wbase, ConfigREGPPE* cfg);
+void nu_ppe_dma_wait_ready_and_run(uintptr_t base);
 
 int  nu_mpe_run_cmd(uintptr_t base, void* cmd,MPECmdMetrics* cmd_metrics);
 

@@ -524,6 +524,18 @@ foreach(i RANGE ${TST_NMB})
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
 
+  if(${LBS} STREQUAL "LIN")
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight_${i}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_ppe.c
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endif()
+
   if (i EQUAL TST_NMB)
     math (EXPR NU_SEED "${NU_SEED} + 1")
   endif()

@@ -2165,6 +2165,11 @@ void nu_ppe_wait_complete(uintptr_t wbase){
   rumboot_printf("Done PPE WDMA...\n");
 }
 
+void nu_ppe_dma_wait_ready_and_run(uintptr_t base) {
+  while(ioread32(base + NU_PPE_STATUS)) {}
+  iowrite32(1,base + NU_PPE_OP_ENABLE);
+}
+
 void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
   nu_cpdmac_trn256_config(dma_base,addr,size);
 }
