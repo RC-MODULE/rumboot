@@ -2,7 +2,6 @@
 # - Вычистить останки EXPERIMENT_STAGE_XXXXX из кода
 # - Директории PPE_EXPER_DIR & MPE_TEST_SHEETS_DIR. Из-за них не будет работать standalone сборка№
 
-
 macro(_na_init_variables DUT)
   set(MISALIGN_COUNT 0)
   # Extract The First Letter Of The DUT (We Pass It As A Define Into c-code)
@@ -558,33 +557,6 @@ foreach(IntMisalign ${MISALIGN})
   )
 endforeach()
 endmacro()
-
-
-macro(ADD_PPE_EXPER_TEST CONF name ShowPerf)
-  if(NOT DEFINED PPE_EXPER_DIR)
-    if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
-      set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
-    elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/PPE)
-      set(PPE_EXPER_DIR ${EXPERIMENT_STAGE_2_DIR}/PPE/)
-    else()
-      #FIXME: ...
-      #message(FATAL_ERROR "PPE_EXPER_DIR test binaries Directory not found")
-      message(WARNING "PPE_EXPER_DIR test binaries Directory not found")
-      endif()
-  endif()
-
-  message("PPE_EXPER_DIR = ${PPE_EXPER_DIR}")
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
-    PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
-    CFLAGS -D${ShowPerf}
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-  )
-endmacro()
-
-
 
 macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
 misalign_increment()
@@ -1998,21 +1970,6 @@ macro(na_testsuite_add_ppe_tests CONF)
 
   ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
   #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
-
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_2  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_3  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_4  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_5  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_6  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_7  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_8  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_9  NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_10 NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_11 NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_12 NotShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_13 ShowPerf)
-  # ADD_PPE_EXPER_TEST(${CONF} PPE_14 NotShowPerf)
-
 
 endmacro()
 
