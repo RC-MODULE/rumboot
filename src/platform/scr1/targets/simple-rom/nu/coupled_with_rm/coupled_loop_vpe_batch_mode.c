@@ -30,9 +30,9 @@ void nu_vpe_set_op_pointers (
   void*op1,
   void*op2
 ){
-  cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
-  cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
-  cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
+  cfg->op0_rdma_config.dma_baddr = rumboot_virt_to_dma(op0);
+  cfg->op1_rdma_config.dma_baddr = rumboot_virt_to_dma(op1);
+  cfg->op2_rdma_config.dma_baddr = rumboot_virt_to_dma(op2);
 }
 
 void nu_vpe_decide_dma_config (
@@ -63,8 +63,8 @@ void nu_vpe_decide_dma_config (
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
   
-  cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
-  cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
+  cfg->src_rdma_config.dma_baddr = rumboot_virt_to_dma(in_data);
+  cfg->wdma_config.dma_baddr     = rumboot_virt_to_dma(res_data);
 
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;

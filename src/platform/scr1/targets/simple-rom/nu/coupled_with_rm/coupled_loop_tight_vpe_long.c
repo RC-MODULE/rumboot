@@ -47,11 +47,11 @@ void nu_vpe_decide_dma_config (
   if(last_turn) 
     cfg->mark = Enable_En;
   
-  cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
-  cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
-  cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
-  cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
-  cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
+  cfg->src_rdma_config.dma_baddr = rumboot_virt_to_dma(in_data);
+  cfg->op0_rdma_config.dma_baddr = rumboot_virt_to_dma(op0);
+  cfg->op1_rdma_config.dma_baddr = rumboot_virt_to_dma(op1);
+  cfg->op2_rdma_config.dma_baddr = rumboot_virt_to_dma(op2);
+  cfg->wdma_config.dma_baddr     = rumboot_virt_to_dma(res_data);
 
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;

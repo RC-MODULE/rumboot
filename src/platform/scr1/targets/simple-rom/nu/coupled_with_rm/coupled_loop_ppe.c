@@ -101,8 +101,8 @@ int main() {
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
     if (!res) {
-      cfg_reg.rBALi = (uintptr_t)in_data;
-      cfg_reg.wBALo = (uintptr_t)res_data;
+      cfg_reg.rBALi = rumboot_virt_to_dma(in_data);
+      cfg_reg.wBALo = rumboot_virt_to_dma(res_data);
     
       cfg_reg.wOpM = flying_mode << 8;
       nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);

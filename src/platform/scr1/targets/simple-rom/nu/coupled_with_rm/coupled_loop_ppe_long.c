@@ -18,8 +18,8 @@ void nu_ppe_decide_dma_config(
   void* in_data,
   void* res_data
 ) {
-  cfg_reg->rBALi = (uintptr_t)in_data;
-  cfg_reg->wBALo = (uintptr_t)res_data;
+  cfg_reg->rBALi = rumboot_virt_to_dma(in_data);
+  cfg_reg->wBALo = rumboot_virt_to_dma(res_data);
 
   cfg_reg->wOpM = flying_mode << 8;
   nu_ppe_decide_dma_config_trivial(cfg, res_metrics, cfg_reg);
