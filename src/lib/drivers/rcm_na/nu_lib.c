@@ -1844,6 +1844,11 @@ void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
   nu_mpe_dma_setup(base + MPE_RDMA_W_BASE, & cfg->dma_w_config);
 }
 
+void nu_mpe_wait_ready(uintptr_t base) {
+  while(ioread32(base + MPE_RDMA_D_BASE + DMA_STS) != 0) {}
+  while(ioread32(base + MPE_RDMA_W_BASE + DMA_STS) != 0) {}
+}
+
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   rumboot_printf("Start MPE...\n");
   iowrite32(0,mpe_base + MPE_RDMA_D_BASE + DMA_START);
