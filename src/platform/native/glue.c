@@ -520,15 +520,15 @@ uint32_t rumboot_virt_to_dma(volatile const void *addr)
 {
         int id = rumboot_malloc_heap_by_addr(addr);
         if (id == -1 ) {
-                rumboot_platform_panic("rumboot_virt_to_dma: can't find heap id");
+                rumboot_platform_panic("rumboot_virt_to_dma: can't find heap id for addr %x\n", addr);
         }
         const char *name =  rumboot_malloc_heap_name(id);
-        if (strcmp(name,"IM1") == 0) {
+        if (strcmp(name, "IM1") == 0) {
                 return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start);
         }
 
-        if (strcmp(name,"IM2") == 0) {
-                return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start) - PCIE_MEM_OFFSET;
+        if (strcmp(name, "IM2") == 0) {
+                return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start) + PCIE_MEM_OFFSET;
         }
 
         rumboot_platform_panic("rumboot_virt_to_dma: No dma mapping for heap %s", name);
