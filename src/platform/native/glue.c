@@ -24,11 +24,14 @@
 #include <rumboot/bitswapper.h>
 #include <platform/devices.h>
 #include <time.h>
+#include <rumboot/rumboot.h>
 
 int g_argc = 0;
 static int ipc_id;
 char *g_argv[64];
 #define NAME CMAKE_BINARY_DIR "/rumboot-native-" CMAKE_BUILD_TYPE "-spl-fail"
+#define PCIE_MEM_OFFSET  (32 * 1024 * 1024)
+
 static struct rumboot_bootsource arr[] = {
         {
                 .name = NAME,
@@ -223,14 +226,16 @@ void rumboot_platform_setup()
                 /* If we own memory, clear it! */
                 memset(rumboot_platform_runtime_info, 0x0, sizeof(*rumboot_platform_runtime_info));
                 /* And add a heap */
-                char *heap = rumboot_platform_runtime_info;
+                char *heap = (void *) rumboot_platform_runtime_info;
+
                 heap = &heap[sizeof(*rumboot_platform_runtime_info)];
 	        rumboot_malloc_register_heap("IM0", heap, &heap[HEAP_SIZE]);
 #ifdef RUMBOOT_ENABLE_NATIVE_PCIE
-                void *ptr = rumboot_native_request_device(0, 0x0000, 2 * 1024 * 1024);
-        	rumboot_malloc_register_heap("IM1", ptr, ptr + 32 * 1024 * 1024);
-                ptr = rumboot_native_request_device(2, 32 * 1024 * 1024, 2 * 1024 * 1024);
-        	rumboot_malloc_register_heap("IM2", ptr, ptr + 32 * 1024 * 1024);
+                void *ptr = rumboot_native_request_device(0, 0x0000, PCIE_MEM_OFFSET);
+        	rumboot_malloc_register_heap("IM1", ptr, ptr + PCIE_MEM_OFFSET);
+
+                ptr = rumboot_native_request_device(2, PCIE_MEM_OFFSET, (512-32) * 1024 * 1024);
+        	rumboot_malloc_register_heap("IM2", ptr, ptr + (512-32) * 1024 * 1024);
                 DUT_BASE = rumboot_native_request_device(1, 0x0000, 0xfd0000);
 #endif
         }
@@ -513,7 +518,20 @@ const struct rumboot_cpu_cluster *rumboot_platform_get_cpus(int *cpu_count)
 
 uint32_t rumboot_virt_to_dma(volatile const void *addr)
 {
-        return (uint32_t) addr;
+        int id = rumboot_malloc_heap_by_addr(addr);
+        if (id == -1 ) {
+                rumboot_platform_panic("rumboot_virt_to_dma: can't find heap id");
+        }
+        const char *name =  rumboot_malloc_heap_name(id);
+        if (strcmp(name,"IM1") == 0) {
+                return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start);
+        }
+
+        if (strcmp(name,"IM2") == 0) {
+                return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start) - PCIE_MEM_OFFSET;
+        }
+
+        rumboot_platform_panic("rumboot_virt_to_dma: No dma mapping for heap %s", name);
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
