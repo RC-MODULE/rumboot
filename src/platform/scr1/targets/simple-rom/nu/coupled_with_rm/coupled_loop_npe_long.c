@@ -205,7 +205,7 @@ int main() {
       nu_vpe_print_config(iteration_desc.cfg_vpe);
       if(iteration_desc.PPE_ENABLED==Enable_En)
         nu_ppe_print_config(iteration_desc.cfg_ppe);
-
+      
       rumboot_printf("Test FAILED at iteration %d\n",i);
 
       return 1;
