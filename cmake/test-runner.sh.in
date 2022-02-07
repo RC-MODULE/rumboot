@@ -44,6 +44,9 @@ uname -a > serverinfo.txt
 free >> serverinfo.txt
 cat /proc/loadavg >> serverinfo.txt
 
+#Rebuild target
+${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${product}.all
+
 #setup the environment
 @TARGET_ENVIRONMENT@
 @TARGET_PREPCMD@
