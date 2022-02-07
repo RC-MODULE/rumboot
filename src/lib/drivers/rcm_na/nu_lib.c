@@ -2330,7 +2330,7 @@ return 0;
 int nu_regs_check(uintptr_t base, int num, int iteration) {
 	  int res;	
 	for( int i =0; i< iteration;i++) {
-		if (i != 2)
+		if ((i != 2) & (i !=1)) //?? (i !=1)
 		{res = ioread32(base + 4*i);}
 	//	{rumboot_printf("res =%x\n",res); }
 	//	rumboot_printf("addr =%x\n",(base + 4*i)); }	
