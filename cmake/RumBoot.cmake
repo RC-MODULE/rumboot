@@ -227,7 +227,7 @@ macro(generate_stuff_for_target product)
       install(TARGETS ${product} RUNTIME DESTINATION rumboot/binaries)
   endif()
 
-  set(_outfiles )
+  set(_outfiles ${product})
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
       list (FIND TARGET_FEATURES "ROMAPIGEN" _romapigen)
       if (NOT ${_romapigen} EQUAL -1)
