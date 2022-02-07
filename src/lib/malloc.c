@@ -32,6 +32,20 @@ void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align,
 	return ret;
 }
 
+
+int rumboot_malloc_heap_by_addr(uintptr_t addr)
+{
+	int i;
+	for (i = 0; i < rumboot_platform_runtime_info->num_heaps; i++) {
+		struct rumboot_heap *hp;
+		hp = &rumboot_platform_runtime_info->heaps[i];
+		if ((addr >= hp->start) && (addr < hp->end)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 int rumboot_malloc_heap_by_name(const char *name)
 {
 	int i;

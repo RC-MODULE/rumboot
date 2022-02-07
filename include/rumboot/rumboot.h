@@ -113,6 +113,14 @@ void rumboot_free(void *ptr);
 int rumboot_malloc_heap_by_name(const char *name);
 
 /**
+ * Find out what heap is this address from
+ * 
+ * @param addr 
+ * @return int heap id or -1 if this memory is not from any heap
+ */
+int rumboot_malloc_heap_by_addr(uintptr_t addr);
+
+/**
  * Get heap name by it's numeric id
  *
  * @param  heap_id heap id
