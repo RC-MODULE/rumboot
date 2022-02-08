@@ -96,7 +96,7 @@ int main() {
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
     if (!res) {
-      cfg_ppe_reg.wBALo = rumboot_virt_to_dma(res_data);
+      cfg_ppe_reg.wBALo = nu_virt_to_dma(res_data);
     
       cfg_ppe_reg.wOpM = flying_mode << 8;
       nu_ppe_decide_dma_config_trivial(&cfg_ppe, res_metrics, &cfg_ppe_reg);
@@ -146,7 +146,7 @@ int main() {
 
       nu_vpe_decide_dma_config_trivial(&cfg_vpe,in_metrics);
 
-      cfg_vpe.src_rdma_config.dma_baddr = rumboot_virt_to_dma(in_data);
+      cfg_vpe.src_rdma_config.dma_baddr = nu_virt_to_dma(in_data);
       cfg_vpe.src_rdma_config.dma_axi_len = 0xF; // axi_len
 
       nu_vpe_setup(MY_VPE_REGS_BASE, &cfg_vpe);

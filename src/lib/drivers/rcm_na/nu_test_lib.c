@@ -10,7 +10,18 @@
 #include <devices/rcm_na/nu_test_lib.h> 
 
 int nu_get_heap_id() {
-  return 1;  // CHECK // fix this by define when compile under other platform than scr1
+#ifdef RUMBOOT_NATIVE
+  return 2; 
+#else
+  return 1; 
+#endif
+}
+
+uintptr_t nu_virt_to_dma(volatile const void *addr) {
+  if(addr==NULL)
+    return 0;
+  else
+    return rumboot_virt_to_dma(addr);
 }
 
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg) {
