@@ -18,8 +18,8 @@ int nu_mpe_decide_dma_config(
   void* warr,
   void* cfg_lut
 ) {
-  cfg->dma_d_config.rdma.BFCA  = nu_virt_to_dma(cube); // Data Base Address
-  cfg->dma_w_config.rdma.BFCA  = nu_virt_to_dma(warr); // Weights Base Address
+  cfg->dma_d_config.rdma.BFCA  = rumboot_virt_to_dma(cube); // Data Base Address
+  cfg->dma_w_config.rdma.BFCA  = rumboot_virt_to_dma(warr); // Weights Base Address
   if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1; // Search For The MPE DMA Configuration (That Is Predefined In cfg_lut Table)
   if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1; // Fill Other Fields
   return 0;
@@ -35,7 +35,8 @@ void nu_vpe_decide_dma_config (
   void*op2,
   //~ CubeMetrics*res_metrics,
   void*res_data,
-  Enable PPE_ENABLED
+  Enable PPE_ENABLED,
+  bool last_turn
 ) {
   cfg->trace_mode = TraceMode_MPE;  // Make VPE To Use MPE Trace Mode // FIRST!!!! Because nu_vpe_decide_dma_config_trivial depends On It
   
@@ -52,12 +53,15 @@ void nu_vpe_decide_dma_config (
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics); // Fill Other cfg Fields
   
+  if(PPE_ENABLED==Enable_NotEn && last_turn) 
+    cfg->mark = Enable_En;
+  
     // Data Base Addresses
   cfg->src_rdma_config.dma_baddr = (uint32_t) 0xDEADBEEF; // Should Be Not Used
-  cfg->op0_rdma_config.dma_baddr = nu_virt_to_dma(op0);
-  cfg->op1_rdma_config.dma_baddr = nu_virt_to_dma(op1);
-  cfg->op2_rdma_config.dma_baddr = nu_virt_to_dma(op2);
-  cfg->wdma_config.dma_baddr     = nu_virt_to_dma(res_data);
+  cfg->op0_rdma_config.dma_baddr = rumboot_virt_to_dma(op0);
+  cfg->op1_rdma_config.dma_baddr = rumboot_virt_to_dma(op1);
+  cfg->op2_rdma_config.dma_baddr = rumboot_virt_to_dma(op2);
+  cfg->wdma_config.dma_baddr     = rumboot_virt_to_dma(res_data);
 
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
@@ -75,7 +79,7 @@ void nu_ppe_decide_dma_config(
   void*res_data
 ){
   cfg_reg->rBALi = (uintptr_t)0xDEADBEEF; // Data Base Addresses
-  cfg_reg->wBALo = nu_virt_to_dma(res_data);
+  cfg_reg->wBALo = rumboot_virt_to_dma(res_data);
 
   cfg_reg->wOpM = 3 << 8; // FLYING_BOXED 
                          // Other Fields Of wOpM Will Be Appended By nu_ppe_decide_dma_config_trivial
@@ -93,6 +97,9 @@ int main() {
   int i;
   int iterations;
   uint8_t  axi_len;
+  LUTLoadDecision* lut_decision;
+  void* lut1_prev;
+  void* lut2_prev;
   
   rumboot_printf("Hellooooooo\n");
 
@@ -115,23 +122,21 @@ int main() {
     // Load All The Test Data Into Memory
   if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
   
-    // Make The Iteration Descriptor To Point At The First Test Data
-  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
-  
     // Program The CU To Enable Direct Mode For All Units // Again - If You Want Otherwise - Write Another Program
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
   
-    // Main Loop 
+    // Make The Iteration Descriptor To Point At The First Test Data
+  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+  
+    // Array Of Decisions What To Do With VPE LUT
+  lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
+  lut1_prev=NULL;lut2_prev=NULL;
+  
   for(i=0;i<iterations;i++) {
-    rumboot_printf("Starting iteration %d\n",i);
-	
-      // Prepare Iteration Descriptor (Some Modifications Should Be Made Before Each Iteration)
-    nu_npe_iteration_start(&iteration_desc);
+    rumboot_printf("Deciding DMA Configuration for iteration %d\n",i);
     
-      // Load (Into The VPE Internal Memory) LUTs If Needed
-    if(iteration_desc.cfg_vpe->op2_config.lut_en == Enable_En) {
-      nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
-    }
+      // Prepare Stuff
+    nu_npe_iteration_start(&iteration_desc);
     
       // Fill The cfg_mpe Fields That Are Not Loaded From File
     if(nu_mpe_decide_dma_config(
@@ -142,13 +147,13 @@ int main() {
       iteration_desc.warr,
       test_desc.mpe_cfg_lut )!=0) return -1;
     
-      // mpe_out_metrics - Metrics Of VPE Input Data (Not Seen In Memory) Needed For Configuring VPE Later
-    nu_calc_mpe_cube_out_metrics(iteration_desc.cfg_mpe, &iteration_desc.mpe_out_metrics); // CHECK - Calc It Before Any Iteration?
+      // mpe_out_metrics - Metrics Of VPE Input Data (Not Seen In Memory) Needed For Configuring VPE Lower
+    nu_calc_mpe_cube_out_metrics(iteration_desc.cfg_mpe, &iteration_desc.mpe_out_metrics); 
     
       // Fill The cfg_vpe Fields That Are Not Loaded From File
     nu_vpe_decide_dma_config (
       iteration_desc.cfg_vpe,
-     &iteration_desc.mpe_out_metrics,
+     &iteration_desc.mpe_out_metrics, // We Recalculate This Struct Each Iteration
       axi_len,
       NULL,
       iteration_desc.op0,
@@ -156,7 +161,29 @@ int main() {
       iteration_desc.op2,
       //~ iteration_desc.res_metrics,
       iteration_desc.res_data,
-      iteration_desc.PPE_ENABLED );
+      iteration_desc.PPE_ENABLED,
+      i==iterations-1);
+    
+      // Prepare The Decision What To Do With LUT On Each Iteration
+    if(iteration_desc.cfg_vpe->op2_config.lut_en==Enable_En) {
+      if(lut1_prev==NULL) {
+        lut_decision[i]=LUTLoadDecision_LoadNow;
+        lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
+      }
+      else {
+        if(nu_vpe_compare_luts(iteration_desc.lut1, iteration_desc.lut2, lut1_prev, lut2_prev) == 0) {
+          lut_decision[i]=LUTLoadDecision_DontLoad;
+        }
+        else {
+          lut_decision[i]=LUTLoadDecision_BlockThenLoad;
+          lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
+        }
+      }
+    }
+    else {
+      lut_decision[i]=LUTLoadDecision_DontLoad;
+      lut1_prev = NULL; lut2_prev = NULL;
+    }
     
       // Fill The cfg_reg_ppe That Is Not Loaded From File
     if(iteration_desc.PPE_ENABLED==Enable_En)
@@ -168,34 +195,78 @@ int main() {
         iteration_desc.res_data );
     
       // Print All The Configurations Got
-    nu_mpe_print_config(iteration_desc.cfg_mpe);
-    nu_vpe_print_config(iteration_desc.cfg_vpe);
+    //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
+    //~ nu_vpe_print_config(iteration_desc.cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
-    if(iteration_desc.PPE_ENABLED==Enable_En) {
-      nu_ppe_print_config(iteration_desc.cfg_ppe);
-      nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
-    }
+    //~ if(iteration_desc.PPE_ENABLED==Enable_En) {
+      //~ nu_ppe_print_config(iteration_desc.cfg_ppe);
+      //~ nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
+    //~ }
     
-      // Program The VPE, MPE And PPE (Single Run)
-    nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+      // Point At The Next Iteration Data
+    nu_npe_iterate_desc(&iteration_desc);
+  }
+  
+    // Init It Again - We Start Iterate From The Beginning
+  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+    // Main Loop 
+  for(i=0;i<iterations;i++) {
+    rumboot_printf("Starting iteration %d\n",i);
+	
+      // Prepare Iteration Descriptor (Some Modifications Should Be Made Before Each Iteration)
+    nu_npe_iteration_start(&iteration_desc);
+    
+      // Write MPE (Shadow) Regs
     nu_mpe_setup(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
+    
+      // Write PPE (Shadow) Regs
     if(iteration_desc.PPE_ENABLED==Enable_En) {
       nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
-    
-      iteration_desc.cfg_reg_ppe->wOpEn  = 0x1;  // Two Lines Needed Because nu_ppe_wdma_run Just Writes The Content Of wOpEn
-      nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     }
-    nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+    
+    if(i!=0)  // Before Writing VPE Regs - We Should Ensure That VPE Is Ready
+              //  Dont Make It On Iteration #0 - Because nu_vpe_wait_cntx_appl Waits For A Status Of Prev Iteration
+      nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+    
+      // Write VPE (Shadow) Regs
+    nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+    
+      // Load LUTs If Needed
+    if(lut_decision[i]==LUTLoadDecision_BlockThenLoad) { // if We Need To Reload LUT
+      rumboot_printf("Blocked To Load LUT\n");  // Here We Should Block And Wait Until VPE Finish
+      while (nu_vpe_busy(MY_VPE_REGS_BASE)) {}; // 
+      rumboot_printf("OK\n");
+    }
+    if(lut_decision[i]!=LUTLoadDecision_DontLoad) {
+      nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
+    }
+    
+      // Try The Effective (But Not Safe) Run Order (MPE->VPE->PPE)
+      //  Because We Are Verificators!
+    nu_mpe_wait_ready(MY_MPE_REGS_BASE);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
+    nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+      // PPE Should Be Run After It Finish Prev Operation
+    if(iteration_desc.PPE_ENABLED==Enable_En) {
+      nu_ppe_dma_wait_ready_and_run(MY_PPE_REGS_BASE); // WDMA
+    }
     
+    if(i!=iterations-1) // Iterate - But Not The Last Iteration Because We Need Accurate cfg_vpe Lower
+      nu_npe_iterate_desc(&iteration_desc);
+  }
     
-      // Wait For The Corresponding DMA Channels To Complete
-    if(iteration_desc.PPE_ENABLED==Enable_En)
-      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
-    else
-      nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-    
-    rumboot_printf("Comparing..\n");
+    // Wait For The Corresponding DMA Channels To Complete
+  if(iteration_desc.PPE_ENABLED==Enable_En)
+    nu_ppe_wait_complete(MY_PPE_REGS_BASE);
+  else
+    nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+  
+  
+    // Init It Again - We Start Iterate From The Beginning
+  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+  for(i=0;i<iterations;i++) {
+    rumboot_printf("Comparing iteration %d..\n",i);
+    nu_npe_iteration_start(&iteration_desc);
     
       // Result vs Etalon Comparision
     if(nu_bitwise_compare(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
@@ -205,7 +276,7 @@ int main() {
       nu_vpe_print_config(iteration_desc.cfg_vpe);
       if(iteration_desc.PPE_ENABLED==Enable_En)
         nu_ppe_print_config(iteration_desc.cfg_ppe);
-      
+
       rumboot_printf("Test FAILED at iteration %d\n",i);
 
       return 1;
@@ -218,3 +289,4 @@ int main() {
   rumboot_printf("Test Passed\n");
   return 0;
 }
+

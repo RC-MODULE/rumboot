@@ -623,6 +623,7 @@ int nu_regs_check(uintptr_t base,int num, int iteration);
 void nu_na_vpe_pause(uintptr_t npe_base );
 void nu_na_vpe_soft_reset(uintptr_t npe_base);
 
+void nu_mpe_wait_ready(uintptr_t base);
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 

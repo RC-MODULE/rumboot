@@ -338,6 +338,26 @@ endmacro()
         IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_tight
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
+        CFLAGS -DDONT_USE_PPE=1
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
     endmacro()
 
       # Tests Use All 3 Units
@@ -346,6 +366,25 @@ endmacro()
         CONFIGURATION ${CONF}
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_tight
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
@@ -614,6 +653,15 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight_rst
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_rst_long.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DVPE_CUBE_CMPL=1 -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )    
 endmacro()
 
 

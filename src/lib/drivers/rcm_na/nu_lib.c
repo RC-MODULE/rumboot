@@ -1844,6 +1844,11 @@ void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
   nu_mpe_dma_setup(base + MPE_RDMA_W_BASE, & cfg->dma_w_config);
 }
 
+void nu_mpe_wait_ready(uintptr_t base) {
+  while(ioread32(base + MPE_RDMA_D_BASE + DMA_STS) != 0) {}
+  while(ioread32(base + MPE_RDMA_W_BASE + DMA_STS) != 0) {}
+}
+
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   rumboot_printf("Start MPE...\n");
   iowrite32(0,mpe_base + MPE_RDMA_D_BASE + DMA_START);
@@ -2325,7 +2330,7 @@ return 0;
 int nu_regs_check(uintptr_t base, int num, int iteration) {
 	  int res;	
 	for( int i =0; i< iteration;i++) {
-		if (i != 2)
+		if ((i != 2) & (i !=1)) //?? (i !=1)
 		{res = ioread32(base + 4*i);}
 	//	{rumboot_printf("res =%x\n",res); }
 	//	rumboot_printf("addr =%x\n",(base + 4*i)); }	
