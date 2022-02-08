@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -x
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -236,4 +236,6 @@ if compgen -G "${NA_TEST_status_regs_file}.*" > /dev/null ; then
 fi
 
 # Turn them back
-rename merged. '' merged.*.bin*
+for file in `find . -maxdepth 1 -name "merged.*"`; do
+        mv "$file" "${file/merged./}"
+done
