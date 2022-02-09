@@ -613,9 +613,14 @@ void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
 uint32_t nu_vpe_busy(uintptr_t vpe_base);
 
 
-void nu_vpe_set_int_mask(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_set_int_mask(uintptr_t vpe_base,ConfigVPE* cfg);
 void nu_vpe_pause_next_cntx(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_dev_resume(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_dev_pause_resume(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_wait_int_pause_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_wait_int_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg);
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
 int nu_regs_check(uintptr_t base,int num, int iteration);
