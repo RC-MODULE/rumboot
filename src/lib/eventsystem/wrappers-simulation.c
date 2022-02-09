@@ -26,11 +26,19 @@ __attribute__((no_instrument_function)) void rumboot_platform_perf_func(void *ad
 	rumboot_platform_event_raise(EVENT_PERF_FUNC, data, ARRAY_SIZE(data));
 }
 
+uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, uint32_t bufsize)
+{
+	uint32_t data[] = { (uint32_t) plusarg, addr, bufsize };
+	rumboot_platform_event_raise(EVENT_UPLOAD, data, ARRAY_SIZE(data));
+	/* FIXME: Proper return code handling here */ 
+	return 0;
+}
+
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
-	uint32_t data[] = { (uint32_t) plusarg, addr };
-	rumboot_platform_event_raise(EVENT_UPLOAD, data, ARRAY_SIZE(data));
+	rumboot_platform_request_file_ex(plusarg, addr, 0);
 }
+
 
 void rumboot_platform_sim_save(const char *filename)
 {

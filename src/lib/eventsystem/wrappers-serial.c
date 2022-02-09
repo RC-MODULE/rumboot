@@ -4,7 +4,6 @@
 #include <string.h>
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
-#include <rumboot/memfill.h>
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
 #include <rumboot/xmodem.h>
@@ -31,24 +30,29 @@ struct mcpy_desc {
 	uint32_t crc32; 
 	void *to;
 	size_t length;
+	size_t maxlength;
 };
 
 static void memcpy_cb(size_t curpos, void *data, size_t length, void *arg)
 {
 	struct mcpy_desc *dsc = arg;
 	char *to = dsc->to;
-	dsc->crc32 = crc32(dsc->crc32, data, length);
-	dsc->length += length;
-	memcpy(&to[curpos], data, length);
+	size_t tocopy = (length <= dsc->maxlength) ? length : dsc->maxlength;
+	dsc->crc32 = crc32(dsc->crc32, data, tocopy);
+	dsc->length += tocopy;
+	dsc->maxlength -= tocopy;
+	memcpy(&to[curpos], data, tocopy);
 }
 #include <rumboot/timer.h>
-void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
+
+uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, uint32_t bufsize)
 {
         rumboot_printf("UPLOAD: %s to 0x%x. 'X' for X-modem, 'E' for EDCL\n", plusarg, addr);
  		struct mcpy_desc dsc = {
 			 .crc32 = 0,
 			 .to = (void *) addr,
 			 .length = 0,
+			 .maxlength = (bufsize > 0) ? bufsize : -1
 		 };
 		while(1) {
 			int tmp = rumboot_platform_getchar(500);
@@ -68,6 +72,13 @@ void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 				break;
 			}
 		}
+		return dsc.length;
+}
+
+
+void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
+{
+	rumboot_platform_request_file_ex(plusarg, addr, 0);
 }
 
 void rumboot_platform_sim_save(const char *filename)
@@ -86,7 +97,7 @@ void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t 
 	while(1) {
 		char tmp = rumboot_platform_getchar(500);
 		if (tmp == 'X') {
-			xmodem_send(addr, len);
+			xmodem_send((void *) addr, len);
 			break;
 		}
 
