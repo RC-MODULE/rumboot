@@ -155,7 +155,7 @@ int main() {
   
   heap_id = nu_get_heap_id();
   
-  rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
+  rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
   rumboot_printf("Number of iterations %d\n",iterations);
   
 #if DUT_IS_NPE

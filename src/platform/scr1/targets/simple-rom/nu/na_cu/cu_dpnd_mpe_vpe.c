@@ -372,11 +372,11 @@ int main()
   int heap_id;
   heap_id = nu_get_heap_id();
 
-  metrics_in_data = rumboot_malloc_from_heap_aligned(heap_id,sizeof(metrics_in_data),128);
-  rumboot_platform_request_file("metrics_in_arr",(uintptr_t)metrics_in_data);
+  metrics_in_data = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),128);
+  rumboot_platform_request_file_ex("metrics_in_arr",(uintptr_t)metrics_in_data,sizeof(CubeMetrics));
 
   in_data = rumboot_malloc_from_heap_aligned(heap_id,metrics_in_data->s,128);
-  rumboot_platform_request_file("in_arr", (uintptr_t)in_data);
+  rumboot_platform_request_file_ex("in_arr", (uintptr_t)in_data,metrics_in_data->s);
 
   //mpe_out_data = rumboot_malloc_from_heap_aligned(heap_id,metrics_pe_data->s,128);
   
@@ -474,11 +474,11 @@ int main()
 
   rumboot_printf("Comparing...\n");
 
-  metrics_etalon_data = rumboot_malloc_from_heap_aligned(heap_id,sizeof(metrics_etalon_data),128);
-  rumboot_platform_request_file("metrics_etalon_arr",(uintptr_t)metrics_etalon_data);
+  metrics_etalon_data = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),128);
+  rumboot_platform_request_file_ex("metrics_etalon_arr",(uintptr_t)metrics_etalon_data,sizeof(CubeMetrics));
 
   etalon_data = rumboot_malloc_from_heap_aligned(heap_id,metrics_etalon_data->s,128);
-  rumboot_platform_request_file("etalon_arr", (uintptr_t)etalon_data);
+  rumboot_platform_request_file_ex("etalon_arr", (uintptr_t)etalon_data,metrics_etalon_data->s);
   
   //for (int j=0; j<(metrics_etalon_data->s)/2; j++) {
   //  rumboot_printf("etalon[%d] = 0x%x, mpe = 0x%x\n",j,etalon_data[j],mpe_out_data[j]);

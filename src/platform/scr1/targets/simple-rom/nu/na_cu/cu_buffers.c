@@ -111,11 +111,11 @@ int main()
   int heap_id;
   heap_id = nu_get_heap_id();
 
-  metrics_in_data = rumboot_malloc_from_heap_aligned(heap_id,sizeof(metrics_in_data),128);
-  rumboot_platform_request_file("metrics_in_arr",(uintptr_t)metrics_in_data);
+  metrics_in_data = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),128);
+  rumboot_platform_request_file_ex("metrics_in_arr",(uintptr_t)metrics_in_data,sizeof(CubeMetrics));
 
   in_data = rumboot_malloc_from_heap_aligned(heap_id,metrics_in_data->s,128);
-  rumboot_platform_request_file("in_arr", (uintptr_t)in_data);
+  rumboot_platform_request_file_ex("in_arr", (uintptr_t)in_data, metrics_in_data->s);
 
   uint32_t mpe_in_data_addr = (uint32_t)in_data;
  
