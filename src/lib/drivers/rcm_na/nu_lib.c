@@ -2324,11 +2324,11 @@ void nu_na_vpe_soft_reset(uintptr_t npe_base){
 }
 
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
-	  int res;	
-	for( int i =num; i< iteration;i++) {
-		{res = ioread32(base + 4*i);}		
+	 int res;
+	res = ioread32(base + 4*num);
+	for( int i =num; i< iteration;i++) {	
 	if ((i != 38) & (i != 4) & (i != 7) )
-		//{res = ioread32(base + 4*i);}
+		{res = ioread32(base + 4*i);}
 		if(((res != 0x00000000) & (i !=12) & (i !=18)& (i !=24) & (i !=25) & (i !=31)& (i != 17) & (i != 23) &  (i != 36) & ( i != 54))|
 		((res != 0x00000053) &( (i==12)| (i ==18)| (i ==24))) |
 		((res != 0x00000002) &( (i==25)| (i ==31))) | 
@@ -2342,11 +2342,11 @@ int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
 return 0;  
 }
 int nu_regs_check(uintptr_t base, int num, int iteration) {
-	  int res;	
-	for( int i =0; i< iteration;i++) {
-		{res = ioread32(base + 4*i);}
+	  int res;
+	res = ioread32(base);	  
+	for( int i =0; i< iteration;i++) {	
 		if ((i != 2) & (i !=1)) //?? (i !=1)
-
+		{res = ioread32(base + 4*i);}
 		if(((res != 0x000000000) & (i !=3)) | ((res != 0x000020000) & (i ==3)))  {
 		rumboot_printf("res_invalid =%x\n",res);
 		rumboot_printf("addr =%x\n",(base + 4*i));
