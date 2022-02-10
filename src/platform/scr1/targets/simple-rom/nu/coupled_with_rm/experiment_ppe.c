@@ -30,7 +30,7 @@ int main() {
 
   int FM; // 0 FLYING_BOXED 1 FLYING_LINEAR 2 OFFLY_LINEAR
 
-  rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
+  rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   perf_avg = 0;

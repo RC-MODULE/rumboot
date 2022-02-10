@@ -47,11 +47,11 @@ void nu_vpe_decide_dma_config (
   if(last_turn) 
     cfg->mark = Enable_En;
   
-  cfg->src_rdma_config.dma_baddr = nu_virt_to_dma(in_data);
-  cfg->op0_rdma_config.dma_baddr = nu_virt_to_dma(op0);
-  cfg->op1_rdma_config.dma_baddr = nu_virt_to_dma(op1);
-  cfg->op2_rdma_config.dma_baddr = nu_virt_to_dma(op2);
-  cfg->wdma_config.dma_baddr     = nu_virt_to_dma(res_data);
+  cfg->src_rdma_config.dma_baddr = rumboot_virt_to_dma(in_data);
+  cfg->op0_rdma_config.dma_baddr = rumboot_virt_to_dma(op0);
+  cfg->op1_rdma_config.dma_baddr = rumboot_virt_to_dma(op1);
+  cfg->op2_rdma_config.dma_baddr = rumboot_virt_to_dma(op2);
+  cfg->wdma_config.dma_baddr     = rumboot_virt_to_dma(res_data);
 
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
@@ -83,7 +83,7 @@ int main() {
 #endif
 
  
-  rumboot_printf("Hellooooooo\n");
+  rumboot_printf("Hello\n");
 
   heap_id = nu_get_heap_id();
   
@@ -98,7 +98,9 @@ int main() {
 #if DUT_IS_NPE
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
-  
+#ifdef VPE_CUBE_CMPL
+  nu_vpe_set_int_mask(MY_VPE_REGS_BASE, iteration_desc.cfg); 	
+#endif       
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
   //~ cfg_prev=NULL;
@@ -168,7 +170,11 @@ int main() {
     
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
-    nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);
+    // vpe received pause
+	nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE, iteration_desc.cfg);			
+	nu_vpe_dev_pause_norst_resume(MY_VPE_REGS_BASE,iteration_desc.cfg);
+	nu_vpe_wait_int_pause_norst_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);
+	
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
   }
@@ -200,8 +206,7 @@ int main() {
         iteration_desc.res_metrics->C
       );
       return 1;
-    }
-    
+    } 
     nu_vpe_iterate_desc(&iteration_desc);
   }
   

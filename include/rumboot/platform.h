@@ -207,6 +207,7 @@ int rumboot_platform_getchar(uint32_t timeout_us);
  * @param plusarg the name of plusarg that contains the filename or the filename
  * @param addr   address to load the file to
  */
+uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, uint32_t bufsize);
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr);
 
 

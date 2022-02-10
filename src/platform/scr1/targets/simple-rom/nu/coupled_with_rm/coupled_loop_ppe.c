@@ -45,7 +45,7 @@ int main() {
 
   rumboot_printf("coupled_loop_ppe\n");
 
-  rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
+  rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   #if DUT_IS_NPE
@@ -101,8 +101,8 @@ int main() {
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
     if (!res) {
-      cfg_reg.rBALi = rumboot_virt_to_dma(in_data);
-      cfg_reg.wBALo = rumboot_virt_to_dma(res_data);
+      cfg_reg.rBALi = nu_virt_to_dma(in_data);
+      cfg_reg.wBALo = nu_virt_to_dma(res_data);
     
       cfg_reg.wOpM = flying_mode << 8;
       nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);

@@ -43,12 +43,12 @@ void nu_vpe_decide_dma_config (
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
   
-  cfg->src_rdma_config.dma_baddr = rumboot_virt_to_dma(in_data);
-  cfg->op0_rdma_config.dma_baddr = rumboot_virt_to_dma(op0);
-  cfg->op1_rdma_config.dma_baddr = rumboot_virt_to_dma(op1);
-  cfg->op2_rdma_config.dma_baddr = rumboot_virt_to_dma(op2);
-  cfg->wdma_config.dma_baddr     = rumboot_virt_to_dma(res_data);
-
+  cfg->src_rdma_config.dma_baddr = nu_virt_to_dma(in_data);
+  cfg->op0_rdma_config.dma_baddr = nu_virt_to_dma(op0);
+  cfg->op1_rdma_config.dma_baddr = nu_virt_to_dma(op1);
+  cfg->op2_rdma_config.dma_baddr = nu_virt_to_dma(op2);
+  cfg->wdma_config.dma_baddr     = nu_virt_to_dma(res_data);
+  
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
   cfg->op1_rdma_config.dma_axi_len = axi_len;
@@ -79,7 +79,7 @@ int main() {
 
   heap_id = nu_get_heap_id();
   
-  rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
+  rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
   rumboot_printf("Number of iterations %d\n",iterations);
   
   nu_vpe_init_test_desc(&test_desc);

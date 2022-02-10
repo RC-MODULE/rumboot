@@ -2276,7 +2276,6 @@ void nu_na_vpe_pause(uintptr_t npe_base ){
 }
 
 void nu_vpe_dev_resume(uintptr_t vpe_base, ConfigVPE* cfg){
-  uint32_t temp;	
     rumboot_printf(" VPE finished cube handle ...\n");
 	//iowrite32(temp | (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 4) & 1) !=1) {}	
@@ -2286,12 +2285,26 @@ void nu_vpe_dev_resume(uintptr_t vpe_base, ConfigVPE* cfg){
 	rumboot_printf("Done VPE end \n");
 }
 void nu_vpe_dev_pause_resume(uintptr_t vpe_base, ConfigVPE* cfg){
-  uint32_t temp;	
     rumboot_printf("Start after stop VPE  begin...\n");
-	iowrite32(temp | (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	iowrite32(/*temp |*/ (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 7) & 1) !=1) {}
 	
 	rumboot_printf("Done VPE start after stop\n");
+}
+void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base, ConfigVPE* cfg){
+    rumboot_printf("Start after stop VPE  begin...\n");
+	iowrite32((0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 7) & 1) !=1) {}
+	 iowrite32((1<<7) ,vpe_base + NU_VPE + NU_VPE_INT_RESET); 
+	rumboot_printf("Done VPE start after stop\n");
+}
+void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
+	rumboot_printf("Wait VPE context got\n");
+    while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 4) & 1) !=1) {}
+    iowrite32((1<<4),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 8) & 1) !=1) {}
+    iowrite32(((1<<8) ),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
+  rumboot_printf("Done VPE context\n");
 }
 void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Soft reset VPE ...\n");	
@@ -2311,15 +2324,16 @@ void nu_na_vpe_soft_reset(uintptr_t npe_base){
 }
 
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
-	  int res;	
-	for( int i =num; i< iteration;i++) {
+	 int res;
+	res = ioread32(base + 4*num);
+	for( int i =num; i< iteration;i++) {	
 	if ((i != 38) & (i != 4) & (i != 7) )
 		{res = ioread32(base + 4*i);}
-		if((res != 0x00000000) & (i !=12) & (i !=18)& (i !=24) & (i !=25) & (i !=31)& (i != 17) & (i != 23) &  (i != 36) & ( i != 54)|
-		(res != 0x00000053) &( (i==12)| (i ==18)| (i ==24)) |
-		(res != 0x00000002) &( (i==25)| (i ==31)) | 
+		if(((res != 0x00000000) & (i !=12) & (i !=18)& (i !=24) & (i !=25) & (i !=31)& (i != 17) & (i != 23) &  (i != 36) & ( i != 54))|
+		((res != 0x00000053) &( (i==12)| (i ==18)| (i ==24))) |
+		((res != 0x00000002) &( (i==25)| (i ==31))) | 
 		(((res >> 16)  != 0x00000007) & ( (i ==17) | (i ==23) | (i ==36))) | 
-		(((res >> 19)  != 0x00000000) & (i == 54))  ) {
+		((((res >> 19)  != 0x00000000) & (i == 54)))  ) {
 		rumboot_printf("res_invalid =%x\n",res);
 		rumboot_printf("addr =%x\n",(base + 4*i));
 		return  -1;
@@ -2328,12 +2342,11 @@ int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
 return 0;  
 }
 int nu_regs_check(uintptr_t base, int num, int iteration) {
-	  int res;	
-	for( int i =0; i< iteration;i++) {
+	  int res;
+	res = ioread32(base);	  
+	for( int i =0; i< iteration;i++) {	
 		if ((i != 2) & (i !=1)) //?? (i !=1)
 		{res = ioread32(base + 4*i);}
-	//	{rumboot_printf("res =%x\n",res); }
-	//	rumboot_printf("addr =%x\n",(base + 4*i)); }	
 		if(((res != 0x000000000) & (i !=3)) | ((res != 0x000020000) & (i ==3)))  {
 		rumboot_printf("res_invalid =%x\n",res);
 		rumboot_printf("addr =%x\n",(base + 4*i));

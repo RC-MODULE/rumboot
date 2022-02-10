@@ -18,8 +18,8 @@ void nu_ppe_decide_dma_config(
   void* in_data,
   void* res_data
 ) {
-  cfg_reg->rBALi = rumboot_virt_to_dma(in_data);
-  cfg_reg->wBALo = rumboot_virt_to_dma(res_data);
+  cfg_reg->rBALi = nu_virt_to_dma(in_data);
+  cfg_reg->wBALo = nu_virt_to_dma(res_data);
 
   cfg_reg->wOpM = flying_mode << 8;
   nu_ppe_decide_dma_config_trivial(cfg, res_metrics, cfg_reg);
@@ -62,7 +62,7 @@ int main() {
   
   heap_id = nu_get_heap_id();
   
-  rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
+  rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   #if DUT_IS_NPE

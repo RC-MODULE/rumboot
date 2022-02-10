@@ -446,11 +446,11 @@ int main()
   warr = nu_mpe_load_warr(heap_id,warr_metrics);
   if(warr == NULL) return -1;
 
-  op0_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(op0_metrics),128);
-  rumboot_platform_request_file("metrics_op0_cube_tag",(uintptr_t)op0_metrics);
+  op0_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),128);
+  rumboot_platform_request_file_ex("metrics_op0_cube_tag",(uintptr_t)op0_metrics,sizeof(CubeMetrics));
 
   op0_data = rumboot_malloc_from_heap_aligned(heap_id,op0_metrics->s,128);
-  rumboot_platform_request_file("op0_cube_file_tag", (uintptr_t)op0_data);
+  rumboot_platform_request_file_ex("op0_cube_file_tag", (uintptr_t)op0_data,op0_metrics->s);
 
   res_metrics= nu_mpe_load_res_metrics(heap_id);
   if(res_metrics == NULL) return -1;
