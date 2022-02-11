@@ -974,8 +974,17 @@ void nu_vpe_setup_op2(uintptr_t base_, Enable op_en, ConfigOp2* op_config, DataT
   }
 }
 
-void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config) {
+void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config, TraceMode trace_mode) {
   uint32_t tmp_data;
+  
+    // CRUTCH - Because Of Wrong Batch Mode Algorythm This Fields Calculated Incorrectly By nu_vpe_decide_dma_cube_config
+    //          We Should Fix Them Here
+    //          Waiting For The Batch Mode Algorythm Edition To Remove This CRUTCH CHECK
+  if(trace_mode==TraceMode_MPE) {
+    dma_config->dma_box_st_size_x = (128/(dma_config->dma_bsize+1)) - 1;
+    dma_config->dma_box_size_x    = (128/(dma_config->dma_bsize+1)) - 1;
+  }
+    // 
   
   tmp_data =( dma_config->dma_ram_type        << 8) | 
             ((dma_config->dma_data_mode >> 1) << 7) | 
@@ -1001,10 +1010,10 @@ void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config) {
   iowrite32(dma_config->dma_frag_last_size  , base_ + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
   iowrite32(dma_config->dma_frag_size       , base_ + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
   iowrite32(dma_config->dma_xyz_drct        , base_ + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;
-  iowrite32(/*dma_config->dma_box_st_size_x*/ (128/(dma_config->dma_bsize+1))/**(dma_config->dma_bsize+1)*/ - 1    , base_ + NU_VPE_DMA_BOX_ST_SIZE_X       ) ; // IMPROVE IT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  iowrite32(dma_config->dma_box_st_size_x   , base_ + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
   iowrite32(dma_config->dma_box_st_size_y   , base_ + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
   iowrite32(dma_config->dma_box_st_size_z   , base_ + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
-  iowrite32(/*dma_config->dma_box_size_x*/    (128/(dma_config->dma_bsize+1))/**(dma_config->dma_bsize+1)*/ - 1    , base_ + NU_VPE_DMA_BOX_SIZE_X          ) ;   // IMPROVE IT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  iowrite32(dma_config->dma_box_size_x      , base_ + NU_VPE_DMA_BOX_SIZE_X          ) ;
   iowrite32(dma_config->dma_box_size_y      , base_ + NU_VPE_DMA_BOX_SIZE_Y          ) ;
   iowrite32(dma_config->dma_box_size_z      , base_ + NU_VPE_DMA_BOX_SIZE_Z          ) ;
   iowrite32(dma_config->dma_box_offset_x    , base_ + NU_VPE_DMA_BOX_OFFSET_SIZE_X   ) ;
@@ -1057,15 +1066,15 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   // OP2 ----------------------------------------------------------------
   nu_vpe_setup_op2 (base + NU_VPE                                  , cfg->op2_en, &(cfg->op2_config), cfg->in_data_type );
   // Configuration of WDMA -------------------------------------------------------------------------
-  nu_vpe_setup_dma (base + NU_VPE_DST_WDMA                                      , &(cfg->wdma_config) );
+  nu_vpe_setup_dma (base + NU_VPE_DST_WDMA                                      , &(cfg->wdma_config)    , cfg->trace_mode );
   // Configuration SRC_RDMA ------------------------------------------------------
-  nu_vpe_setup_dma (base + NU_VPE_SRC_RDMA                                      , &(cfg->src_rdma_config) );
+  nu_vpe_setup_dma (base + NU_VPE_SRC_RDMA                                      , &(cfg->src_rdma_config), cfg->trace_mode );
   // Configuration OP0_RDMA ------------------------------------------------------
-  nu_vpe_setup_dma (base + NU_VPE_OP0_RDMA                                      , &(cfg->op0_rdma_config) );
+  nu_vpe_setup_dma (base + NU_VPE_OP0_RDMA                                      , &(cfg->op0_rdma_config), cfg->trace_mode );
   // Configuration OP1_RDMA ------------------------------------------------------
-  nu_vpe_setup_dma (base + NU_VPE_OP1_RDMA                                      , &(cfg->op1_rdma_config) );
+  nu_vpe_setup_dma (base + NU_VPE_OP1_RDMA                                      , &(cfg->op1_rdma_config), cfg->trace_mode );
   // Configuration OP2_RDMA ------------------------------------------------------
-  nu_vpe_setup_dma (base + NU_VPE_OP2_RDMA                                      , &(cfg->op2_rdma_config) );
+  nu_vpe_setup_dma (base + NU_VPE_OP2_RDMA                                      , &(cfg->op2_rdma_config), cfg->trace_mode );
 }
 
 
@@ -1162,10 +1171,10 @@ void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, Cub
       dma_cfg->dma_border_x       = (metrics->W - 1) * dma_cfg->dma_stride_x                  ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
       dma_cfg->dma_border_y       = (metrics->H - 1) * dma_cfg->dma_stride_y                  ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
       
-      dma_cfg->dma_box_st_size_x  = (128/(dma_cfg->dma_bsize+1))*(dma_cfg->dma_bsize+1) - 1 ;
+      dma_cfg->dma_box_st_size_x  = (128/(dma_cfg->dma_bsize+1)) - 1 ;
       dma_cfg->dma_box_st_size_y  = 1      - 1 ;
       dma_cfg->dma_box_st_size_z  = 128/16 - 1 ;
-      dma_cfg->dma_box_size_x     = (128/(dma_cfg->dma_bsize+1))*(dma_cfg->dma_bsize+1) - 1 ;
+      dma_cfg->dma_box_size_x     = (128/(dma_cfg->dma_bsize+1)) - 1 ;
       dma_cfg->dma_box_size_y     = 1      - 1 ;
       dma_cfg->dma_box_size_z     = 128/16 - 1 ;
       dma_cfg->dma_box_offset_x   = 0 ;

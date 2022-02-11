@@ -554,7 +554,7 @@ void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2);
 void nu_vpe_setup_op01(uintptr_t base_, Enable op_en, ConfigOp01* op_config);
 void nu_vpe_setup_lut(uintptr_t base_, ConfigOp2* op_config, DataTypeExt in_data_type);
 void nu_vpe_setup_op2(uintptr_t base_, Enable op_en, ConfigOp2* op_config, DataTypeExt in_data_type);
-void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config);
+void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config, TraceMode trace_mode);
   
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg);
 
