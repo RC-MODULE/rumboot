@@ -25,7 +25,7 @@
 static inline uint32_t rumboot_arch_irq_disable()
 {
     uint32_t ret = 0;
-    uint32_t new_state = 0x1f0; /* Mask ALL interrupts */
+    uint32_t new_state = 0x1e0; /* Mask ALL interrupts */
     asm volatile(
         "delayed callrel 2;\n"
         "pswr clear %1;\n"
@@ -35,7 +35,7 @@ static inline uint32_t rumboot_arch_irq_disable()
         : "=r"(ret)
         : "r"(new_state)
         );
-    return ret & 0x1f0; /* Do not return flags & reserved bits */
+    return ret & 0x1e0; /* Do not return flags & reserved bits */
 }
 
 static inline void __nmc_flush_pipeline()
