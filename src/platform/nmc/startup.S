@@ -123,6 +123,11 @@ irq_vector RUMBOOT_IRQ_TYPE_NORMAL,    63
  */
 
 irq_wrapper:
+    /* Arch weirdness: Force-disable all IRQs. 
+     * Otherwise if an atomic block kicks in, we may end up in a nested IRQ.
+     * We will restore pswr from stack when doing ireturn
+     */
+    pswr clear 0x1e0;  
     push ar5;
     push gr7;
     ar5 = 0;
