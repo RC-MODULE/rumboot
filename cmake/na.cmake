@@ -973,6 +973,23 @@ macro(na_testsuite_add_npe_tests CONF)
     FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
   )
 
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME simple_direct_WITH_PPE
+    FILES scr1/targets/simple-rom/nu/simple_direct/nu_simple_direct.c
+    PREPCMD cp ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/simple_direct/with_ppe/* .
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+  )
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME simple_direct_WITH_VPE
+    CFLAGS -DDONT_USE_PPE=1
+    FILES scr1/targets/simple-rom/nu/simple_direct/nu_simple_direct.c
+    PREPCMD cp ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/simple_direct/with_vpe/* .
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+  )
+
   ################################
   ### MPE Tests
   ### FixMe: Duplication? 
