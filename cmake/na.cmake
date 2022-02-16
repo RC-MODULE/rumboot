@@ -317,7 +317,7 @@ endmacro()
 
 
       # Tests Use MPE+VPE (Without PPE)
-      macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name)
+      macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight)
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}
@@ -338,30 +338,32 @@ endmacro()
         IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}_tight
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
-        CFLAGS -DDONT_USE_PPE=1
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
+      if("${make_tight}" STREQUAL "MAKE_TIGHT")
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME ${name}_tight
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
+          CFLAGS -DDONT_USE_PPE=1
+          PREPCMD 
+            ${NA_RM_BIN_PATH}/${rm_bin_name} 
+            ${NA_RM_KEYS} 
+            ${RM_TF_KEYS}
+            > ${RM_LOGFILE} &&
 
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+            &&
+            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-          || exit 1
+            || exit 1
 
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+        )
+      endif()  # MAKE_TIGHT
     endmacro()
 
       # Tests Use All 3 Units
-    macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name)
+    macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight)
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}
@@ -381,25 +383,27 @@ endmacro()
         IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}_tight
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
+      if("${make_tight}" STREQUAL "MAKE_TIGHT")
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME ${name}_tight
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
+          PREPCMD 
+            ${NA_RM_BIN_PATH}/${rm_bin_name} 
+            ${NA_RM_KEYS} 
+            ${RM_TF_KEYS}
+            > ${RM_LOGFILE} &&
 
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+            &&
+            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-          || exit 1
+            || exit 1
 
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+        )
+      endif()  # MAKE_TIGHT
     endmacro()
 
 macro (ADD_MPE_CONV_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
@@ -1074,50 +1078,50 @@ macro(na_testsuite_add_npe_tests CONF)
           ##########################################
           ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
         foreach(label RANGE 25 48)  # Int16
-          ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+          ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
         endforeach()
         foreach(label RANGE 49 72)  # Int8
-          ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+          ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
         endforeach()
     
           foreach(label RANGE 1 24)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
           endforeach()
           foreach(label RANGE 25 72)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT)
           endforeach()
           foreach(label RANGE 1 48)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT)
           endforeach()
     
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
         foreach(label RANGE 49 72)
-          ADD_NPE_COMPLEX_TEST(${CONF} NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+          ADD_NPE_COMPLEX_TEST(${CONF} NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT)
         endforeach()
         foreach(label RANGE 25 48)
-          ADD_NPE_COMPLEX_TEST(${CONF} NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+          ADD_NPE_COMPLEX_TEST(${CONF} NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT)
         endforeach()
     
           ###################################
           ## Some Other Direct Tests
           foreach(label RANGE 1 24)
-            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT)
           endforeach()
           foreach(label RANGE 1 48)
-            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE)
+            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE NO_TIGHT)
           endforeach()
     
-          ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16)
+          ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT)
           
           ###################################################################
           # Resnet-test 
-          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE) # LAYER0_MPE
-          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN) # LAYER0_MPE_BN
-          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU) # LAYER0_MPE_BN_RELU
-          ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE) # LAYER0_MPE_BN_RELU_PPE
+          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT) # LAYER0_MPE
+          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT) # LAYER0_MPE_BN
+          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT) # LAYER0_MPE_BN_RELU
+          ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT) # LAYER0_MPE_BN_RELU_PPE
           ###################################################################
     
 
