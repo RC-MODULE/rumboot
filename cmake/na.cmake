@@ -428,6 +428,19 @@ add_rumboot_target(
 endmacro()
 
 
+macro (ADD_MPE_VPE_BATCH_TEST CONF B C W H LP RP BP TP K S R SX SY)
+set(TEST_BINS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/BATCH/B${B})
+add_rumboot_target(
+  CONFIGURATION ${CONF}
+  NAME MPE_VPE_BATCH${B}
+  FILES scr1/targets/simple-rom/nu/npe/mpe_vpe_batch.c
+  CFLAGS -DdB=${B} -DdC=${C} -DdW=${W} -DdH=${H} -DLP=${LP} -DRP=${RP} -DBP=${BP} -DTP=${TP} -DdK=${K} -DdS=${S} -DdR=${R} -DSX=${SX} -DSY=${SY} 
+  PREPCMD cp ${TEST_BINS}/cmd.bin ${TEST_BINS}/cmd.bin.metrics ${TEST_BINS}/cube.bin ${TEST_BINS}/cube.bin.metrics ${TEST_BINS}/etalon.bin.metrics ${TEST_BINS}/warr.bin ${TEST_BINS}/warr.bin.metrics -t .
+  IRUN_FLAGS ${NA_RM_PLUSARGS}
+)
+endmacro()
+
+
 macro (ADD_MPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
 set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
 foreach(i RANGE 0 15)
@@ -1028,7 +1041,10 @@ macro(na_testsuite_add_npe_tests CONF)
           PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
           IRUN_FLAGS ${NA_RM_PLUSARGS}
         )
-    
+        
+        ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
+        ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
+
           ################################
           ### Control Unit Tests
         set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
