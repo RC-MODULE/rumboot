@@ -963,6 +963,20 @@ foreach(name_in ${${test_list_name}})
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
 
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_tight
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_ppe_long.c
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+
+    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
   if (j EQUAL 3)
     math (EXPR NU_SEED "${NU_SEED} + 1")
   endif()
