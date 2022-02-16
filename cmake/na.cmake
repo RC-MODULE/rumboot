@@ -506,13 +506,13 @@ foreach(name_in ${${test_list_name}})
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO}} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
       CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
 
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
     )
@@ -835,13 +835,13 @@ foreach(i RANGE ${TST_NMB})
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}_${i}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
 
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
@@ -884,13 +884,13 @@ foreach(i RANGE ${TST_NMB})
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
 
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
@@ -948,13 +948,13 @@ foreach(name_in ${${test_list_name}})
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
 
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )

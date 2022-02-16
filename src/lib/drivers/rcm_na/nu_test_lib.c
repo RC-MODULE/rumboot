@@ -1570,6 +1570,7 @@ int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations
 
 
 void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
+  test_desc-> MPE_ENABLED=Enable_En;
   test_desc-> PPE_ENABLED=Enable_En;
   
   test_desc-> array_of_cfg_mpe=NULL;
@@ -1599,6 +1600,7 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
 
 
 void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc) {
+  iteration_desc->MPE_ENABLED=test_desc->MPE_ENABLED;
   iteration_desc->PPE_ENABLED=test_desc->PPE_ENABLED;
   
   iteration_desc->cfg_mpe  = test_desc->array_of_cfg_mpe;
@@ -1671,7 +1673,9 @@ void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty
 
 void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
   desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s );
-  desc->warr    = (void*) ( (char*)(desc->warr)    + desc->warr_metrics->s);
+  if(desc->MPE_ENABLED==Enable_En) {
+    desc->warr    = (void*) ( (char*)(desc->warr)    + desc->warr_metrics->s);
+  }
   desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s);
   desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s);
   if    (desc->cfg_vpe->op0_en==Enable_En) {
@@ -1724,12 +1728,16 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     }
   }
   
-  desc->warr_metrics       += 1;
+  if(desc->MPE_ENABLED) {
+    desc->warr_metrics       += 1;
+  }
   desc->in_metrics         += 1;
   desc->res_metrics        += 1;
   //~ desc->status_regs_etalon += 1;
   
-  desc->cfg_mpe += 1;
+  if(desc->MPE_ENABLED) {
+    desc->cfg_mpe += 1;
+  }
   desc->cfg_vpe += 1;
   
   if(desc->PPE_ENABLED==Enable_En) {
@@ -1741,30 +1749,36 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
 
 
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
-  test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigMPE)*iterations,sizeof(uint32_t));
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigMPE)*iterations,sizeof(uint32_t));
+  }
   test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
   if(test_desc->PPE_ENABLED==Enable_En) {
     test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)*iterations,sizeof(uint32_t));
     test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
   }
   
-  if(test_desc->array_of_cfg_mpe==NULL ||
+  if((test_desc->array_of_cfg_mpe==NULL && test_desc->MPE_ENABLED==Enable_En) ||
      test_desc->array_of_cfg_vpe==NULL ||
    ((test_desc->array_of_cfg_ppe==NULL || test_desc->array_of_cfg_reg_ppe==NULL) && test_desc->PPE_ENABLED==Enable_En) 
     ) return -1;
   
-  if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,iterations) !=0) return -1;
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,iterations) !=0) return -1;
+  }
   if(nu_vpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_vpe,iterations) !=0) return -1;
   if(test_desc->PPE_ENABLED==Enable_En)
     if(nu_ppe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_ppe,iterations) !=0) return -1;
   
-  test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", iterations);
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", iterations);
+  }
   test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
   test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
   
   if(test_desc->array_of_in_metrics  ==NULL ||
      test_desc->array_of_res_metrics ==NULL ||
-     test_desc->array_of_warr_metrics==NULL ) return -1;
+    (test_desc->array_of_warr_metrics==NULL && test_desc->MPE_ENABLED==Enable_En) ) return -1;
   
   if(nu_vpe_load_arrays_of_op_metrics(
     heap_id,
@@ -1774,21 +1788,25 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     test_desc->array_of_cfg_vpe,
     iterations) !=0) return -1;
   
-  test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,iterations);
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,iterations);
+  }
   test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
   test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
   test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
   
   if(test_desc->array_of_in_data ==NULL || 
-     test_desc->array_of_warr    ==NULL ||
+    (test_desc->array_of_warr    ==NULL && test_desc->MPE_ENABLED==Enable_En) ||
      test_desc->array_of_etalon  ==NULL || 
      test_desc->array_of_res_data==NULL ) return -1;
   
   if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
   
-  test_desc->mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
-  if(test_desc->mpe_cfg_lut==NULL)
-    return -1;
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
+    if(test_desc->mpe_cfg_lut==NULL)
+      return -1;
+  }
   
   //~ test_desc->array_of_status_regs_etalon = nu_vpe_load_array_of_status_regs(heap_id,iterations);
   //~ if(test_desc->array_of_status_regs_etalon==NULL)return -1;

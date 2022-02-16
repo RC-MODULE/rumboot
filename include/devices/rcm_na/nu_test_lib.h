@@ -209,6 +209,7 @@ int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations
 
 ///
 typedef struct NPETestDescriptor {
+  Enable MPE_ENABLED;
   Enable PPE_ENABLED;
   
   ConfigMPE* array_of_cfg_mpe;
@@ -239,6 +240,7 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc);
 
 
 typedef struct NPEIterationDescriptor {
+  Enable MPE_ENABLED;
   Enable PPE_ENABLED;
   
   ConfigMPE* cfg_mpe;
