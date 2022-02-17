@@ -626,11 +626,14 @@ void nu_vpe_wait_int_dev_off(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg);
-int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
-int nu_regs_check(uintptr_t base,int num, int iteration);
 
 void nu_na_vpe_pause(uintptr_t npe_base );
 void nu_na_vpe_soft_reset(uintptr_t npe_base);
+void nu_na_vpe_dev_pause_resume(uintptr_t npe_base);
+void nu_na_vpe_wait_int_pause_cntx_appl(uintptr_t npe_base);
+void nu_na_vpe_dev_resume(uintptr_t npe_base);
+
+void nu_na_wait_int(uintptr_t npe_base);
 
 void nu_mpe_wait_ready(uintptr_t base);
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
@@ -653,5 +656,6 @@ void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base);
 
 int out_dim_comp(int in_dim, int k_dim, int k_str);
 void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m);
-
+int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
+int nu_regs_check(uintptr_t base,int num, int iteration);
 #endif

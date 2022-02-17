@@ -289,4 +289,6 @@ void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc);
 void nu_npe_iterate_desc(NPEIterationDescriptor* desc) ;
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations);
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg);
+int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
+int nu_regs_check(uintptr_t base,int num, int iteration);
 #endif
