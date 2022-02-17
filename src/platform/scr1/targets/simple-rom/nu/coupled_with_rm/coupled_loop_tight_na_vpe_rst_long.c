@@ -154,13 +154,11 @@ nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
     //~ cfg_prev = iteration_desc.cfg;
     nu_vpe_iterate_desc(&iteration_desc);
   }
-//  rumboot_printf("Test A1 at iteration %d\n");
     // Once More Init - This Time For The Main Working Loop
   nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
   
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);
-//	 rumboot_printf("Test A2 at iteration %d\n");
     nu_vpe_iteration_start(&iteration_desc);
     
       // Load LUTs If Needed

@@ -833,7 +833,6 @@ add_rumboot_target(
 )
 endmacro()
 
-ADD_PPE_DGTL_SLTN_TESTS in na.cmake; npe_rm up
 macro (ADD_VPE_PPE_TESTS CONF name_in RM_CFG_PARAM)
 set (ShowPerf "NotShowPerf")
 set (TST_NMB 3)
