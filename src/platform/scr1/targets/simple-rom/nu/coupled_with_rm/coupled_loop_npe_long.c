@@ -201,10 +201,10 @@ int main() {
     if(nu_bitwise_compare(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
-      nu_mpe_print_config(iteration_desc.cfg_mpe);
-      nu_vpe_print_config(iteration_desc.cfg_vpe);
-      if(iteration_desc.PPE_ENABLED==Enable_En)
-        nu_ppe_print_config(iteration_desc.cfg_ppe);
+      //nu_mpe_print_config(iteration_desc.cfg_mpe);
+      //nu_vpe_print_config(iteration_desc.cfg_vpe);
+      //if(iteration_desc.PPE_ENABLED==Enable_En)
+      //  nu_ppe_print_config(iteration_desc.cfg_ppe);
       
       rumboot_printf("Test FAILED at iteration %d\n",i);
 
