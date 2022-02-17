@@ -1104,7 +1104,7 @@ void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, Cub
     dma_cfg->dma_box_st_size_z  = 0 ;
     dma_cfg->dma_box_size_x     = 0 ;
     dma_cfg->dma_box_size_y     = 0 ;
-    dma_cfg->dma_box_size_z     = 0 ;
+    dma_cfg->dma_box_size_z     = 128/16 - 1 ;  // CHECK CRUTCH - This Register Works Even When Channel Is Off
     dma_cfg->dma_box_offset_x   = 0 ;
     dma_cfg->dma_box_offset_y   = 0 ;
     dma_cfg->dma_box_offset_z   = 0 ;
