@@ -1815,11 +1815,9 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   
 }
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
-  uint32_t temp;
     rumboot_printf("Prepare for Stop VPE begin...\n");
 	while( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) == 0x00000041) !=1) {}
-	 rumboot_printf("Soft reset VPE ...\n");	
-	//while (( (ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) >> 20) & 1) !=1) {}
+	rumboot_printf("Soft reset VPE ...\n");	
 	iowrite32( (1<<0),vpe_base + NU_VPE + NU_VPE_SOFT_RESET);
 	rumboot_printf("Soft reset done ...\n");
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 17) & 1) !=1) {}
