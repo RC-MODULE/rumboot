@@ -1826,3 +1826,36 @@ void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
 	rumboot_printf("VPE fail soft reset passed\n");	
 	 iowrite32(((1<<17) | (1<<0)|(1<<6)) ,vpe_base + NU_VPE + NU_VPE_INT_RESET); 
 	}
+int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
+	 int res;
+	res = ioread32(base + 4*num);
+	for( int i =num; i< iteration;i++) {	
+	if ((i != 38) & (i != 4) & (i != 7) )
+		{res = ioread32(base + 4*i);}
+		if(((res != 0x00000000) & (i !=12) & (i !=18)& (i !=24) & (i !=25) & (i !=31)& (i != 17) & (i != 23) &  (i != 36) & ( i != 54))|
+		((res != 0x00000053) &( (i==12)| (i ==18)| (i ==24))) |
+		((res != 0x00000002) &( (i==25)| (i ==31))) | 
+		(((res >> 16)  != 0x00000007) & ( (i ==17) | (i ==23) | (i ==36))) | 
+		((((res >> 19)  != 0x00000000) & (i == 54)))  ) {
+		rumboot_printf("res_invalid =%x\n",res);
+		rumboot_printf("addr =%x\n",(base + 4*i));
+		return  -1;
+		}
+  }
+return 0;  
+}
+int nu_regs_check(uintptr_t base, int num, int iteration) {
+	  int res;
+	res = ioread32(base);	  
+	for( int i =0; i< iteration;i++) {	
+		if ((i != 2)) //& (i != 1)
+		{res = ioread32(base + 4*i);}
+		if(((res != 0x000000000) & (i !=3)) | ((res != 0x000020000) & (i ==3)))  {
+		rumboot_printf("res_invalid =%x\n",res);
+		rumboot_printf("addr =%x\n",(base + 4*i));
+		return  -1;
+    }
+  }
+  return 0;
+}		
+	
