@@ -99,6 +99,14 @@ macro(_na_init_variables DUT)
     # '.metrics' added by RM itself
   )
 
+  set (NA_RM_KEYS_PPE
+    --num_iterations_file      ${NA_TEST_num_iterations_file}
+    --in_file                  ${NA_TEST_in_file}
+    --etalon_file              ${NA_TEST_etalon_file}
+    --cfg_ppe_file             ${NA_TEST_cfg_ppe_file}
+    --status_regs_file         ${NA_TEST_status_regs_file}
+  )
+
   set(PLUSARG_num_iterations_file_tag num_iterations_file_tag)
   set(PLUSARG_in_file_tag in_file_tag)
   set(PLUSARG_in_ameba_file_tag in_ameba_file_tag)
@@ -154,7 +162,6 @@ macro(_na_init_variables DUT)
 
   set(PLUSARG_status_regs_file_tag status_regs_file_tag)
   set(PLUSARG_mpe_cfg_lut_file_tag mpe_cfg_lut_file_tag)
-
 
   set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/npe_rm/rm_core/rtl-tests)
   set(NA_RM_PLUSARGS +${PLUSARG_in_file_tag}=${NA_TEST_in_file}
@@ -892,14 +899,14 @@ endmacro()
 
 macro (ADD_PPE_DGTL_SLTN_TESTS CONF)
 
-set (dt_i8    0)
-set (dt_i16   1)
-set (dt_fp16  2)
+set (i8    0)
+set (i16   1)
+set (fp16  2)
 
 set (dt_lst
-  dt_i8
-  dt_i16
-  dt_fp16
+  i8
+  i16
+  fp16
 )
 
 set (avg  0)
@@ -957,8 +964,37 @@ foreach (pm ${pm_lst})
           set (set_dt_cfg "--data_type ${${dt}}")
 
           set (rm_cfg_prm "${set_pm_cfg} ${set_dt_cfg} ${set_Kw_cfg} ${set_Sw_cfg} ${set_Kh_cfg} ${set_Sh_cfg} ${set_W_cfg} ${set_H_cfg} ${set_C_cfg} ${set_Tp_cfg} ${set_Bp_cfg} ${set_Lp_cfg} ${set_Rp_cfg}")
+#          message("rm_cfg_prm ${rm_cfg_prm}")
 
-#          message ("rm_cfg_prm ${rm_cfg_prm}")
+          set (name "ppe_${dt}_${pm}_${kw}_${sw}_${kh}_${sh}_${w}_${h}_${c}")
+#          message("${name}")
+
+          set (LBS "LIN")
+          set (DataSrc "MEMtoPPE")
+          set (ShowPerf "DoNotShowPerf")
+          set (main_c scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c)
+
+          if (${dt} EQUAL i8)
+            set(rm_bin_name "main_ppe_IN_INT8")
+          elseif (${dt} EQUAL i16)
+            set(rm_bin_name "main_ppe_IN_INT16")
+          elseif (${dt} EQUAL fp16)
+            set(rm_bin_name "main_ppe_IN_FP16")
+          endif()
+
+          add_rumboot_target(
+            CONFIGURATION ${CONF}
+            NAME ${name}
+            FILES ${main_c}
+          
+            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS_PPE} --it_nmb 1 --seed 1 ${rm_cfg_prm} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS_PPE} || exit 1
+          
+            CFLAGS -D${LBS} -D${DataSrc} -D${ShowPerf} -DDUT=${DUT_LETTER_QUOTED}
+          
+            IRUN_FLAGS ${NA_RM_PLUSARGS}
+          
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
 
         endforeach()
       endforeach()
