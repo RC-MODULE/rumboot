@@ -921,8 +921,8 @@ set (pm_lst
 
 set (sw_lst_base 1 2)
 
-foreach (pm ${pm_lst})
-  foreach (dt ${dt_lst})
+foreach (dt ${dt_lst})
+  foreach (pm ${pm_lst})
     foreach (kw RANGE 2 8)
 
       set (sw_lst)
