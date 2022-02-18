@@ -1005,8 +1005,56 @@ endforeach()
 
 endmacro()
 
-macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
+macro (ADD_PPE_PY_TESTS CONF)
+  set(rm_bin_name main_ppe_IN_INT8)
+  set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${PPE_SOURCE_DIR}/model/testplan/testcaseKW_engine.py)
+  set(PPE_PY_TESTCASE_PREP_SCRIPT ${PPE_SOURCE_DIR}/model/constraint_engine.py)
+  set(PPE_PY_TESTCASE_PREP_SCRIPT_OPTS -cm all_with_all -cf )
+  execute_process(
+    COMMAND 
+      ${PYTHON_EXECUTABLE} ${PPE_PY_GENERATE_TESTCASE_SCRIPT}
+    WORKING_DIRECTORY
+      ${CMAKE_BINARY_DIR}
+    OUTPUT_VARIABLE
+      PPE_PY_TESTCASE_LIST
+  )
+  file(GLOB PPE_PY_TESTCASE_FILES ${CMAKE_BINARY_DIR}/data_constraint/*/*.py)
+  foreach(file ${PPE_PY_TESTCASE_FILES})
+    string(REGEX MATCH "[a-zA-Z0-9_\\.]+.py" test_file_name ${file})
+    string(REGEX MATCH "[0-9]+_dc_ppe_[a-zA-Z0-9_]+" test_dir ${file})
+    #string(REGEX MATCH "^[a-zA-Z0-9_\\.]+" test_name ${test_file_name})
+    string(REPLACE "." "_" test_name ${test_file_name})
+    set(test_name "${test_dir}-${test_name}")
+    execute_process(
+      COMMAND             grep scenario__path_mode ${file}
+      WORKING_DIRECTORY   ${CMAKE_BINARY_DIR}
+      OUTPUT_VARIABLE     SCENARIO_PATH_LINE
+    )
+    string(REGEX MATCH "mode_[a-z_]+" scenario__path_mode ${SCENARIO_PATH_LINE})
+    if("${scenario__path_mode}" STREQUAL "mode_linear")
+      set(LBS LIN)
+    endif()
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ppe_py_${test_name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
+      CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD 
+        cp ${file} . 
+        &&
+        ${PPE_PY_TESTCASE_PREP_SCRIPT} ${PPE_PY_TESTCASE_PREP_SCRIPT_OPTS} ${test_file_name}
+        &&
+        echo "We Will RUN:" ${NA_RM_BIN_PATH}/${rm_bin_name}  ${NA_RM_KEYS} --it_nmb 1 
+        && 
+        exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endforeach()
+endmacro()
 
+
+macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
 set (ShowPerf "NotShowPerf")
 set (i 0)
 
@@ -2188,6 +2236,8 @@ macro(na_testsuite_add_ppe_tests CONF)
   ADD_PPE_TESTS(${CONF} ppe_i8_avg_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_avg})
   ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
   ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
+
+  ADD_PPE_PY_TESTS(${CONF})
 
   ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
   #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
