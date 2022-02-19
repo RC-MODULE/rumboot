@@ -369,6 +369,29 @@ endmacro()
       endif()  # MAKE_TIGHT
     endmacro()
 
+    macro(ADD_NPE_MPE_RDMA_RDCH_VPE_TEST CONF name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+        CFLAGS -DDONT_USE_PPE=1 -DMPE_CFG_TESTPLAN_RDMA_RDCH
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+    endmacro()
+
       # Tests Use All 3 Units
     macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight)
       add_rumboot_target(
@@ -1207,6 +1230,8 @@ macro(na_testsuite_add_npe_tests CONF)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT)
           endforeach()
+
+          ADD_NPE_MPE_RDMA_RDCH_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
     
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
