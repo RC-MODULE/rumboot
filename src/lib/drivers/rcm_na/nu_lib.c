@@ -1255,8 +1255,6 @@ void nu_vpe_decide_op01_rdma_config(ConfigOp01* op_config, ConfigDMA* op_rdma_co
   }                                                                                                                                          \
   else op_rdma_config->dma_data_use = DmaDUse_Off ;                                                                                          \
                                                                                                                                              \
-  op_rdma_config->dma_bsize=0;                                                                                                               \
-  op_rdma_config->dma_bstride=0;                                                                                                             \
                                                                                                                                              \
   nu_vpe_decide_dma_cube_config(op_rdma_config, trace_mode, metrics);                                                                        \
   
