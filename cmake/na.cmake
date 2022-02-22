@@ -1439,62 +1439,6 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
   # Test on VPE special cases
   ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
 
-  # Tests on VPE batch-mode for int-type
-  foreach(in IN ITEMS IN_INT8 IN_INT16)
-    foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
-      foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
-        foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
-          foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-            foreach(number_testcase RANGE 1 4)
-              add_rumboot_target(
-                CONFIGURATION ${CONF}
-                NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS}
-                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-              )
-              add_rumboot_target(
-                CONFIGURATION ${CONF}
-                NAME vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS}
-                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-              )
-            endforeach()
-          endforeach()
-        endforeach()
-      endforeach()
-    endforeach()
-  endforeach()
-
-  # Tests on VPE batch-mode for fp-type
-  foreach(out IN ITEMS OUT_INT16 OUT_FP16)
-    foreach(number_testcase RANGE 1 4)
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-      )
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-      )
-    endforeach()
-  endforeach()
-
 endmacro()
 
 macro(na_testsuite_add_vpe_tests CONF)
@@ -1629,6 +1573,63 @@ macro(na_testsuite_add_vpe_tests CONF)
   # Test on VPE ???
   ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
   ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
+  
+  
+  # Tests on VPE batch-mode for int-type
+  foreach(in IN ITEMS IN_INT8 IN_INT16)
+    foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
+      foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
+        foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
+          foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+            foreach(number_testcase RANGE 1 4)
+              add_rumboot_target(
+                CONFIGURATION ${CONF}
+                NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+                IRUN_FLAGS ${NA_RM_PLUSARGS}
+                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+              )
+              add_rumboot_target(
+                CONFIGURATION ${CONF}
+                NAME vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+                IRUN_FLAGS ${NA_RM_PLUSARGS}
+                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+              )
+            endforeach()
+          endforeach()
+        endforeach()
+      endforeach()
+    endforeach()
+  endforeach()
+
+  # Tests on VPE batch-mode for fp-type
+  foreach(out IN ITEMS OUT_INT16 OUT_FP16)
+    foreach(number_testcase RANGE 1 4)
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+      )
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+      )
+    endforeach()
+  endforeach()
 
 endmacro()
 
