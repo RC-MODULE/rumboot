@@ -558,16 +558,24 @@ void nu_vpe_print_status_regs_etalon(VPEStatusRegs* status_regs) {
 void nu_mpe_print_ConfigRDDMAMPEBias(ConfigRDDMAMPEBias* bias,int index) {
   rumboot_printf("ConfigRDDMAMPEBias(%d):\n",index);
     nu_vpe_print_Enable(bias->BiasEn,"BiasEn");
-    rumboot_printf("  ThreCtrl = %d \n", bias->ThreCtrl);
-    rumboot_printf("  DecCtrl = %d \n", bias->DecCtrl);
+
+    if (index < 6) {
+      rumboot_printf("  ThreCtrl = %d \n", bias->ThreCtrl);
+      rumboot_printf("  DecCtrl = %d \n", bias->DecCtrl);
+    }
+
     nu_vpe_print_Enable(bias->PXBSEn,"PXBSEn");
     nu_vpe_print_Enable(bias->PYBSEn,"PYBSEn");
     rumboot_printf("  Bias = 0x%x \n",bias->Bias);
-    rumboot_printf("  AOffset = 0x%x \n",bias->AOffset );
+
     rumboot_printf("  CntSha = %d \n",bias->CntSha);
-    nu_vpe_print_Enable(bias->CntOffsetEn,"CntOffsetEn");
-    rumboot_printf("  CntOffset = %d \n",bias->CntOffset);
-    rumboot_printf("  CntThresholdSha = %d \n",bias->CntThresholdSha);
+
+    if (index < 6) {
+      nu_vpe_print_Enable(bias->CntOffsetEn,"CntOffsetEn");
+      rumboot_printf("  CntOffset = %d \n",bias->CntOffset);
+    }
+
+    rumboot_printf("  CntThresholdSha = %d \n",bias->CntThresholdSha);   
     rumboot_printf("  CntCmp = %d \n",bias->CntCmp);
 }
 
@@ -1247,8 +1255,6 @@ void nu_vpe_decide_op01_rdma_config(ConfigOp01* op_config, ConfigDMA* op_rdma_co
   }                                                                                                                                          \
   else op_rdma_config->dma_data_use = DmaDUse_Off ;                                                                                          \
                                                                                                                                              \
-  op_rdma_config->dma_bsize=0;                                                                                                               \
-  op_rdma_config->dma_bstride=0;                                                                                                             \
                                                                                                                                              \
   nu_vpe_decide_dma_cube_config(op_rdma_config, trace_mode, metrics);                                                                        \
   
@@ -1489,16 +1495,24 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
 //
   for(int i=0;i<7;i++){
     cfg->rdma.Bias[i].BiasEn=                    *ptr;ptr++;
-    cfg->rdma.Bias[i].ThreCtrl=(uint8_t)         *ptr;ptr++;
-    cfg->rdma.Bias[i].DecCtrl=(uint8_t)          *ptr;ptr++;
+
+    if (i < 6) {
+      cfg->rdma.Bias[i].ThreCtrl=(uint8_t)         *ptr;ptr++;
+      cfg->rdma.Bias[i].DecCtrl=(uint8_t)          *ptr;ptr++;
+    }
+
     cfg->rdma.Bias[i].PXBSEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].PYBSEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].Bias=                      *ptr;ptr++;
 //                                                      ptr++; // Skipped AOffset
-    cfg->rdma.Bias[i].AOffset=                   *ptr;ptr++;
+
     cfg->rdma.Bias[i].CntSha=(uint16_t)          *ptr;ptr++;
-    cfg->rdma.Bias[i].CntOffsetEn=               *ptr;ptr++;
-    cfg->rdma.Bias[i].CntOffset=(uint8_t)        *ptr;ptr++;
+
+    if (i < 6) {
+      cfg->rdma.Bias[i].CntOffsetEn=               *ptr;ptr++;
+      cfg->rdma.Bias[i].CntOffset=(uint8_t)        *ptr;ptr++;
+    }
+
     cfg->rdma.Bias[i].CntThresholdSha=(uint16_t) *ptr;ptr++;
     cfg->rdma.Bias[i].CntCmp=(uint16_t)          *ptr;ptr++;
   }
@@ -1646,8 +1660,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
   
   for(int i=0;i<7;i++)
-    cfg->dma_d_config.rdma.Bias[i].AOffset = 0;
-  
+ 
   cfg->dma_d_config.rdma.LPXData=0;
   cfg->dma_d_config.rdma.RPXData=0;
   cfg->dma_d_config.rdma.TPYData=0;
@@ -1679,10 +1692,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_w_config.rdma.TPYOffset= 0;
   cfg->dma_w_config.rdma.BPYOffset= 0;
   cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;
-  
-  for(int i=0;i<7;i++)
-    cfg->dma_w_config.rdma.Bias[i].AOffset = 0;
-  
+   
   cfg->dma_w_config.rdma.LPXData=0;
   cfg->dma_w_config.rdma.RPXData=0;
   cfg->dma_w_config.rdma.TPYData=0;
@@ -1729,21 +1739,30 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
       // Separate Regs
     iowrite32(cfg->Bias[i].Bias   , base + temp_BiasBase + Bias1Sha_MSha);
     iowrite32(cfg->Bias[i].CntSha , base + temp_BiasBase + RD_Bias1CntSha_MSha);
-    iowrite32( 
-             (cfg->Bias[i].CntOffsetEn<<8) | (cfg->Bias[i].CntOffset<<0),
-             base + temp_BiasBase +  Bias1CntOffset_MSha
-    );
+
+    if (i<6) {
+      iowrite32( 
+               (cfg->Bias[i].CntOffsetEn<<8) | (cfg->Bias[i].CntOffset<<0),
+               base + temp_BiasBase +  Bias1CntOffset_MSha
+      );
+    }
+
     iowrite32(cfg->Bias[i].CntThresholdSha, base + temp_BiasBase + Bias1CntThresholdSha_MSha);
     iowrite32(cfg->Bias[i].CntCmp , base + temp_BiasBase + RD_Bias1CntCmp_MSha);
     
       // Accumulate Common Regs
     temp_BiasCtrl = temp_BiasCtrl | (cfg->Bias[i].BiasEn << i);
-    temp_ThreCtrl = temp_ThreCtrl | (
-      ( (uint32_t)cfg->Bias[i].ThreCtrl ) << ((i+1)*3)
-    ); // *3 :-( May Be Done By Looped+ // +1 - Because The lsb Position is For cfg->ThreCtrl
-    temp_DecCtrl  = temp_DecCtrl  | (
-      ( (uint32_t)cfg->Bias[i].DecCtrl ) << (i*3)
-    );
+
+    if (i<6) {
+      temp_ThreCtrl = temp_ThreCtrl | (
+        ( (uint32_t)cfg->Bias[i].ThreCtrl ) << ((i+1)*3)
+      ); // *3 :-( May Be Done By Looped+ // +1 - Because The lsb Position is For cfg->ThreCtrl
+
+      temp_DecCtrl  = temp_DecCtrl  | (
+        ( (uint32_t)cfg->Bias[i].DecCtrl ) << (i*3)
+      );
+    }
+
     temp_PadCtrl  = temp_PadCtrl  | (cfg->Bias[i].PXBSEn << (i+4)) | (cfg->Bias[i].PYBSEn << (i+12));
     
       // Point At The Next Bias Couple

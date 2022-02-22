@@ -25,6 +25,14 @@ int nu_mpe_decide_dma_config(
   return 0;
 }
 
+void inc_if_not_zero (uint8_t* data) {
+  if (*data!=0) (*data)++;
+}
+
+void rewrite_and_inc_if_not_zero (uint8_t* data0, uint8_t data1) {
+  if (data1!=0) *data0 = data1+1;
+}
+
 void nu_vpe_decide_dma_config (
   ConfigVPE* cfg,
   CubeMetrics* in_metrics,
@@ -41,6 +49,12 @@ void nu_vpe_decide_dma_config (
   
   cfg->src_rdma_config.dma_bsize=0;   // Batch Parameters Are Default In This Program (Do Not Use Batch)
   cfg->src_rdma_config.dma_bstride=0;
+  cfg->op0_rdma_config.dma_bsize=0;
+  cfg->op0_rdma_config.dma_bstride=0;
+  cfg->op1_rdma_config.dma_bsize=0;
+  cfg->op1_rdma_config.dma_bstride=0;
+  cfg->op2_rdma_config.dma_bsize=0;
+  cfg->op2_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
   cfg->wdma_config.dma_bstride=0;
   
@@ -141,7 +155,7 @@ int main() {
       iteration_desc.in_data,
       iteration_desc.warr,
       test_desc.mpe_cfg_lut )!=0) return -1;
-    
+
       // mpe_out_metrics - Metrics Of VPE Input Data (Not Seen In Memory) Needed For Configuring VPE Later
     nu_calc_mpe_cube_out_metrics(iteration_desc.cfg_mpe, &iteration_desc.mpe_out_metrics); // CHECK - Calc It Before Any Iteration?
     
@@ -168,6 +182,56 @@ int main() {
         iteration_desc.res_data );
     
       // Print All The Configurations Got
+
+#ifdef MPE_CFG_TESTPLAN_RDMA_RDCH
+    if ((iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[6].BiasEn!=0) |
+        (iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].BiasEn!=1) |
+        (iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].BiasEn!=0) |
+        (iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[3].BiasEn!=1) |
+        (iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[2].BiasEn!=1) |
+        (iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[1].BiasEn!=1) |
+        (iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[0].BiasEn!=0)) {
+      rumboot_printf("ERROR: This MPE' configuration does not not match for MPE RDMA RDCH test!\n");
+      nu_mpe_print_config(iteration_desc.cfg_mpe);
+      return -1;
+    }
+      // Replace setting from Bias[5] to Bias[4]
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].BiasEn = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].BiasEn;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].BiasEn = 0;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].ThreCtrl = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].ThreCtrl;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].DecCtrl  = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].DecCtrl;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].PXBSEn   = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].PXBSEn;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].PYBSEn   = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].PYBSEn;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].Bias     = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].Bias;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].AOffset         = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].AOffset;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].CntSha          = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].CntSha;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].CntOffsetEn     = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].CntOffsetEn;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].CntOffset       = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].CntOffset;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].CntThresholdSha = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].CntThresholdSha;
+    iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[4].CntCmp          = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[5].CntCmp;
+
+      // Shift Biases
+    for (int shifts=i;shifts>0;shifts--) {
+      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.rdma.ThreCtrl);
+
+      for (int j=6;j>0;j--) {
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].BiasEn = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].BiasEn;
+        rewrite_and_inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].ThreCtrl,iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].ThreCtrl);
+        rewrite_and_inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].DecCtrl ,iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].DecCtrl);
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].PXBSEn = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].PXBSEn;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].PYBSEn = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].PYBSEn;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].Bias   = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].Bias;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].AOffset         = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].AOffset;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].CntSha          = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].CntSha;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].CntOffsetEn     = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].CntOffsetEn;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].CntOffset       = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].CntOffset;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].CntThresholdSha = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].CntThresholdSha;
+        iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j].CntCmp          = iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[j-1].CntCmp;
+      }
+      iteration_desc.cfg_mpe->dma_d_config.rdma.Bias[0].BiasEn = 0;
+    }
+#endif
+
     nu_mpe_print_config(iteration_desc.cfg_mpe);
     nu_vpe_print_config(iteration_desc.cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
@@ -210,7 +274,7 @@ int main() {
 
       return 1;
     }
-    
+
       // Point At The Next Iteration Data
     nu_npe_iterate_desc(&iteration_desc);
   }

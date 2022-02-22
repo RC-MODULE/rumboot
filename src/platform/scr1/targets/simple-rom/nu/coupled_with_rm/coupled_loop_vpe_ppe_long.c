@@ -41,6 +41,13 @@ void nu_vpe_ppe_decide_dma_config(
 
   cfg_vpe->src_rdma_config.dma_bsize=0;   // Batch Parameters Are Default In This Program (Do Not Use Batch)
   cfg_vpe->src_rdma_config.dma_bstride=0;
+  cfg_vpe->src_rdma_config.dma_bstride=0;
+  cfg_vpe->op0_rdma_config.dma_bsize=0;
+  cfg_vpe->op0_rdma_config.dma_bstride=0;
+  cfg_vpe->op1_rdma_config.dma_bsize=0;
+  cfg_vpe->op1_rdma_config.dma_bstride=0;
+  cfg_vpe->op2_rdma_config.dma_bsize=0;
+  cfg_vpe->op2_rdma_config.dma_bstride=0;
   cfg_vpe->wdma_config.dma_bsize=0;
   cfg_vpe->wdma_config.dma_bstride=0;
   

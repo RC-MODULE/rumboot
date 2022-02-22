@@ -369,6 +369,29 @@ endmacro()
       endif()  # MAKE_TIGHT
     endmacro()
 
+    macro(ADD_NPE_MPE_RDMA_RDCH_VPE_TEST CONF name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+        CFLAGS -DDONT_USE_PPE=1 -DMPE_CFG_TESTPLAN_RDMA_RDCH
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+    endmacro()
+
       # Tests Use All 3 Units
     macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight)
       add_rumboot_target(
@@ -921,8 +944,8 @@ set (pm_lst
 
 set (sw_lst_base 1 2)
 
-foreach (pm ${pm_lst})
-  foreach (dt ${dt_lst})
+foreach (dt ${dt_lst})
+  foreach (pm ${pm_lst})
     foreach (kw RANGE 2 8)
 
       set (sw_lst)
@@ -1257,6 +1280,8 @@ macro(na_testsuite_add_npe_tests CONF)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT)
           endforeach()
+
+          ADD_NPE_MPE_RDMA_RDCH_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
     
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
@@ -1424,19 +1449,19 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
               add_rumboot_target(
                 CONFIGURATION ${CONF}
                 NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
                 CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+                IRUN_FLAGS ${NA_RM_PLUSARGS}
                 SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
               )
               add_rumboot_target(
                 CONFIGURATION ${CONF}
                 NAME vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
                 CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+                IRUN_FLAGS ${NA_RM_PLUSARGS}
                 SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
               )
             endforeach()
@@ -1452,19 +1477,19 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
         CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
       )
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_batch_mode.c
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
         CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
       )
     endforeach()

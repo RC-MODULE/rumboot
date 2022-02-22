@@ -20,8 +20,7 @@ void nu_vpe_decide_dma_config (
   void*op1,
   void*op2,
   CubeMetrics*res_metrics,
-  void*res_data,
-  bool last_turn
+  void*res_data
 ) {
   
   cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
@@ -37,28 +36,19 @@ void nu_vpe_decide_dma_config (
   cfg->trace_mode = TraceMode_MPE;
 #endif
 
-  cfg->src_rdma_config.dma_bsize=0;
+  /*cfg->src_rdma_config.dma_bsize=0;
   cfg->src_rdma_config.dma_bstride=0;
-  cfg->op0_rdma_config.dma_bsize=0;
-  cfg->op0_rdma_config.dma_bstride=0;
-  cfg->op1_rdma_config.dma_bsize=0;
-  cfg->op1_rdma_config.dma_bstride=0;
-  cfg->op2_rdma_config.dma_bsize=0;
-  cfg->op2_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
-  cfg->wdma_config.dma_bstride=0;
+  cfg->wdma_config.dma_bstride=0;*/
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
-  
-  if(last_turn) 
-    cfg->mark = Enable_En;
   
   cfg->src_rdma_config.dma_baddr = nu_virt_to_dma(in_data);
   cfg->op0_rdma_config.dma_baddr = nu_virt_to_dma(op0);
   cfg->op1_rdma_config.dma_baddr = nu_virt_to_dma(op1);
   cfg->op2_rdma_config.dma_baddr = nu_virt_to_dma(op2);
   cfg->wdma_config.dma_baddr     = nu_virt_to_dma(res_data);
-
+  
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
   cfg->op1_rdma_config.dma_axi_len = axi_len;
@@ -73,11 +63,8 @@ VPEIterationDescriptor iteration_desc;
 int main() {
   int heap_id;
   int i;
-  int iterations;
-  LUTLoadDecision* lut_decision;
-  void* lut1_prev;
-  void* lut2_prev;
-  //~ ConfigVPE* cfg_prev;
+  int num_cubes;
+  //int invocations;
   
   uint8_t  axi_len;
   
@@ -89,15 +76,17 @@ int main() {
 #endif
 
  
-  rumboot_printf("Hellooooooo\n");
+  rumboot_printf("Hellooooooo Batch mode\n");
 
   heap_id = nu_get_heap_id();
   
-  rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
-  rumboot_printf("Number of iterations %d\n",iterations);
+  rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &num_cubes);
+  rumboot_printf("Number of cubes %d\n",num_cubes);
   
   nu_vpe_init_test_desc(&test_desc);
-  if(nu_vpe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
+  if(nu_vpe_place_arrays(heap_id,&test_desc,num_cubes) !=0) return -1;
+  
+  rumboot_printf("Invocations = %d\n",test_desc.invocations);
   
   nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
   
@@ -105,15 +94,18 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
   
-  lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
-  lut1_prev=NULL;lut2_prev=NULL;
-  //~ cfg_prev=NULL;
-  
-    // Fill The Recent cfg Fields Now Because We Can
-  for(i=0;i<iterations;i++) {
-    rumboot_printf("Deciding DMA Configuration, Iteration %d\n",i);
+  for(i=0;i<test_desc.invocations;i++) {
+    rumboot_printf("Starting invocation %d\n",i);
+	
     nu_vpe_iteration_start(&iteration_desc);
-    // nu_vpe_print_iteration_desc(&iteration_desc);
+    nu_vpe_print_iteration_desc(&iteration_desc);
+    
+      // Load LUTs If Needed
+    if(iteration_desc.cfg->op2_config.lut_en == Enable_En) {
+      nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
+    }
+     
+
     nu_vpe_decide_dma_config(
       iteration_desc.cfg,
       iteration_desc.in_metrics,
@@ -123,72 +115,47 @@ int main() {
       iteration_desc.op1,
       iteration_desc.op2,
       iteration_desc.res_metrics,
-      iteration_desc.res_data,
-      i==iterations-1
+      iteration_desc.res_data
     );
     // nu_vpe_print_config(iteration_desc.cfg);
     // nu_vpe_print_status_regs_etalon(iteration_desc.status_regs_etalon);
     
-      // Prepare The Decision What To Do With LUT On Each Iteration
-    if(iteration_desc.cfg->op2_config.lut_en==Enable_En) {
-      if(lut1_prev==NULL) {
-        lut_decision[i]=LUTLoadDecision_LoadNow;
-        lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
-      }
-      else {
-        if(nu_vpe_compare_luts(iteration_desc.lut1, iteration_desc.lut2, lut1_prev, lut2_prev) == 0) {
-          lut_decision[i]=LUTLoadDecision_DontLoad;
-        }
-        else {
-          lut_decision[i]=LUTLoadDecision_BlockThenLoad;
-          lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
-        }
-      }
-    }
-    else {
-      lut_decision[i]=LUTLoadDecision_DontLoad;
-      lut1_prev = NULL; lut2_prev = NULL;
-    }
-    
-    //~ cfg_prev = iteration_desc.cfg;
-    nu_vpe_iterate_desc(&iteration_desc);
-  }
-  
-    // Once More Init - This Time For The Main Working Loop
-  nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
-  
-  for(i=0;i<iterations;i++) {
-    rumboot_printf("Starting iteration %d\n",i);
-	
-    nu_vpe_iteration_start(&iteration_desc);
-    
-      // Load LUTs If Needed
-    if(lut_decision[i]==LUTLoadDecision_BlockThenLoad) {
-      rumboot_printf("Blocked To Load LUT\n");
-      while (nu_vpe_busy(MY_VPE_REGS_BASE)) {};
-      rumboot_printf("OK\n");
-    }
-    if(lut_decision[i]!=LUTLoadDecision_DontLoad) {
-      nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
-    }
-    
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);
-    nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
-    nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);
-    if(i!=iterations-1)
-      nu_vpe_iterate_desc(&iteration_desc);
-  }
-  
-  nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg);
-  
-    // And Third Turn - Check The Data
-  rumboot_printf("Comparing..\n");
-  nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
-  
-  for(i=0;i<iterations;i++) {
-    nu_vpe_iteration_start(&iteration_desc);
+    
+    rumboot_printf("Running DMA..\n");
+    
+#if DUT_IS_VPE
+      // Setup Main Channel DMAs if Required
+    if(iteration_desc.cfg->src_rdma_config.dma_en == Enable_NotEn)
+      //nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,iteration_desc.in_data,(iteration_desc.in_metrics->s)*(iteration_desc.cfg[i].src_rdma_config.dma_bsize+1));
+      nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,iteration_desc.in_data,iteration_desc.in_metrics->s);
+    if(iteration_desc.cfg->wdma_config.dma_en == Enable_NotEn)
+      //nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,iteration_desc.res_data,(iteration_desc.in_metrics->s)*(iteration_desc.cfg[i].src_rdma_config.dma_bsize+1));
+      nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,iteration_desc.res_data,iteration_desc.res_metrics->s);
+    
+      // Invoke Required DMA Channels
+    if(iteration_desc.cfg->src_rdma_config.dma_en == Enable_NotEn)
+      nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
+    if(iteration_desc.cfg->wdma_config.dma_en == Enable_NotEn)
+      nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
+#endif
+    
+    nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
+    
+    nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg);
+    
+#if DUT_IS_VPE
+      // Finalize Required DMA Channels
+    if(iteration_desc.cfg->src_rdma_config.dma_en == Enable_NotEn)
+      nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
+    if(iteration_desc.cfg->wdma_config.dma_en == Enable_NotEn)
+      nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
+#endif
+    
+    rumboot_printf("Comparing..\n");
     
     if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
+    //if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,(iteration_desc.res_metrics->s*(iteration_desc.cfg[i].src_rdma_config.dma_bsize+1))) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       rumboot_printf("Test FAILED at iteration %d\n",i);
@@ -208,6 +175,14 @@ int main() {
       return 1;
     }
     
+    
+    /*if(nu_vpe_check_status_regs(MY_VPE_REGS_BASE, iteration_desc.status_regs_etalon) != 0) {
+      rumboot_printf("Test FAILED Due to Status Reg Check at iteration %d\n",i);
+      nu_vpe_print_status_regs_etalon(iteration_desc.status_regs_etalon);
+      return -1;
+    }
+    else {rumboot_printf("Test OK Due to Status Reg Check at iteration %d\n",i);}		
+    */
     nu_vpe_iterate_desc(&iteration_desc);
   }
   
@@ -215,4 +190,3 @@ int main() {
   return 0;
   
 }
-

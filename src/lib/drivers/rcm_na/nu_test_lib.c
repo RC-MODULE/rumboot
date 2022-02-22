@@ -811,7 +811,7 @@ int nu_vpe_load_arrays_of_op_metrics(
       
       if( (array_of_cfg[i].op0_config.alu_en==Enable_En && array_of_cfg[i].op0_config.alu_mode==Mode_Element) ||
           (array_of_cfg[i].op0_config.mux_en==Enable_En && array_of_cfg[i].op0_config.mux_mode==Mode_Element) )  {
-            op0_array_desc->num_cubes++;
+            op0_array_desc->num_cubes += (array_of_cfg[i].src_rdma_config.dma_bsize+1);
       }
       if( (array_of_cfg[i].op0_config.alu_en==Enable_En && array_of_cfg[i].op0_config.alu_mode==Mode_Channel) ||
           (array_of_cfg[i].op0_config.mux_en==Enable_En && array_of_cfg[i].op0_config.mux_mode==Mode_Channel) )  {
@@ -823,7 +823,7 @@ int nu_vpe_load_arrays_of_op_metrics(
     if(array_of_cfg[i].op1_en==Enable_En) {
       if( (array_of_cfg[i].op1_config.alu_en==Enable_En && array_of_cfg[i].op1_config.alu_mode==Mode_Element) ||
           (array_of_cfg[i].op1_config.mux_en==Enable_En && array_of_cfg[i].op1_config.mux_mode==Mode_Element) )  {
-            op1_array_desc->num_cubes++;
+             op1_array_desc->num_cubes += (array_of_cfg[i].src_rdma_config.dma_bsize+1);
       }
       if( (array_of_cfg[i].op1_config.alu_en==Enable_En && array_of_cfg[i].op1_config.alu_mode==Mode_Channel) ||
           (array_of_cfg[i].op1_config.mux_en==Enable_En && array_of_cfg[i].op1_config.mux_mode==Mode_Channel) )  {
@@ -835,7 +835,7 @@ int nu_vpe_load_arrays_of_op_metrics(
     if(array_of_cfg[i].op2_en==Enable_En) {
       if( (array_of_cfg[i].op2_config.alu_en==Enable_En && array_of_cfg[i].op2_config.alu_mode==Mode_Element) ||
           (array_of_cfg[i].op2_config.mux_en==Enable_En && array_of_cfg[i].op2_config.mux_mode==Mode_Element) )  {
-            op2_array_desc->num_cubes++;
+              op2_array_desc->num_cubes += (array_of_cfg[i].src_rdma_config.dma_bsize+1);
       }
       if( (array_of_cfg[i].op2_config.alu_en==Enable_En && array_of_cfg[i].op2_config.alu_mode==Mode_Channel) ||
           (array_of_cfg[i].op2_config.mux_en==Enable_En && array_of_cfg[i].op2_config.mux_mode==Mode_Channel) )  {
@@ -1387,15 +1387,15 @@ void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc) {
 }
 
 void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
-  desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s );
-  desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s);
-  desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s);
+  desc->in_data = (void*) ( (char*)(desc->in_data) + (desc->cfg->wdma_config.dma_bsize+1) * (desc->in_metrics->s) );
+  desc->etalon  = (void*) ( (char*)(desc->etalon ) + (desc->cfg->wdma_config.dma_bsize+1) * (desc->in_metrics->s));
+  desc->res_data= (void*) ( (char*)(desc->res_data)+ (desc->cfg->wdma_config.dma_bsize+1) * (desc->in_metrics->s));
   if    (desc->cfg->op0_en==Enable_En) {
     if( (desc->cfg->op0_config.alu_en==Enable_En   &&   desc->cfg->op0_config.alu_mode==Mode_Element) ||
         (desc->cfg->op0_config.mux_en==Enable_En   &&   desc->cfg->op0_config.mux_mode==Mode_Element) ) {
              desc->op0_cube = (void*) ( (char*)(desc->op0_cube) + 
-                                                desc->op0_cube_metrics->s );
-             desc->op0_cube_metrics += 1;
+                                                (desc->cfg->op0_rdma_config.dma_bsize+1) * (desc->op0_cube_metrics->s) );
+             desc->op0_cube_metrics += (desc->cfg->op0_rdma_config.dma_bsize+1);
     }
     if( (desc->cfg->op0_config.alu_en==Enable_En   &&   desc->cfg->op0_config.alu_mode==Mode_Channel) ||
         (desc->cfg->op0_config.mux_en==Enable_En   &&   desc->cfg->op0_config.mux_mode==Mode_Channel) ) {
@@ -1408,8 +1408,8 @@ void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
     if( (desc->cfg->op1_config.alu_en==Enable_En   &&   desc->cfg->op1_config.alu_mode==Mode_Element) ||
         (desc->cfg->op1_config.mux_en==Enable_En   &&   desc->cfg->op1_config.mux_mode==Mode_Element) ) {
              desc->op1_cube = (void*) ( (char*)(desc->op1_cube) + 
-                                                desc->op1_cube_metrics->s );
-             desc->op1_cube_metrics += 1;
+                                                (desc->cfg->op1_rdma_config.dma_bsize+1) * (desc->op1_cube_metrics->s) );
+             desc->op1_cube_metrics += (desc->cfg->op1_rdma_config.dma_bsize+1);
     }
     if( (desc->cfg->op1_config.alu_en==Enable_En   &&   desc->cfg->op1_config.alu_mode==Mode_Channel) ||
         (desc->cfg->op1_config.mux_en==Enable_En   &&   desc->cfg->op1_config.mux_mode==Mode_Channel) ) {
@@ -1422,8 +1422,8 @@ void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
     if( (desc->cfg->op2_config.alu_en==Enable_En   &&   desc->cfg->op2_config.alu_mode==Mode_Element) ||
         (desc->cfg->op2_config.mux_en==Enable_En   &&   desc->cfg->op2_config.mux_mode==Mode_Element) ) {
              desc->op2_cube = (void*) ( (char*)(desc->op2_cube) + 
-                                                desc->op2_cube_metrics->s );
-             desc->op2_cube_metrics += 1;
+                                                (desc->cfg->op2_rdma_config.dma_bsize+1) * (desc->op2_cube_metrics->s) );
+             desc->op2_cube_metrics += (desc->cfg->op2_rdma_config.dma_bsize+1);
     }
     if( (desc->cfg->op2_config.alu_en==Enable_En   &&   desc->cfg->op2_config.alu_mode==Mode_Channel) ||
         (desc->cfg->op2_config.mux_en==Enable_En   &&   desc->cfg->op2_config.mux_mode==Mode_Channel) ) {
@@ -1440,9 +1440,9 @@ void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
     }
   }
   
-  desc->in_metrics         += 1;
-  desc->res_metrics        += 1;
-  desc->status_regs_etalon += 1;
+  desc->in_metrics         += (desc->cfg->wdma_config.dma_bsize+1);
+  desc->res_metrics        += (desc->cfg->wdma_config.dma_bsize+1);
+  desc->status_regs_etalon += (desc->cfg->wdma_config.dma_bsize+1);
   
   desc->cfg += 1;
 }
@@ -1469,15 +1469,30 @@ int nu_vpe_compare_luts(void* lut1_one, void* lut2_one, void* lut1_another, void
 }
 
 int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations) {
-  test_desc->array_of_cfg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
-  if(test_desc->array_of_cfg==NULL)return -1;
-  if(nu_vpe_load_array_of_cfg(heap_id, test_desc->array_of_cfg, iterations) !=0) return -1;
-  
   test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
   test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
   
+  
   if(test_desc->array_of_in_metrics  ==NULL ||
      test_desc->array_of_res_metrics ==NULL ) return -1;
+  
+  test_desc->invocations = nu_vpe_invocations_cnt(test_desc,iterations);
+    
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,"in_file_tag",    test_desc->array_of_in_metrics, iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,"etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                  test_desc->array_of_res_metrics,iterations);
+  
+  
+  if(test_desc->array_of_in_data ==NULL || 
+     test_desc->array_of_etalon  ==NULL || 
+     test_desc->array_of_res_data==NULL ) return -1;
+    
+  test_desc->array_of_cfg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*(test_desc->invocations),sizeof(uint32_t));
+  if(test_desc->array_of_cfg==NULL)return -1;
+  if(nu_vpe_load_array_of_cfg(heap_id, test_desc->array_of_cfg, test_desc->invocations) !=0) return -1;
+  
+  nu_vpe_batch_size_stride_cnt(test_desc,iterations);  
+  
   
   if(nu_vpe_load_arrays_of_op_metrics(
     heap_id,
@@ -1485,15 +1500,9 @@ int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations
     &(test_desc->op1_array_desc),
     &(test_desc->op2_array_desc),
     test_desc->array_of_cfg,
-    iterations) !=0) return -1;
+    test_desc->invocations) !=0) return -1;
   
-  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,"in_file_tag",    test_desc->array_of_in_metrics, iterations);
-  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,"etalon_file_tag",test_desc->array_of_res_metrics,iterations);
-  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                  test_desc->array_of_res_metrics,iterations);
-  
-  if(test_desc->array_of_in_data ==NULL || 
-     test_desc->array_of_etalon  ==NULL || 
-     test_desc->array_of_res_data==NULL ) return -1;
+  nu_vpe_batch_size_stride_of_ops_cnt(test_desc);
   
   if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
   
@@ -1502,6 +1511,105 @@ int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations
   
   return 0;
 }
+
+int nu_vpe_invocations_cnt(VPETestDescriptor* test_desc,int num_cubes){
+    rumboot_printf("Invocations_cnt start\n");
+    int invocations_cnt = 0;
+    for (int i=0;i<num_cubes;i++) {
+        
+        if (test_desc->array_of_in_metrics[i].role == CubeRole_LastInBatch){
+            invocations_cnt += 1;
+        }
+        else{
+            if (test_desc->array_of_in_metrics[i].role == CubeRole_NotLastInBatch){
+            }
+        }
+    }
+    return invocations_cnt;    
+}
+
+void nu_vpe_batch_size_stride_cnt(VPETestDescriptor* test_desc,int num_cubes){
+    rumboot_printf("batch_size_cnt start\n");
+    int invocations_index = 0;
+    uint32_t bstride_temp;
+    uint8_t bsize_temp = 0;
+    for (int i=0;i<num_cubes;i++) {
+        rumboot_printf("batch_size for index: %d\n", i);
+        
+        if (test_desc->array_of_in_metrics[i].role == CubeRole_LastInBatch){
+            rumboot_printf("This is LastInBatch!\n");
+            test_desc->array_of_cfg[invocations_index].src_rdma_config.dma_bsize = bsize_temp;
+            test_desc->array_of_cfg[invocations_index].wdma_config.dma_bsize = bsize_temp;
+            bstride_temp = test_desc->array_of_in_metrics[i].s;
+            test_desc->array_of_cfg[invocations_index].src_rdma_config.dma_bstride = bstride_temp;
+            test_desc->array_of_cfg[invocations_index].wdma_config.dma_bstride = bstride_temp;
+            rumboot_printf("Invocation = %d, batch_size = %d, batch_stride = %d\n",invocations_index,bsize_temp,bstride_temp);
+            invocations_index += 1; // increment 
+            bsize_temp = 0; // reset
+            
+        }
+        else{
+            if (test_desc->array_of_in_metrics[i].role == CubeRole_NotLastInBatch){
+                rumboot_printf("This is NotLastInBatch!\n");
+                bsize_temp += 1; //
+            }
+        }
+         
+    }
+}
+
+
+void nu_vpe_batch_size_stride_of_ops_cnt(VPETestDescriptor* test_desc){
+    CubeMetrics* op0_cube_metrics;
+    CubeMetrics* op1_cube_metrics;
+    CubeMetrics* op2_cube_metrics;
+    
+    //ConfigVPE* cfg;
+    
+    op0_cube_metrics = test_desc->op0_array_desc.array_of_cube_metrics;
+    op1_cube_metrics = test_desc->op1_array_desc.array_of_cube_metrics;
+    op2_cube_metrics = test_desc->op2_array_desc.array_of_cube_metrics;
+    
+ 
+    for (int i=0; i<test_desc->invocations;i++){
+        //cfg = test_desc->array_of_cfg[i];
+                
+        test_desc->array_of_cfg[i].op0_rdma_config.dma_bsize = 0;
+        test_desc->array_of_cfg[i].op0_rdma_config.dma_bstride = 0;
+        test_desc->array_of_cfg[i].op1_rdma_config.dma_bsize = 0;
+        test_desc->array_of_cfg[i].op1_rdma_config.dma_bstride = 0;
+        test_desc->array_of_cfg[i].op2_rdma_config.dma_bsize = 0;
+        test_desc->array_of_cfg[i].op2_rdma_config.dma_bstride = 0;
+        
+        if    (test_desc->array_of_cfg[i].op0_en==Enable_En) {
+            if( (test_desc->array_of_cfg[i].op0_config.alu_en==Enable_En   &&   test_desc->array_of_cfg[i].op0_config.alu_mode==Mode_Element) ||
+                (test_desc->array_of_cfg[i].op0_config.mux_en==Enable_En   &&   test_desc->array_of_cfg[i].op0_config.mux_mode==Mode_Element) ) {
+                    test_desc->array_of_cfg[i].op0_rdma_config.dma_bsize = test_desc->array_of_cfg[i].src_rdma_config.dma_bsize;
+                    test_desc->array_of_cfg[i].op0_rdma_config.dma_bstride = op0_cube_metrics[i].s;
+                    op0_cube_metrics += test_desc->array_of_cfg[i].op0_rdma_config.dma_bsize+1;
+                }
+        }
+        
+        if    (test_desc->array_of_cfg[i].op1_en==Enable_En) {
+            if( (test_desc->array_of_cfg[i].op1_config.alu_en==Enable_En   &&   test_desc->array_of_cfg[i].op1_config.alu_mode==Mode_Element) ||
+                (test_desc->array_of_cfg[i].op1_config.mux_en==Enable_En   &&   test_desc->array_of_cfg[i].op1_config.mux_mode==Mode_Element) ) {
+                    test_desc->array_of_cfg[i].op1_rdma_config.dma_bsize = test_desc->array_of_cfg[i].src_rdma_config.dma_bsize;
+                    test_desc->array_of_cfg[i].op1_rdma_config.dma_bstride = op1_cube_metrics[i].s;
+                    op1_cube_metrics += test_desc->array_of_cfg[i].op1_rdma_config.dma_bsize+1;
+                }
+        }
+        
+        if    (test_desc->array_of_cfg[i].op2_en==Enable_En) {
+            if( (test_desc->array_of_cfg[i].op2_config.alu_en==Enable_En   &&   test_desc->array_of_cfg[i].op2_config.alu_mode==Mode_Element) ||
+                (test_desc->array_of_cfg[i].op2_config.mux_en==Enable_En   &&   test_desc->array_of_cfg[i].op2_config.mux_mode==Mode_Element) ) {
+                    test_desc->array_of_cfg[i].op2_rdma_config.dma_bsize = test_desc->array_of_cfg[i].src_rdma_config.dma_bsize;
+                    test_desc->array_of_cfg[i].op2_rdma_config.dma_bstride = op2_cube_metrics[i].s;
+                    op2_cube_metrics += test_desc->array_of_cfg[i].op2_rdma_config.dma_bsize+1;
+                }
+        }
+    }
+}
+
 
 
 void nu_ppe_init_test_desc(PPETestDescriptor* test_desc) {
@@ -1855,5 +1963,4 @@ int nu_regs_check(uintptr_t base, int num, int iteration) {
     }
   }
   return 0;
-}		
-	
+}    
