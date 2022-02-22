@@ -308,6 +308,23 @@ endmacro()
 macro(na_testsuite_init DUT)
   rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
   rumboot_add_external_project(externals/py_mpe_test)
+
+        # CRUTCH - We Need This Submodule Content During The cmake First Run (From toplevel)
+  set(directory externals/py_ppe_test)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} submodule status ${directory}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_SUBMOD_STATUS_OUTPUT
+  )
+  if(GIT_SUBMOD_STATUS_OUTPUT MATCHES "^-")
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} submodule update --init ${directory}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
+        #
+
+
   rumboot_add_external_project(externals/py_ppe_test)
   _na_init_variables(${DUT})
 endmacro()
