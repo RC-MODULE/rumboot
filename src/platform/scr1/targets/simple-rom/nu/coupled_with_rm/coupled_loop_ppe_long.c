@@ -43,6 +43,10 @@ int main() {
   #ifdef BOX
     lbs = 0x1;
   #endif
+  #ifdef LBS_NOT_SUPPORTED
+  rumboot_printf("ERROR: Not supported path mode for this test choosen\n");
+  return -1;
+  #endif
   #ifdef SPL
     lbs = 0x2;
   #endif

@@ -1057,6 +1057,11 @@ macro (ADD_PPE_PY_TESTS CONF)
     string(REGEX MATCH "mode_[a-z_]+" scenario__path_mode ${SCENARIO_PATH_LINE})
     if("${scenario__path_mode}" STREQUAL "mode_linear")
       set(LBS LIN)
+    elseif("${scenario__path_mode}" STREQUAL "mode_boxed_mpe")
+      set(LBS BOX)
+    else()
+      message("Warning: scenario__path_mode ${scenario__path_mode} For Test ${test_name} Not Supported")
+      set(LBS LBS_NOT_SUPPORTED)
     endif()
     add_rumboot_target(
       CONFIGURATION ${CONF}
