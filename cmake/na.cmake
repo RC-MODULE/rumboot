@@ -308,6 +308,7 @@ endmacro()
 macro(na_testsuite_init DUT)
   rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
   rumboot_add_external_project(externals/py_mpe_test)
+  rumboot_add_external_project(externals/py_ppe_test)
   _na_init_variables(${DUT})
 endmacro()
 
@@ -1030,8 +1031,8 @@ endmacro()
 
 macro (ADD_PPE_PY_TESTS CONF)
   set(rm_bin_name main_ppe_py)
-  set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${PPE_SOURCE_DIR}/model/testplan/testcaseKW_engine.py)
-  set(PPE_PY_TESTCASE_PREP_SCRIPT ${PPE_SOURCE_DIR}/model/constraint_engine_bin.py)
+  set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${CMAKE_SOURCE_DIR}/externals/py_ppe_test/testplan/testcaseKW_engine.py)
+  set(PPE_PY_TESTCASE_PREP_SCRIPT ${CMAKE_SOURCE_DIR}/externals/py_ppe_test/constraint_engine_bin.py)
   set(PPE_PY_TESTCASE_PREP_SCRIPT_OPTS -cm all_with_all -cf )
   execute_process(
     COMMAND 

@@ -7,3 +7,6 @@
 [submodule "externals/py_mpe_test"]
 	path = externals/py_mpe_test
 	url = git@git.module.ru:lava/py_mpe_test.git
+[submodule "externals/py_ppe_test"]
+	path = externals/py_ppe_test
+	url = git@git.module.ru:lava/py_ppe_test.git
