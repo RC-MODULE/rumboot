@@ -2264,7 +2264,9 @@ macro(na_testsuite_add_ppe_tests CONF)
   ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
   ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-  ADD_PPE_PY_TESTS(${CONF})
+  if("${USE_PPE_PY_TESTS}" STREQUAL "Yes")  
+    ADD_PPE_PY_TESTS(${CONF})
+  endif()
 
   ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
   #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
