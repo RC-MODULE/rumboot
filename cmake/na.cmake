@@ -325,7 +325,7 @@ macro(na_testsuite_init DUT)
         #
 
 
-  rumboot_add_external_project(externals/py_ppe_test)
+  # rumboot_add_external_project(externals/py_ppe_test)
   _na_init_variables(${DUT})
 endmacro()
 
