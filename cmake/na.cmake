@@ -1031,7 +1031,7 @@ endmacro()
 macro (ADD_PPE_PY_TESTS CONF)
   set(rm_bin_name main_ppe_py)
   set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${PPE_SOURCE_DIR}/model/testplan/testcaseKW_engine.py)
-  set(PPE_PY_TESTCASE_PREP_SCRIPT ${PPE_SOURCE_DIR}/model/constraint_engine.py)
+  set(PPE_PY_TESTCASE_PREP_SCRIPT ${PPE_SOURCE_DIR}/model/constraint_engine_bin.py)
   set(PPE_PY_TESTCASE_PREP_SCRIPT_OPTS -cm all_with_all -cf )
   execute_process(
     COMMAND 
