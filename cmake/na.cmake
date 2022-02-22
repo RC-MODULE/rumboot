@@ -1006,7 +1006,7 @@ endforeach()
 endmacro()
 
 macro (ADD_PPE_PY_TESTS CONF)
-  set(rm_bin_name main_ppe_IN_INT8)
+  set(rm_bin_name main_ppe_py)
   set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${PPE_SOURCE_DIR}/model/testplan/testcaseKW_engine.py)
   set(PPE_PY_TESTCASE_PREP_SCRIPT ${PPE_SOURCE_DIR}/model/constraint_engine.py)
   set(PPE_PY_TESTCASE_PREP_SCRIPT_OPTS -cm all_with_all -cf )
@@ -1038,14 +1038,16 @@ macro (ADD_PPE_PY_TESTS CONF)
       CONFIGURATION ${CONF}
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
-      CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+      CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1
       PREPCMD 
         cp ${file} . 
         &&
         ${PPE_PY_TESTCASE_PREP_SCRIPT} ${PPE_PY_TESTCASE_PREP_SCRIPT_OPTS} ${test_file_name}
         &&
-        echo "We Will RUN:" ${NA_RM_BIN_PATH}/${rm_bin_name}  ${NA_RM_KEYS} --it_nmb 1 
-        && 
+        ${NA_RM_BIN_PATH}/${rm_bin_name}  ${NA_RM_KEYS} > ${RM_LOGFILE}
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+        ||
         exit 1
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
