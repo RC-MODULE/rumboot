@@ -161,9 +161,16 @@ void nu_vpe_print_iteration_desc(VPEIterationDescriptor* iteration_desc);
 void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc);
 void nu_vpe_iterate_desc(VPEIterationDescriptor* desc);
 int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations);
-int nu_vpe_invocations_cnt(VPETestDescriptor* test_desc,int iterations);
-void nu_vpe_batch_size_stride_cnt(VPETestDescriptor* test_desc,int iterations);
-void nu_vpe_batch_size_stride_of_ops_cnt(VPETestDescriptor* test_desc);
+int nu_vpe_invocations_cnt(CubeMetrics* array_of_in_metrics,int num_cubes);
+void nu_vpe_batch_size_stride_cnt(CubeMetrics* array_of_in_metrics,ConfigVPE* array_of_cfg,int num_cubes);
+void nu_vpe_batch_size_stride_of_ops_cnt(
+  OpArrayDescriptor* op0_array_desc,
+  OpArrayDescriptor* op1_array_desc,
+  OpArrayDescriptor* op2_array_desc,
+  ConfigVPE* array_of_cfg,
+  int invocations
+);
+
 
 // LUT Stuff (For "Tight" Tests)
 typedef enum LUTLoadDecision /*: unsigned char*/ {
