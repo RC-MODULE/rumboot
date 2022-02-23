@@ -1609,7 +1609,7 @@ macro(na_testsuite_add_vpe_tests CONF)
                 CONFIGURATION ${CONF}
                 NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
                 FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+                CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
                 PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
                 IRUN_FLAGS ${NA_RM_PLUSARGS}
                 SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
@@ -1618,7 +1618,7 @@ macro(na_testsuite_add_vpe_tests CONF)
                 CONFIGURATION ${CONF}
                 NAME vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
                 FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-                CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+                CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
                 PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
                 IRUN_FLAGS ${NA_RM_PLUSARGS}
                 SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
@@ -1637,7 +1637,7 @@ macro(na_testsuite_add_vpe_tests CONF)
         CONFIGURATION ${CONF}
         NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+        CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
         PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
@@ -1646,7 +1646,7 @@ macro(na_testsuite_add_vpe_tests CONF)
         CONFIGURATION ${CONF}
         NAME vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+        CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
         PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}

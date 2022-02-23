@@ -1597,7 +1597,7 @@ void nu_vpe_batch_size_stride_of_ops_cnt(
             if( (array_of_cfg[i].op0_config.alu_en==Enable_En   &&   array_of_cfg[i].op0_config.alu_mode==Mode_Element) ||
                 (array_of_cfg[i].op0_config.mux_en==Enable_En   &&   array_of_cfg[i].op0_config.mux_mode==Mode_Element) ) {
                     array_of_cfg[i].op0_rdma_config.dma_bsize = array_of_cfg[i].src_rdma_config.dma_bsize;
-                    array_of_cfg[i].op0_rdma_config.dma_bstride = op0_cube_metrics[i].s;
+                    array_of_cfg[i].op0_rdma_config.dma_bstride = op0_cube_metrics->s;
                     op0_cube_metrics += array_of_cfg[i].op0_rdma_config.dma_bsize+1;
                 }
         }
@@ -1606,7 +1606,7 @@ void nu_vpe_batch_size_stride_of_ops_cnt(
             if( (array_of_cfg[i].op1_config.alu_en==Enable_En   &&   array_of_cfg[i].op1_config.alu_mode==Mode_Element) ||
                 (array_of_cfg[i].op1_config.mux_en==Enable_En   &&   array_of_cfg[i].op1_config.mux_mode==Mode_Element) ) {
                     array_of_cfg[i].op1_rdma_config.dma_bsize = array_of_cfg[i].src_rdma_config.dma_bsize;
-                    array_of_cfg[i].op1_rdma_config.dma_bstride = op1_cube_metrics[i].s;
+                    array_of_cfg[i].op1_rdma_config.dma_bstride = op1_cube_metrics->s;
                     op1_cube_metrics += array_of_cfg[i].op1_rdma_config.dma_bsize+1;
                 }
         }
@@ -1615,7 +1615,7 @@ void nu_vpe_batch_size_stride_of_ops_cnt(
             if( (array_of_cfg[i].op2_config.alu_en==Enable_En   &&   array_of_cfg[i].op2_config.alu_mode==Mode_Element) ||
                 (array_of_cfg[i].op2_config.mux_en==Enable_En   &&   array_of_cfg[i].op2_config.mux_mode==Mode_Element) ) {
                     array_of_cfg[i].op2_rdma_config.dma_bsize = array_of_cfg[i].src_rdma_config.dma_bsize;
-                    array_of_cfg[i].op2_rdma_config.dma_bstride = op2_cube_metrics[i].s;
+                    array_of_cfg[i].op2_rdma_config.dma_bstride = op2_cube_metrics->s;
                     op2_cube_metrics += array_of_cfg[i].op2_rdma_config.dma_bsize+1;
                 }
         }
