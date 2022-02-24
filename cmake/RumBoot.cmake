@@ -169,7 +169,13 @@ endif()
 
 function(rumboot_add_external_project directory)
       ## Download The External If it is not inited
-    execute_process(
+      set(options NOOP)
+      set(oneValueArgs )
+      set(multiValueArgs CONFIGURE_FLAGS)
+      cmake_parse_arguments(EXTPRJ "${options}" "${oneValueArgs}"
+                            "${multiValueArgs}" ${ARGN} )
+
+      execute_process(
       COMMAND ${GIT_EXECUTABLE} submodule status ${directory}
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
       OUTPUT_VARIABLE GIT_SUBMOD_STATUS_OUTPUT
@@ -180,17 +186,28 @@ function(rumboot_add_external_project directory)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
       )
     endif()
-      ##
 
     get_filename_component(_name ${directory} NAME_WE)
+
+    if (EXTPRJ_NOBUILD)
+      set(EXT_OPTS 
+        BUILD_COMMAND ""
+        CONFIGURE_COMMAND ""
+        )
+    else()
+      set(EXT_OPTS 
+          BUILD_COMMAND "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
+          CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${EXTPRJ_CONFIGURE_FLAGS}
+      )
+    endif()
 
     ExternalProject_Add(${_name}
       STEP_TARGETS      configure
       SOURCE_DIR        "${CMAKE_SOURCE_DIR}/${directory}"
       BINARY_DIR        "${CMAKE_BINARY_DIR}/${_name}"
-      CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${ARGN}
       #-DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS}
-      BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
+      #BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
+      ${EXT_OPTS}
       INSTALL_COMMAND   ""
     )
 endfunction()

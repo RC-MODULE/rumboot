@@ -306,8 +306,13 @@ endmacro()
 
 
 macro(na_testsuite_init DUT)
-  rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
-  rumboot_add_external_project(externals/py_mpe_test)
+  rumboot_add_external_project(externals/npe_rm 
+    CONFIGURE_FLAGS -DCOMPILE_FROM_ROMBOOT="YES"
+    NOOP
+  )
+  rumboot_add_external_project(externals/py_mpe_test
+    NOOP
+  )
 
         # CRUTCH - We Need This Submodule Content During The cmake First Run (From toplevel)
   set(directory externals/py_ppe_test)
