@@ -82,6 +82,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ################################################################
     include(${CMAKE_SOURCE_DIR}/cmake/na.cmake)
     if(DUT STREQUAL "NPE")
+      message("============ NA_TESTGROUP = ${NA_TESTGROUP}")
       na_testsuite_init(${DUT})
       na_testsuite_add_npe_tests("ROM")
     endif()

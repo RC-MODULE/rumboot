@@ -1222,7 +1222,7 @@ macro(na_testsuite_add_npe_tests CONF)
 
   ################################
   ### MPE Tests
-  ### FixMe: Duplication? 
+ if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE")
   ADD_MPE_SINGLE_TEST(${CONF} MPE_2 TRUNC0)
   ADD_MPE_SINGLE_TEST(${CONF} MPE_3 TRUNC0)
   ADD_MPE_SINGLE_TEST(${CONF} MPE_4 TRUNC0)
@@ -1262,8 +1262,11 @@ macro(na_testsuite_add_npe_tests CONF)
         ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
         ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
 
+ endif()  # NA_TESTGROUP MPE
+
           ################################
           ### Control Unit Tests
+      if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "CU")
         set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
         add_rumboot_target(
           CONFIGURATION ${CONF}
@@ -1287,9 +1290,11 @@ macro(na_testsuite_add_npe_tests CONF)
           ##########################################
           ## NPE Reg Test
         ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
+      endif() # NA_TESTGROUP CU
     
           ##########################################
           ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
+      if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE_CFG")
         foreach(label RANGE 25 48)  # Int16
           ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
         endforeach()
@@ -1331,12 +1336,13 @@ macro(na_testsuite_add_npe_tests CONF)
     
           ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT)
           
+      endif() # NA_TESTGROUP MPE_CFG
           ###################################################################
           # Resnet-test 
-          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT) # LAYER0_MPE
-          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT) # LAYER0_MPE_BN
-          ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT) # LAYER0_MPE_BN_RELU
-          ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT) # LAYER0_MPE_BN_RELU_PPE
+          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT) # LAYER0_MPE
+          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT) # LAYER0_MPE_BN
+          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT) # LAYER0_MPE_BN_RELU
+          # ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT) # LAYER0_MPE_BN_RELU_PPE
           ###################################################################
     
 
@@ -1470,6 +1476,7 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
 endmacro()
 
 macro(na_testsuite_add_vpe_tests CONF)
+if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BASE")
   add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME VPE_1
@@ -1602,6 +1609,9 @@ macro(na_testsuite_add_vpe_tests CONF)
   ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
   ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
   
+endif() # NA_TESTGROUP VPE_DMA_BASE
+
+if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BATCH")
   
   # Tests on VPE batch-mode for int-type
   foreach(in IN ITEMS IN_INT8 IN_INT16)
@@ -1658,6 +1668,7 @@ macro(na_testsuite_add_vpe_tests CONF)
       )
     endforeach()
   endforeach()
+endif() # NA_TESTGROUP VPE_DMA_BATCH
 
 endmacro()
 
@@ -2275,6 +2286,8 @@ macro(na_testsuite_add_ppe_tests CONF)
     w256_288_k256_288_h2_16
   )
 
+if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
+
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME PPE_1
@@ -2293,12 +2306,16 @@ macro(na_testsuite_add_ppe_tests CONF)
   ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
   ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-  if("${USE_PPE_PY_TESTS}" STREQUAL "Yes")  
+endif() # NA_TESTGROUP PPE_BASE
+
+  if(NOT DEFINED NA_TESTGROUP AND "${USE_PPE_PY_TESTS}" STREQUAL "Yes" OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")  
     ADD_PPE_PY_TESTS(${CONF})
   endif()
 
+ if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
   ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
   #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
+ endif() # NA_TESTGROUP VPE_PPE
 
   #ADD_PPE_DGTL_SLTN_TESTS(${CONF})
 endmacro()

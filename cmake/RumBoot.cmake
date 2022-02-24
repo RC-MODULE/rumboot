@@ -189,7 +189,7 @@ function(rumboot_add_external_project directory)
 
     get_filename_component(_name ${directory} NAME_WE)
 
-    if (EXTPRJ_NOBUILD)
+    if (EXTPRJ_NOOP)
       set(EXT_OPTS 
         BUILD_COMMAND ""
         CONFIGURE_COMMAND ""
@@ -200,6 +200,8 @@ function(rumboot_add_external_project directory)
           CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${EXTPRJ_CONFIGURE_FLAGS}
       )
     endif()
+
+    message("EXT_OPTS = ${EXT_OPTS} name = ${_name}")
 
     ExternalProject_Add(${_name}
       STEP_TARGETS      configure
