@@ -502,7 +502,8 @@ void* nu_malloc_array_of_cubes(int heap_id,CubeMetrics* array_of_metrics,int num
     *size += array_of_metrics[i].s;
   }
   
-  aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,16/*Dont Know*/);
+  aoc = rumboot_malloc_from_heap(heap_id,*size);
+  //aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,16/*Dont Know*/);
   if(aoc==NULL)
     return NULL;
   
@@ -1537,7 +1538,8 @@ int nu_vpe_invocations_cnt(CubeMetrics* array_of_in_metrics,int num_cubes){
 void nu_vpe_batch_size_stride_cnt(CubeMetrics* array_of_in_metrics,ConfigVPE* array_of_cfg,int num_cubes){
     rumboot_printf("batch_size_cnt start\n");
     int invocations_index = 0;
-    uint32_t bstride_temp;
+    uint32_t bstride_wdma_temp;
+    uint32_t bstride_rdma_temp;
     uint8_t bsize_temp = 0;
     for (int i=0;i<num_cubes;i++) {
         rumboot_printf("batch_size for index: %d\n", i);
@@ -1546,10 +1548,11 @@ void nu_vpe_batch_size_stride_cnt(CubeMetrics* array_of_in_metrics,ConfigVPE* ar
             rumboot_printf("This is LastInBatch!\n");
             array_of_cfg[invocations_index].src_rdma_config.dma_bsize = bsize_temp;
             array_of_cfg[invocations_index].wdma_config.dma_bsize = bsize_temp;
-            bstride_temp = array_of_in_metrics[i].s;
-            array_of_cfg[invocations_index].src_rdma_config.dma_bstride = bstride_temp;
-            array_of_cfg[invocations_index].wdma_config.dma_bstride = bstride_temp;
-            rumboot_printf("Invocation = %d, batch_size = %d, batch_stride = %d\n",invocations_index,bsize_temp,bstride_temp);
+            bstride_rdma_temp = array_of_in_metrics[i].s;
+            bstride_wdma_temp = array_of_in_metrics[i].H*array_of_in_metrics[i].W*array_of_in_metrics[i].C*(array_of_cfg[invocations_index].out_data_type == DataType_Int8 ? 1 : 2);
+            array_of_cfg[invocations_index].src_rdma_config.dma_bstride = bstride_rdma_temp;
+            array_of_cfg[invocations_index].wdma_config.dma_bstride = bstride_wdma_temp;
+            rumboot_printf("Invocation = %d, batch_size = %d, bstride_rdma = %d, bstride_wdma = %d\n",invocations_index,bsize_temp,bstride_rdma_temp,bstride_wdma_temp);
             invocations_index += 1; // increment 
             bsize_temp = 0; // reset
             

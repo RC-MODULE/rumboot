@@ -154,8 +154,8 @@ int main() {
     
     rumboot_printf("Comparing..\n");
     
-    if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
-    //if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,(iteration_desc.res_metrics->s*(iteration_desc.cfg[i].src_rdma_config.dma_bsize+1))) == 0)
+    //if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
+    if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,(iteration_desc.res_metrics->s*(iteration_desc.cfg->wdma_config.dma_bsize+1))) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       rumboot_printf("Test FAILED at iteration %d\n",i);
