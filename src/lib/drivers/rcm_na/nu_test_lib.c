@@ -1387,9 +1387,9 @@ void nu_vpe_iteration_start(VPEIterationDescriptor* iteration_desc) {
 }
 
 void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
-  desc->in_data = (void*) ( (char*)(desc->in_data) + (desc->cfg->wdma_config.dma_bsize+1) * (desc->in_metrics->s) );
-  desc->etalon  = (void*) ( (char*)(desc->etalon ) + (desc->cfg->wdma_config.dma_bsize+1) * (desc->in_metrics->s));
-  desc->res_data= (void*) ( (char*)(desc->res_data)+ (desc->cfg->wdma_config.dma_bsize+1) * (desc->in_metrics->s));
+  desc->in_data = (void*) ( (char*)(desc->in_data) + (desc->cfg->src_rdma_config.dma_bsize+1) * (desc->in_metrics->s) );
+  desc->etalon  = (void*) ( (char*)(desc->etalon ) + (desc->cfg->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
+  desc->res_data= (void*) ( (char*)(desc->res_data)+ (desc->cfg->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
   if    (desc->cfg->op0_en==Enable_En) {
     if( (desc->cfg->op0_config.alu_en==Enable_En   &&   desc->cfg->op0_config.alu_mode==Mode_Element) ||
         (desc->cfg->op0_config.mux_en==Enable_En   &&   desc->cfg->op0_config.mux_mode==Mode_Element) ) {
@@ -1440,9 +1440,9 @@ void nu_vpe_iterate_desc(VPEIterationDescriptor* desc) {
     }
   }
   
-  desc->in_metrics         += (desc->cfg->wdma_config.dma_bsize+1);
-  desc->res_metrics        += (desc->cfg->wdma_config.dma_bsize+1);
-  desc->status_regs_etalon += (desc->cfg->wdma_config.dma_bsize+1);
+  desc->in_metrics         += (desc->cfg->src_rdma_config.dma_bsize+1);
+  desc->res_metrics        += (desc->cfg->    wdma_config.dma_bsize+1);
+  desc->status_regs_etalon += (desc->cfg->    wdma_config.dma_bsize+1);
   
   desc->cfg += 1;
 }
