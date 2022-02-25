@@ -169,7 +169,8 @@ endif()
 
 function(rumboot_add_external_project directory)
       ## Download The External If it is not inited
-      set(options NOOP)
+      set(_ext_opts)
+      set(options NOCONFIGURE NOBUILD)
       set(oneValueArgs )
       set(multiValueArgs CONFIGURE_FLAGS)
       cmake_parse_arguments(EXTPRJ "${options}" "${oneValueArgs}"
@@ -189,27 +190,32 @@ function(rumboot_add_external_project directory)
 
     get_filename_component(_name ${directory} NAME_WE)
 
-    if (EXTPRJ_NOOP)
-      set(EXT_OPTS 
-        BUILD_COMMAND ""
-        CONFIGURE_COMMAND ""
+    if (EXTPRJ_NOCONFIGURE)
+      set(EXTPRJ_NOBUILD True)
+      set(_ext_opts ${_ext_opts}
+        CONFIGURE_COMMAND echo "${_name} needs no configure step"
         )
     else()
-      set(EXT_OPTS 
-          BUILD_COMMAND "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
-          CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${EXTPRJ_CONFIGURE_FLAGS}
+      set(_ext_opts ${_ext_opts}
+        CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${EXTPRJ_CONFIGURE_FLAGS}
       )
     endif()
 
-    message("EXT_OPTS = ${EXT_OPTS} name = ${_name}")
+    if (EXTPRJ_NOBUILD)
+      set(_ext_opts ${_ext_opts}
+        BUILD_COMMAND echo "${_name} needs no build step"
+      )
+    else()
+      set(_ext_opts ${_ext_opts}
+        BUILD_COMMAND "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
+      )
+    endif()
 
     ExternalProject_Add(${_name}
       STEP_TARGETS      configure
       SOURCE_DIR        "${CMAKE_SOURCE_DIR}/${directory}"
       BINARY_DIR        "${CMAKE_BINARY_DIR}/${_name}"
-      #-DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS}
-      #BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
-      ${EXT_OPTS}
+      ${_ext_opts}
       INSTALL_COMMAND   ""
     )
 endfunction()
