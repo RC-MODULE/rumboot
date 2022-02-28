@@ -1978,9 +1978,11 @@ int nu_regs_check(uintptr_t base, int num, int iteration) {
 	for( int i =0; i< iteration;i++) {	
 		if ((i != 2)) //& (i != 1)
 		{res = ioread32(base + 4*i);}
-		if(((res != 0x000000000) & (i !=3)) | ((res != 0x000020000) & (i ==3)))  {
+		if(((res != 0x000000000) & (i !=3) & (i !=20)) | ((res != 0x000020000) & (i ==3)) |
+		((res != 0x000000002) & (i ==20) & (num==1)) | ((res != 0x000000000) & (i ==20) & (num==0)) ){
 		rumboot_printf("res_invalid =%x\n",res);
 		rumboot_printf("addr =%x\n",(base + 4*i));
+		rumboot_printf("i =%x\n",i);
 		return  -1;
     }
   }
@@ -2000,8 +2002,8 @@ int nu_ppe_regs_check(uintptr_t base, int num, int iteration) {
 		  ) {
 		rumboot_printf("res_invalid =%x\n",res);
 		rumboot_printf("addr =%x\n",(base + 4*i));
-		rumboot_printf("i =%x\n",i);
-		//return  -1;
+		//rumboot_printf("i =%x\n",i);
+		return  -1;
 		}
   }
 return 0;  
