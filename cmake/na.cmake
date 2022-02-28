@@ -654,6 +654,58 @@ foreach(i RANGE ${TST_NMB})
 endforeach()
 endmacro()
 
+macro (ADD_PPE_RST_TESTS CONF name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
+
+set (name "${name_in}")
+set (ShowPerf "NotShowPerf")
+set (TST_NMB 1)
+set (Sh_is_1 "--set_Sh 1 --Sh 1")
+set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
+
+if (EXPERIMENT_STAGE_2_SUB_2)
+  string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name  ${name})
+  string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name  ${name})
+
+ # string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name  ${name})
+ # string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name  ${name})
+
+  if (${name} STREQUAL "PPE_10_fp16_avg_ml")
+    set (TST_NMB 1)
+  else()
+    set (TST_NMB 0)
+  endif()
+
+endif()
+
+foreach(i RANGE ${TST_NMB})
+
+  if (i EQUAL TST_NMB)
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
+
+    string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name  ${name})
+  else()
+    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
+  endif()
+
+
+add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_na_rst_${i}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_rst_long.c
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+
+    CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+if (i EQUAL TST_NMB)
+    math (EXPR NU_SEED "${NU_SEED} + 1")
+  endif()
+endforeach()  
+endmacro()
 
 macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
 misalign_increment()
@@ -2306,6 +2358,8 @@ if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
   ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
   ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
+  ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
+  ADD_PPE_RST_TESTS(${CONF} ppe_i16_max_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_max})
 endif() # NA_TESTGROUP PPE_BASE
 
   if(NOT DEFINED NA_TESTGROUP AND "${USE_PPE_PY_TESTS}" STREQUAL "Yes" OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")  
