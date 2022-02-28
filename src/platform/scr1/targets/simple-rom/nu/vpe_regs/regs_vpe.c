@@ -857,7 +857,7 @@ if ((0x00000000) != (ioread32(base + NU_VPE + LUT_CNT_HIT_TAB0)))
 		else 
 		{src_res21=0;}	
 	
-	if ((0x00000000) != (ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_SIZE_X)& 0x00003fff)) 
+	if ((0x00000000) != (ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_SIZE_X)& 0x00001fff)) 
 		{src_res22 =1;
 		rumboot_printf("src_res2 error\n");}	
 		else 
@@ -1725,14 +1725,14 @@ iowrite32(tmpr, base + offset + NU_VPE_DMA_BORDER_Z);
 		rumboot_printf("src_res18_tmp =%x\n",tmp);}	
 
 		iowrite32(tmpr, base + offset + NU_VPE_DMA_BOX_ST_SIZE_X);	
-	if ((tmpr & 0x00003fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_ST_SIZE_X)& 0x00003fff)) 
+	if ((tmpr & 0x00001fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_ST_SIZE_X)& 0x00001fff)) 
 		{src_res19 =1;
 		rumboot_printf("op0_res19 error\n");}	
 		else 
 		{src_res19=0;}
 	
 		iowrite32(tmpr, base + offset + NU_VPE_DMA_BOX_ST_SIZE_Y);	
-	if ((tmpr & 0x00003fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_ST_SIZE_Y)& 0x00003fff)) 
+	if ((tmpr & 0x00001fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_ST_SIZE_Y)& 0x00001fff)) 
 		{src_res20 =1;
 		rumboot_printf("op0_res20 error\n");}	
 		else 
@@ -1740,31 +1740,31 @@ iowrite32(tmpr, base + offset + NU_VPE_DMA_BORDER_Z);
 	
 	
 		iowrite32(tmpr, base + offset + NU_VPE_DMA_BOX_ST_SIZE_Z);	
-	if ((tmpr & 0x00003fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_ST_SIZE_Z)& 0x00003fff)) 
+	if ((tmpr & 0x00001fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_ST_SIZE_Z)& 0x00001fff)) 
 		{src_res21 =1;
 		rumboot_printf("op0_res21 error\n");}	
 		else 
 		{src_res21=0;}
 	
 		iowrite32(tmpr, base + offset + NU_VPE_DMA_BOX_SIZE_X);	
-	if ((tmpr & 0x00003fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_SIZE_X)& 0x00003fff)) 
+	if ((tmpr & 0x00001fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_SIZE_X)& 0x00001fff)) 
 		{src_res22 =1;
 		rumboot_printf("op0_res22 error\n");}	
 		else 
 		{src_res22=0;}
 	
 		iowrite32(tmpr, base + offset + NU_VPE_DMA_BOX_SIZE_Y);	
-	if ((tmpr & 0x00003fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_SIZE_Y)& 0x00003fff)) 
+	if ((tmpr & 0x00001fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_SIZE_Y)& 0x00001fff)) 
 		{src_res23 =1;
-		rumboot_printf("op0_res20 error\n");}	
+		rumboot_printf("op0_res23 error\n");}	
 		else 
 		{src_res23=0;}
 	
 	
 		iowrite32(tmpr, base + offset + NU_VPE_DMA_BOX_SIZE_Z);	
-	if ((tmpr & 0x00003fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_SIZE_Z)& 0x00003fff)) 
+	if ((tmpr & 0x00001fff) != (ioread32(base + offset + NU_VPE_DMA_BOX_SIZE_Z)& 0x00001fff)) 
 		{src_res24 =1;
-		rumboot_printf("op0_res21 error\n");}	
+		rumboot_printf("op0_res24 error\n");}	
 		else 
 		{src_res24=0;}
 
