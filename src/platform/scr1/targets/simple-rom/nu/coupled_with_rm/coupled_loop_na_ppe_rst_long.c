@@ -132,7 +132,7 @@ int main() {
       return 1;
 	}
 	
-	if	(nu_regs_check((MY_PPE_RDMA_BASE),0,28) != 0){
+	if	(nu_regs_check((MY_PPE_RDMA_BASE),1,28) != 0){
 		 rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}	
