@@ -1995,10 +1995,7 @@ int nu_ppe_regs_check(uintptr_t base, int num, int iteration) {
 	if ((i != 38) & (i != 9) & (i != 10)& (i != 11) )
 		{res = ioread32(base + 4*i);}
 		if(((res != 0x00000000) & (i !=3) & (i !=20))|
-		//((res != 0x00020000) & (i==2)) |
-		((res != 0x00000002) & (i==20) ) 
-		//(((res >> 16)  != 0x00000007) & ( (i ==17) | (i ==23) | (i ==36))) | 
-		//((((res >> 19)  != 0x00000000) & (i == 54)))
+		((res != 0x00000002) & (i==20) ) 	
 		  ) {
 		rumboot_printf("res_invalid =%x\n",res);
 		rumboot_printf("addr =%x\n",(base + 4*i));
