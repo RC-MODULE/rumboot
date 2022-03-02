@@ -1959,6 +1959,13 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   int32_t Hi  = cfg->H;
   int32_t Wi  = cfg->W;
   int32_t Ci  = cfg->C;
+  int32_t Sh  = cfg->Sh;
+  int32_t Kh  = cfg->Kh;
+  int32_t Sw  = cfg->Sw;
+  int32_t Kw  = cfg->Kw;
+
+  int32_t Lp  = cfg->Lp;
+  int32_t Rp  = cfg->Rp;
 
   int32_t Ho  = out_cube_metrics->H;
   int32_t Wo  = out_cube_metrics->W;
@@ -1968,17 +1975,43 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   uint32_t mr = fm&0x1 && dt || !(fm&0x1) && (dt&&(Ci>8) || Ci>16) ? 0x1 : 0x0;
 
-  int el_s    = dt ? 0x2 : 0x1; // element size in bytes
-  int rdma_thr= 0x10;   // rdma throughput in bytes; wdma_thr is the same
-  int rdctn   = mr + 1; // reduction
+  int el_s      = dt ? 0x2 : 0x1; // element size in bytes
+  int rwdma_thr = 0x10;           // rdma throughput in bytes; wdma_thr is the same
+  int rdctn     = mr + 1;         // reduction
 
-  int frgs  = rdma_thr * rdctn; // dma transfer quantum in bytes; fragment size
+  int frgs  = rwdma_thr * rdctn;  // dma transfer quantum in bytes; fragment size
 
   int Ci_s  = Ci * el_s;
   int Co_s  = Co * el_s;
 
-  int frgli = Ci_s % frgs; // fragment last size if frgl>0
-  int frglo = Co_s % frgs; // fragment last size if frgl>0
+  int frgli = Ci_s % frgs; // input fragment last size
+  int frglo = Co_s % frgs; // output fragment last size
+
+  int Kh_d_Sh, rndup_Kh_d_Sh;
+  int Buffer_md = 4096;
+
+  if (Sh>0 && Kh>0) Kh_d_Sh = Kh%Sh == 0 ? Kh/Sh : Kh/Sh + 1; // Kh/Sh
+  else rumboot_printf("Error:nu_ppe_decide_dma_config_trivial: cfg->Sh<=0 || cfg->Kh<=0\n");
+
+  rndup_Kh_d_Sh = Kh_d_Sh == 1 ? 1 :
+                  Kh_d_Sh == 2 ? 2 :
+                  Kh_d_Sh == 3 || Kh_d_Sh == 4 ? 4 :
+                  Kh_d_Sh > 4 ? 8 : 8
+  ;
+
+  int Wout_splt, Win_splt, Wout_splt_st, Win_splt_st, Win_offset;
+
+  if (fm==0x4 || fm==0x5) {
+    Wout_splt = Buffer_md/(rndup_Kh_d_Sh*rdctn);
+
+    Win_splt = Kw>Sw ? (Wout_splt - 1)*Sw + Kw : Wout_splt*Sw;
+
+    Wout_splt_st = (Wo % Wout_splt == 0) || (Win_splt - (Lp+Wi+Rp)%Win_splt > Rp) ? Wout_splt : Wout_splt/2;
+
+    Win_splt_st = Kw>Sw ? (Wout_splt_st - 1)*Sw + Kw : Wout_splt_st * Sw;
+
+    Win_offset = Kw>Sw ? Kw - Sw : 0x0;
+  }
 
   if (!(fm&0x1)) {  // MEMtoPPE
     //cfg_reg->rAXIp  =
@@ -1991,7 +2024,9 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->rStrZ  = frgs;
 
     cfg_reg->rFrgs  = frgs;
+
     cfg_reg->rFrgl  = frgli>0 ? frgli : frgs;
+
     cfg_reg->rXYZd  = DmaXYZDirection_Z;
 
     if (!(fm&0x2)) {  // linear
@@ -2004,13 +2039,23 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
       cfg_reg->rBstY  = 0x0     ; // 1 element
       cfg_reg->rBstZ  = 0x8 - 1 ; // 128 channels/frgs = 128*(1B|2B)/(16B|32B)
     }
-    //else if (fm&0x4) {} // split
 
-    cfg_reg->rBxtX  = cfg_reg->rBstX;
+    if (fm == 0x4) {  // split MEMtoPPE
+      cfg_reg->rBstX = Win_splt_st - Win_offset;
+      cfg_reg->rBxtX = Win_splt - Win_offset;
+      cfg_reg->rBffX = Win_offset;
+
+      cfg_reg->rBstY = Hi-1;
+      cfg_reg->rBstZ = 0x0;
+    }
+    else {
+      cfg_reg->rBxtX  = cfg_reg->rBstX;
+      cfg_reg->rBffX  = 0x0;
+    }
+
     cfg_reg->rBxtY  = cfg_reg->rBstY;
     cfg_reg->rBxtZ  = cfg_reg->rBstZ;
 
-    cfg_reg->rBffX  = 0x0;
     cfg_reg->rBffY  = 0x0;
     cfg_reg->rBffZ  = 0x0;
   }
@@ -2047,7 +2092,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   cfg_reg->wFrgs  = frgs;
   cfg_reg->wFrgl  = frglo>0 ? frglo : frgs;
-  cfg_reg->wXYZd  = 0x2;
+  cfg_reg->wXYZd  = DmaXYZDirection_Z;
 
   if (!(fm&0x2)) {  // linear
     cfg_reg->wBstX  = Wo-1;
@@ -2059,14 +2104,17 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->wIstX  = 0x0;
     cfg_reg->wIxtX  = 0x0;
     cfg_reg->wIffX  = 0x0;
+
+    cfg_reg->wBxtY  = Ho-1;
+    cfg_reg->wBxtZ  = 0x0;
+
+    cfg_reg->wBffX  = 0x0;
+    cfg_reg->wBffY  = 0x0;
+    cfg_reg->wBffZ  = 0x0;
   }
   else if (fm&0x2) {  // boxed limitated
     cfg_reg->wBstY  = 0x0   ;
     cfg_reg->wBstZ  = 0x8-1 ;
-
-    //cfg_reg->wIstX  = Wi-1; // the same as rBstX
-    //cfg_reg->wIxtX  = Wi-1; // the same as rBxtX
-    //cfg_reg->wIffX  = 0x0;  // the same as rBffX
 
     cfg_reg->wIstX  = 0x80-1;
     cfg_reg->wIxtX  = 0x80-1;
@@ -2074,15 +2122,32 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
     cfg_reg->wBstX  = (cfg_reg->wIstX + 1)/cfg->Kw - 1;
     cfg_reg->wBxtX  = cfg_reg->wBstX;
+
+    cfg_reg->wBxtY  = 0x0;
+    cfg_reg->wBxtZ  = 0x8-1;
+
+    cfg_reg->wBffX  = 0x0;
+    cfg_reg->wBffY  = 0x0;
+    cfg_reg->wBffZ  = 0x0;
   }
-  //else if (fm&0x4) {} // split
 
-  cfg_reg->wBxtY  = cfg_reg->wBstY;
-  cfg_reg->wBxtZ  = cfg_reg->wBstZ;
+  if (fm == 0x4) {  // split
+    cfg_reg->wBstX  = Wout_splt_st-1;
+    cfg_reg->wBstY  = Ho-1;
+    cfg_reg->wBstZ  = 0x0;
 
-  cfg_reg->wBffX  = 0x0;
-  cfg_reg->wBffY  = 0x0;
-  cfg_reg->wBffZ  = 0x0;
+    cfg_reg->wIstX  = Win_splt_st-1;
+    cfg_reg->wIxtX  = Win_splt-1;
+    cfg_reg->wIffX  = Win_offset; 
+
+    cfg_reg->wBxtX  = Wout_splt-1;
+    cfg_reg->wBxtY  = Ho-1;
+    cfg_reg->wBxtZ  = 0x0;
+
+    cfg_reg->wBffX  = 0x0;
+    cfg_reg->wBffY  = 0x0;
+    cfg_reg->wBffZ  = 0x0;
+  }
 
   cfg_reg->wWi  = Wi - 1;
   cfg_reg->wHi  = Hi - 1;
