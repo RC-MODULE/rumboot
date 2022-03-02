@@ -1954,6 +1954,18 @@ void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
 	rumboot_printf("VPE fail soft reset passed\n");	
 	 iowrite32(((1<<17) | (1<<0)|(1<<6)) ,vpe_base + NU_VPE + NU_VPE_INT_RESET); 
 	}
+	
+void nu_na_ppe_pause_fail_stop(uintptr_t npe_base){
+    rumboot_printf("Prepare for Stop NA_PPE begin...\n");
+	while( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) == 0xC0200000) !=1) {}
+	rumboot_printf("Soft reset NA_PPE ...\n");	
+	iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET);
+	rumboot_printf("Soft reset done ...\n");
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 26) & 1) !=1) {}
+	rumboot_printf("NA_PPE fail soft reset passed\n");	
+	iowrite32(((1<<31) | (1<<21)|(1<<26)) ,npe_base +  NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	}	
+	
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration) {
 	 int res;
 	res = ioread32(base + 4*num);
@@ -1989,17 +2001,17 @@ int nu_regs_check(uintptr_t base, int num, int iteration) {
   return 0;
 }
 int nu_ppe_regs_check(uintptr_t base, int num, int iteration) {
-	 int res;
-	res = ioread32(base + 4*num);
+	 int res_ppe;
+	res_ppe = ioread32(base + 4*num);
 	for( int i =num; i< iteration;i++) {	
 	if ((i != 38) & (i != 9) & (i != 10)& (i != 11) )
-		{res = ioread32(base + 4*i);}
-		if(((res != 0x00000000) & (i !=3) & (i !=20))|
-		((res != 0x00000002) & (i==20) ) 	
+		{res_ppe = ioread32(base + 4*i);}
+		if(((res_ppe != 0x00000000) & (i !=3) & (i !=20))|
+		((res_ppe != 0x00000002) & (i==20) ) 	
 		  ) {
-		rumboot_printf("res_invalid =%x\n",res);
+		rumboot_printf("res_ppe_invalid =%x\n",res_ppe);
 		rumboot_printf("addr =%x\n",(base + 4*i));
-		//rumboot_printf("i =%x\n",i);
+		rumboot_printf("i =%x\n",i);
 		return  -1;
 		}
   }
