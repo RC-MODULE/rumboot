@@ -9,6 +9,8 @@
 #include <devices/rcm_na/nu_test_lib.h> 
 #include <devices/rcm_na/nu_test_macro.h> 
 
+#define SKIP_ITERATIONS 0
+
 void nu_ppe_decide_dma_config(
   ConfigPPE* cfg, 
   CubeMetrics* res_metrics, 
@@ -32,6 +34,7 @@ int main() {
   int i, it_nmb, dtB;
   int clk_cnt, perf_avg;
   int res;
+  int skip;
 
   uint32_t flying_mode, lbs, mv;
 
@@ -75,7 +78,18 @@ int main() {
 
   if (!res) nu_ppe_init_iteration_desc(&test_desc,&iteration_desc);
 
-  for (perf_avg=0, i=0; i<it_nmb && !res; i++) {
+#ifndef SKIP_ITERATIONS
+  skip=0;
+#else
+  skip = SKIP_ITERATIONS;
+#endif
+  
+  for(i=0;i<skip;i++) {
+    rumboot_printf("Skipping Iteration %d\n",i);
+    nu_ppe_iterate_desc(&iteration_desc);
+  }
+
+  for (perf_avg=0, i=skip; i<it_nmb && !res; i++) {
     //rumboot_malloc_update_heaps(1);
 
     rumboot_printf("Starting Iteration %d\n",i);
@@ -91,6 +105,11 @@ int main() {
 
     iteration_desc.cfg_reg->rOpEn  = 0x0;
     iteration_desc.cfg_reg->wOpEn  = 0x0;
+#if SKIP_ITERATIONS != 0
+      // Print Them When We Debug
+    nu_ppe_print_config(iteration_desc.cfg);
+    nu_ppe_print_config_reg(iteration_desc.cfg_reg);
+#endif
     nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
 
     iteration_desc.cfg_reg->wOpEn  = 0x1;
