@@ -668,4 +668,5 @@ int out_dim_comp(int in_dim, int k_dim, int k_str);
 void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m);
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
 int nu_regs_check(uintptr_t base,int num, int iteration);
+void nu_na_ppe_wait_int_dev_off(uintptr_t npe_base);
 #endif

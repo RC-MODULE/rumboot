@@ -303,4 +303,5 @@ void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg);
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
 int nu_regs_check(uintptr_t base,int num, int iteration);
 int nu_ppe_regs_check(uintptr_t base,int num, int iteration);
+void nu_na_ppe_pause_fail_stop(uintptr_t npe_base); 
 #endif
