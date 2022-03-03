@@ -1015,27 +1015,36 @@ int nu_bitwise_compare(void* res_data, void* etalon, int size) {
 }
 
 int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
-  int res = 0;
-
-  int i, ri, ei, eps_cmp;
-
-  for (i=0; i < size>>1 && !res; i=i+2) {
-  //for (i=0; i < 4 && !res; i=i+2) {
-
-    ri = (*((int*)res_data + i + 1)&0xF) << 8 | *((int*)res_data + i)&0xF;
-    ei = (*((int*)etalon + i + 1)&0xF) << 8 | *((int*)etalon + i)&0xF;
-
-    if (ri > ei)  eps_cmp = ri - ei;
-    else          eps_cmp = ei - ri;
-
-    if (eps_cmp > eps) {
-      res = 1;
-
-      rumboot_printf("ERROR: Data Mismatch Address: %08x, Read Data: %08x, Address: %08x, Read Data: %08x\n", *((int*)res_data+i), ri, *((int*)etalon+i), ei);
+  
+  int16_t* r_ptr;
+  int16_t* e_ptr;
+  int16_t ri;
+  int16_t ei;
+  int16_t diff;
+  
+  r_ptr = (int16_t*) res_data;
+  e_ptr = (int16_t*) etalon;
+  for(int i=0; i< size/sizeof(int16_t); i++) {
+    ri = *r_ptr;
+    ei = *e_ptr;
+    
+    if(ri != ei) {
+      rumboot_printf("inacc == %x vs %x ===\n",ri,ei);
+      
+      if(ri > ei) diff = ri - ei;
+      else        diff = ei - ri;
+      
+      if(diff > eps) {
+        rumboot_printf("ERROR: Data Mismatch Address: %x, Read Data: %x, Address: %x, Read Data: %x\n", (uint32_t)r_ptr, ri, (uint32_t)e_ptr , ei);
+        return 1;
+      }
     }
+    
+    r_ptr++;
+    e_ptr++;
   }
-
-  return res;
+  
+  return 0;
 }
 
 void nu_vpe_interpret_mismatch_print_op01(ConfigOp01 *op_config,void* op,uint32_t offset_out,int C) {

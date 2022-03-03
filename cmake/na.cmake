@@ -347,12 +347,17 @@ endmacro()
 
 
       # Tests Use MPE+VPE (Without PPE)
-      macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight)
+      macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
+      if("${comparer}" STREQUAL "EPS")
+        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+      else()
+        set(COMPARER_OPT)
+      endif()
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS -DDONT_USE_PPE=1
+        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
@@ -1361,22 +1366,22 @@ macro(na_testsuite_add_npe_tests CONF)
           ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
       if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE_CFG")
         foreach(label RANGE 25 48)  # Int16
-          ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
+          ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
         endforeach()
         foreach(label RANGE 49 72)  # Int8
-          ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
+          ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
         endforeach()
     
           foreach(label RANGE 1 24)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT BITWISE)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
           endforeach()
           foreach(label RANGE 25 72)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT BITWISE)
           endforeach()
           foreach(label RANGE 1 48)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT EPS)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
           endforeach()
 
           ADD_NPE_MPE_RDMA_RDCH_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
@@ -1404,9 +1409,9 @@ macro(na_testsuite_add_npe_tests CONF)
       endif() # NA_TESTGROUP MPE_CFG
           ###################################################################
           # Resnet-test 
-          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT) # LAYER0_MPE
-          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT) # LAYER0_MPE_BN
-          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT) # LAYER0_MPE_BN_RELU
+          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT BITWISE) # LAYER0_MPE
+          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT BITWISE) # LAYER0_MPE_BN
+          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU
           # ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT) # LAYER0_MPE_BN_RELU_PPE
           ###################################################################
     

@@ -26,4 +26,14 @@
   #define MY_PPE_REGS_BASE (NPE_BASE + NA_PPE_WDMA_BASE)
 #endif
 
+#ifdef USE_NU_HALF_COMPARE_EPS
+  #ifndef NU_HALF_COMPARE_EPSILON
+    #define NU_HALF_COMPARE_EPSILON 256
+  #endif
+
+  #define NU_COMPARE_FUNCTION(RES,ETALON,SIZE) nu_half_compare_eps ( RES , ETALON , SIZE , NU_HALF_COMPARE_EPSILON )
+#else
+  #define NU_COMPARE_FUNCTION(RES,ETALON,SIZE) nu_bitwise_compare ( RES , ETALON , SIZE )
+#endif
+
 #endif
