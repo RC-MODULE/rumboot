@@ -96,6 +96,9 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op2_config.lut_mrr_type=*ptr;ptr++;
   cfg->op2_config.lut_xoffset=*ptr;ptr++;
   cfg->op2_config.lut_yoffset=*ptr;ptr++;
+  cfg->ninf_cnt_en=*ptr;ptr++;
+  cfg->ovrf_cnt_en=*ptr;ptr++;
+  cfg->lut_cnt_en=*ptr;ptr++;
 
 }
 
@@ -493,6 +496,10 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  lut_mrr_type = %d \n", cfg->op2_config.lut_mrr_type);
   rumboot_printf("  lut_xoffset = %x \n", cfg->op2_config.lut_xoffset);
   rumboot_printf("  lut_yoffset = %x \n", cfg->op2_config.lut_yoffset);
+  
+  nu_vpe_print_Enable(cfg->ninf_cnt_en,"ninf_cnt_en");
+  nu_vpe_print_Enable(cfg->ovrf_cnt_en,"ovrf_cnt_en");
+  nu_vpe_print_Enable(cfg->lut_cnt_en,"lut_cnt_en");
 
   nu_print_config_dma(&(cfg->src_rdma_config),"src_rdma_config");
   nu_print_config_dma(&(cfg->op0_rdma_config),"op0_rdma_config");
@@ -1051,7 +1058,9 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
   else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
   else                                                                                       tmp_type = DataType_Int8  ;
-  tmp_data = (1<<30) | (1<<29) | (1<<28) |   // All Counters On
+  tmp_data = ( (cfg->ninf_cnt_en&1) << 30) | 
+             ( (cfg->ovrf_cnt_en&1) << 29) | 
+             ( (cfg->lut_cnt_en&1)  << 28) |
              ((cfg->wdma_config.dma_bsize) << 20) |   // why wdma&&&& maybe rdma????  -1
              (cfg->out_data_type << 16) | 
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |

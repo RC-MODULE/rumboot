@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define NU_VPE_CFG_PARAMS_NUM 80
+#define NU_VPE_CFG_PARAMS_NUM 83
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 63
@@ -395,6 +395,9 @@
     ConfigOp01  op0_config      ;
     ConfigOp01  op1_config      ;
     ConfigOp2   op2_config      ;
+    Enable      ninf_cnt_en     ;
+    Enable      ovrf_cnt_en     ;
+    Enable      lut_cnt_en      ;
     ConfigDMA   src_rdma_config ;
     ConfigDMA   op0_rdma_config ;
     ConfigDMA   op1_rdma_config ;
