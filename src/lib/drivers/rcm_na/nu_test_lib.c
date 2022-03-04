@@ -1033,8 +1033,6 @@ float fp16_to_fp32(const short in){
       t1 |= t2;
     }
   
-    printf("fp16_to_fp32 t1 = 0x%x\n",t1);
-
     out = *( (float*) &t1);
 //    memcpy(&out, &t1, sizeof(out));
     
