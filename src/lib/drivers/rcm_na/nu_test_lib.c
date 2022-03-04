@@ -5,6 +5,7 @@
 #include <rumboot/io.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <regs/regs_na.h>
 
@@ -1014,6 +1015,34 @@ int nu_bitwise_compare(void* res_data, void* etalon, int size) {
   return memcmp((char*)res_data,(char*)etalon,size)  ;
 }
 
+float fp16_to_fp32(const short in){
+    signed int t1, t2, t3;
+    float out = 0;
+
+    t1 = ((in & 0x7fff) << 13) + 0x38000000; 
+    t2 = (in & 0x8000) << 16;
+    t3 = in & 0x7c00;
+    
+    if(t3==0x7c00) // NaN or inf
+      if(in & 0x3FF) // NaN
+        t1 = t2 | 0x7FFFFFFF;
+      else // inf
+        t1 = t2 | 0x7F800000;
+    else {
+      t1 = (t3==0 ? 0 : t1); // Denorm Correction
+      t1 |= t2;
+    }
+  
+    printf("fp16_to_fp32 t1 = 0x%x\n",t1);
+
+    out = *( (float*) &t1);
+//    memcpy(&out, &t1, sizeof(out));
+    
+    return out;
+}
+
+
+
 int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
   
   int16_t* r_ptr;
@@ -1035,8 +1064,48 @@ int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
       else        diff = ei - ri;
       
       if(diff > eps) {
-        rumboot_printf("ERROR: Data Mismatch Address: %x, Read Data: %x, Address: %x, Read Data: %x\n", (uint32_t)r_ptr, ri, (uint32_t)e_ptr , ei);
-        return 1;
+        float rf;
+        float ef;
+        float abs_rf;
+        float abs_ef;
+        const float small_epsilon = 0.0009765625f; // Exponent = -10 
+        int mis;
+        
+        rf = fp16_to_fp32(ri);
+        ef = fp16_to_fp32(ei);
+        abs_rf = fabs(rf);
+        abs_ef = fabs(ef);
+        
+        mis=0;
+        if(abs_rf < small_epsilon || abs_ef < small_epsilon) {  // Also Negative Zero
+          if(abs_rf > 0.125f || abs_ef > 0.125f) // Was Decided By v.gordeev As OK
+            mis=1;
+        }
+        else {
+          if( (ri & 0x8000) ^ (ei & 0x8000) )  // Different Signs
+            mis=1;
+          else {
+            float max;
+            float min;
+            
+            if(abs_rf > abs_ef) {
+              max = abs_rf;
+              min = abs_ef;
+            }
+            else {
+              max = abs_ef;
+              min = abs_rf;
+            }
+            
+            if( max - min > 0.0125f * max)
+              mis=1;
+          }
+        }
+        
+        if(mis) {
+          rumboot_printf("ERROR: Data Mismatch Address: %x, Read Data: %x, Address: %x, Read Data: %x\n", (uint32_t)r_ptr, ri, (uint32_t)e_ptr , ei);
+          return 1;
+        }
       }
     }
     
