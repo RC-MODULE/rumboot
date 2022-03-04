@@ -455,6 +455,10 @@ cfg_vpe->op2_config.  lut_mrr_type = 0                                       ;
 cfg_vpe->op2_config.  lut_xoffset = 0                                        ;
 cfg_vpe->op2_config.  lut_yoffset = 0                                        ;
 
+cfg_vpe->ninf_cnt_en = Enable_NotEn;
+cfg_vpe->ovrf_cnt_en = Enable_NotEn;
+cfg_vpe->lut_cnt_en  = Enable_NotEn;
+
 
 cfg_ppe->   H      = 1              ;
 cfg_ppe->   W      = 1              ;
