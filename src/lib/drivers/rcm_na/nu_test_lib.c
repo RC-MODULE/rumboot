@@ -2093,4 +2093,24 @@ int nu_ppe_regs_check(uintptr_t base, int num, int iteration) {
   }
 return 0;  
 }
-    
+float fp16_to_fp32 (uint16_t in_value) {
+  uint32_t magic = { 113 << 23 };
+  uint32_t shifted_exp = 0x7c00 << 13;
+  uint32_t out_value = (in_value & 0x7fff) << 13;
+  uint32_t exp = shifted_exp & out_value;                        // just the exponent
+  out_value += (127 - 15) << 23;                                 // exponent adjust
+
+  // special cases
+  float float_out_value;
+  if (exp == shifted_exp) // Inf/NaN?
+    out_value += (128 - 16) << 23;                               // extra exp adjust
+  
+  else if (exp == 0) // Zero/Denormal?
+  {
+    out_value += 1 << 23;                                        // extra exp adjust
+    float_out_value = *((float*)&out_value) - *((float*)&magic); // renormalize
+    out_value = *((uint32_t*)&float_out_value);
+  }
+  out_value |= ((in_value & 0x8000) << 16);                      // sign bit
+  return *((float*)&out_value);
+}
