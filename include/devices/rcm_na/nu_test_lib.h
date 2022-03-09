@@ -305,6 +305,4 @@ int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
 int nu_regs_check(uintptr_t base,int num, int iteration);
 int nu_ppe_regs_check(uintptr_t base,int num, int iteration);
 void nu_na_ppe_pause_fail_stop(uintptr_t npe_base); 
-
-float fp16_to_fp32 (uint16_t in_value);
 #endif
