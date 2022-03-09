@@ -1543,6 +1543,13 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
   # Test on VPE special cases
   ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
 
+  # Test on VPE ALU according to testplan with Vitia's targets
+  foreach(coef IN ITEMS INT16 INT8)
+    foreach(block IN ITEMS OP0 OP1)  
+      ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_alu_IN_INT32_COEF0_${coef}_COEF1_${coef}_COEF2_${coef}_OUT_INT16_${block} main_alu_IN_INT32_COEF0_${coef}_COEF1_${coef}_COEF2_${coef}_OUT_INT16_${block})
+    endforeach()
+  endforeach()
+  
 endmacro()
 
 macro(na_testsuite_add_vpe_tests CONF)
