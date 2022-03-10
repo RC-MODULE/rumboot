@@ -275,7 +275,7 @@ int main() {
     nu_npe_iteration_start(&iteration_desc);
     
       // Result vs Etalon Comparision
-    if(nu_bitwise_compare(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
+    if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       nu_mpe_print_config(iteration_desc.cfg_mpe);
