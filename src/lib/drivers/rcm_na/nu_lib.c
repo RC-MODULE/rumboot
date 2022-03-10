@@ -2585,8 +2585,8 @@ void nu_npe_ppe_set_int_mask(uintptr_t npe_base, ConfigPPE* cfg){
 void nu_na_ppe_dev_pause_norst_resume(uintptr_t npe_base){
     rumboot_printf("Start after stop PPE  begin...\n");
 	iowrite32((0<<2),npe_base + NA_CU_REGS_BASE + NA_PAUSE);
-	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 30) & 1) !=1) {} //???
-	iowrite32((1<<30) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);  //????
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 30) & 1) !=1) {}
+	iowrite32((1<<30) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 24) & 1) !=1) {}
 	iowrite32((1<<24) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
 	rumboot_printf("Done NA_PPE start after stop\n");
