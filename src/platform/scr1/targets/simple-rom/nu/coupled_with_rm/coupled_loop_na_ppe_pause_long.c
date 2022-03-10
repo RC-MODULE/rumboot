@@ -125,7 +125,7 @@ int main() {
    // ppe received pause
  	nu_na_ppe_pause(NPE_BASE); //nu_na_ppe_pause_next_cntx(NPE_BASE)????
 	nu_na_ppe_dev_pause_norst_resume(NPE_BASE);
-	nu_na_ppe_wait_int_pause_norst(NPE_BASE);  
+	//nu_na_ppe_wait_int_pause_norst(NPE_BASE);  
 	
     clk_cnt = rumboot_platform_get_uptime();
 //--------------------------------------------  
