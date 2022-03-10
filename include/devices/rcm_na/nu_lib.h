@@ -666,6 +666,7 @@ void nu_na_ppe_wait_int_pause(uintptr_t npe_base);
 void nu_na_ppe_rdma_wait_complete(uintptr_t npe_base);
 void nu_na_ppe_wait_complete(uintptr_t npe_base);
 void nu_na_ppe_dev_resume(uintptr_t npe_base);
+void nu_na_ppe_dev_pause_norst_resume(uintptr_t npe_base);
 
 int out_dim_comp(int in_dim, int k_dim, int k_str);
 void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m);
