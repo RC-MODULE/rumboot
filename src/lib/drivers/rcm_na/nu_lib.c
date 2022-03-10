@@ -2399,7 +2399,7 @@ void nu_na_ppe_rdma_wait_complete(uintptr_t npe_base){
   rumboot_printf("Wait NA PPE ...\n");
   while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS)>> 27) & 1) !=1) {}
 	  {iowrite32( (1<<27),npe_base + NA_CU_REGS_BASE   + NA_INT_UNITS_STATUS);
-	  rumboot_printf("Done PPE WDMA...\n");}
+	  rumboot_printf("Done PPE RDMA...\n");}
 }
 void nu_na_ppe_wait_complete(uintptr_t npe_base){
   rumboot_printf("Wait PPE WDMA...\n");
@@ -2583,13 +2583,39 @@ void nu_npe_ppe_set_int_mask(uintptr_t npe_base, ConfigPPE* cfg){
     iowrite32((1<<31) | (1<<30)| (1<<29) | (1<<28) |(1<<27) | (1<<26) | (1<<25) | (1<<24) | (1<<23) | (1<<22) |  (1<<21),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
 	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }		
+void nu_na_ppe_dev_pause_norst_resume(uintptr_t npe_base){
+    rumboot_printf("Start after stop PPE  begin...\n");
+	iowrite32((0<<2),npe_base + NA_CU_REGS_BASE + NA_PAUSE);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 30) & 1) !=1) {}
+	iowrite32((1<<30) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 24) & 1) !=1) {}
+	iowrite32((1<<24) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	rumboot_printf("Done NA_PPE start after stop\n");
+	
+    while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 28) & 1) !=1) {} // IRQ_PPE_WDMA_CMPL
+ 	rumboot_printf("Wait NA_PPE context got\n");   
+	iowrite32((1<<28),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 22) & 1) !=1) {}
+	
+	//while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 27) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+ 	//rumboot_printf("Wait NA_PPE context got\n");   
+	//iowrite32(((1<<27) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 22) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+ 	rumboot_printf("Wait NA_PPE context got\n");   
+	iowrite32(((1<<22) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	    
+	
+	rumboot_printf("Done NA_PPE context\n");
+
+
+}
 
 void nu_na_ppe_dev_pause_resume(uintptr_t npe_base){
     rumboot_printf("Start after stop NA_PPE  begin...\n");
 	iowrite32( (0<<2),npe_base + NA_CU_REGS_BASE  + NA_PAUSE);
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 24) & 1) !=1) {}
 	iowrite32( (0<<24),npe_base + NA_CU_REGS_BASE  + NA_INT_UNITS_RESET);
-	rumboot_printf("Done PPE start after stop\n");
+	rumboot_printf("Done NA_PPE start after stop\n");
 }
 void nu_na_vpe_wait_int_pause(uintptr_t npe_base){
 	rumboot_printf("Wait_ NA_VPE context got\n");
