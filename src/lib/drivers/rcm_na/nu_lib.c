@@ -1983,6 +1983,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   uint32_t fm = cfg_reg->wOpM >> 8;
 
   uint32_t mr = fm&0x1 && dt || !(fm&0x1) && (dt&&(Ci>8) || Ci>16) ? 0x1 : 0x0;
+//  uint32_t mr = 0;
 
   int el_s      = dt ? 0x2 : 0x1; // element size in bytes
   int rwdma_thr = 0x10;           // rdma throughput in bytes; wdma_thr is the same
@@ -2015,9 +2016,9 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
     Win_splt = Kw>Sw ? (Wout_splt - 1)*Sw + Kw : Wout_splt*Sw;
 
-    Wout_splt_st = (Wo % Wout_splt == 0) || (Win_splt - (Lp+Wi+Rp)%Win_splt > Rp) ? Wout_splt : Wout_splt/2;
+    Wout_splt_st = (Wo % Wout_splt == 0) || (Wi + Lp)%Win_splt >= Kw ? Wout_splt : Wout_splt/2;
 
-    Win_splt_st = Kw>Sw ? (Wout_splt_st - 1)*Sw + Kw : Wout_splt_st * Sw;
+    Win_splt_st = Kw>Sw ? (Wout_splt_st - 1)*Sw + Kw - Lp : Wout_splt_st * Sw - Lp;
 
     Win_offset = Kw>Sw ? Kw - Sw : 0x0;
   }
@@ -2066,8 +2067,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     }
 
     if (fm == 0x4) {  // split MEMtoPPE
-      cfg_reg->rBstX = Win_splt_st - Win_offset;
-      cfg_reg->rBxtX = Win_splt - Win_offset;
+      cfg_reg->rBstX = Win_splt_st - Win_offset - 1;
+      cfg_reg->rBxtX = Win_splt - Win_offset - 1;
       cfg_reg->rBffX = Win_offset;
 
       cfg_reg->rBstY = Hi-1;
@@ -2160,8 +2161,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->wBstY  = Ho-1;
     cfg_reg->wBstZ  = 0x0;
 
-    cfg_reg->wIstX  = Win_splt_st-1;
-    cfg_reg->wIxtX  = Win_splt-1;
+    cfg_reg->wIstX  = Win_splt_st-Win_offset-1;
+    cfg_reg->wIxtX  = Win_splt-Win_offset-1;
     cfg_reg->wIffX  = Win_offset; 
 
     cfg_reg->wBxtX  = Wout_splt-1;
