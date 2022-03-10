@@ -125,8 +125,7 @@ int main() {
    // ppe received pause
  	nu_na_ppe_pause(NPE_BASE); //nu_na_ppe_pause_next_cntx(NPE_BASE)????
 	nu_na_ppe_dev_pause_norst_resume(NPE_BASE);
-	//nu_na_ppe_wait_int_pause_norst(NPE_BASE);  
-	
+
     clk_cnt = rumboot_platform_get_uptime();
 //--------------------------------------------  
     while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
@@ -141,7 +140,7 @@ int main() {
     #endif
     #endif
 
-	nu_na_ppe_rdma_wait_complete(NPE_BASE);  //????????????
+	//nu_na_ppe_rdma_wait_complete(NPE_BASE);  //????????????
 	//nu_na_ppe_dev_resume(NPE_BASE);
 	nu_na_wait_int(NPE_BASE); //reset NA interrupts
 //--------------------------------------------    
