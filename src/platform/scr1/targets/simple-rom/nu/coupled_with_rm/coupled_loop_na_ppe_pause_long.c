@@ -141,8 +141,8 @@ int main() {
     #endif
     #endif
 
-	//nu_na_ppe_wait_complete(NPE_BASE);  //????????????
-	nu_na_ppe_dev_resume(NPE_BASE);
+	nu_na_ppe_rdma_wait_complete(NPE_BASE);  //????????????
+	//nu_na_ppe_dev_resume(NPE_BASE);
 	nu_na_wait_int(NPE_BASE); //reset NA interrupts
 //--------------------------------------------    
     // Sizeof(DataCube)/(times*frequency); time measure is us, frequency measure is MHz
