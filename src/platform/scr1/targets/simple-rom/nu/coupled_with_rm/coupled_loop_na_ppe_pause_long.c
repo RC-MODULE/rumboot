@@ -130,9 +130,9 @@ int main() {
 //--------------------------------------------  
     while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
     clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
-    #ifdef MEMtoPPE
-    nu_na_ppe_rdma_wait_complete(NPE_BASE);
-   #endif
+    //#ifdef MEMtoPPE
+   // nu_na_ppe_rdma_wait_complete(NPE_BASE);
+	//#endif
   
     #ifdef VPEtoPPE
     #if DUT_IS_PPE
@@ -140,8 +140,6 @@ int main() {
     #endif
     #endif
 
-	//nu_na_ppe_rdma_wait_complete(NPE_BASE);  //????????????
-	//nu_na_ppe_dev_resume(NPE_BASE);
 	nu_na_wait_int(NPE_BASE); //reset NA interrupts
 //--------------------------------------------    
     // Sizeof(DataCube)/(times*frequency); time measure is us, frequency measure is MHz
@@ -151,7 +149,6 @@ int main() {
   
     rumboot_printf("Comparing...\n");
   
-   // res =0; // nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
   res = nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
     if (res) {
       nu_ppe_print_config(iteration_desc.cfg);
@@ -175,8 +172,7 @@ int main() {
       rumboot_printf("Test FAILED at iteration %d\n", i);
       return 1;
     };
-  //	}   
-  
+   
 	if(i!=it_nmb-1)
     nu_ppe_iterate_desc(&iteration_desc);
  }
