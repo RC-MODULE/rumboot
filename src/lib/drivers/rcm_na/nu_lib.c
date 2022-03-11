@@ -175,6 +175,8 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
     cfg-> meth  =*ptr;ptr++;
     cfg-> dt    =*ptr;ptr++;
+
+    cfg-> nan_to_zero_input = *ptr;ptr++;
 }
 
 int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
@@ -1976,6 +1978,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   int32_t Lp  = cfg->Lp;
   int32_t Rp  = cfg->Rp;
 
+  int32_t nan_to_zero_input = cfg->nan_to_zero_input;
+
   int32_t Ho  = out_cube_metrics->H;
   int32_t Wo  = out_cube_metrics->W;
   int32_t Co  = out_cube_metrics->C;
@@ -2180,7 +2184,9 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   cfg_reg->wWo  = Wo - 1;
   cfg_reg->wHo  = Ho - 1;
   cfg_reg->wCo  = Co - 1;
-  cfg_reg->wOpM = mr<<28 | dt<<16 | fm<<8 | meth;
+
+  cfg_reg->wOpM = mr<<28 | nan_to_zero_input<<24 | dt<<16 | fm<<8 | meth;
+
   cfg_reg->wK   = (cfg->Sh-1)<<20 | (cfg->Sw-1)<<16 | (cfg->Kh-1)<<8 | (cfg->Kw-1);
   cfg_reg->wKWr = cfg->Kw_r;
   cfg_reg->wKHr = cfg->Kh_r;
@@ -2249,7 +2255,6 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wCi  , wbase + NU_PPE_DATA_C_IN          );
   iowrite32(cfg->wWo  , wbase + NU_PPE_DATA_W_OUT         );
   iowrite32(cfg->wHo  , wbase + NU_PPE_DATA_H_OUT         );
-  //iowrite32(cfg->wCo  , wbase + NU_PPE_DATA_C_OUT         );
   iowrite32(cfg->wOpM , wbase + NU_PPE_OP_MODE            );
   iowrite32(cfg->wK   , wbase + NU_PPE_KERNEL             );
   iowrite32(cfg->wKWr , wbase + NU_PPE_RECIP_KERNEL_W     );

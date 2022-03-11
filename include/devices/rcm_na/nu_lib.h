@@ -7,7 +7,7 @@
 
 #define NU_VPE_CFG_PARAMS_NUM 83
 #define NU_MPE_CFG_PARAMS_NUM 18
-#define NU_PPE_CFG_PARAMS_NUM 22
+#define NU_PPE_CFG_PARAMS_NUM 23
 #define NU_PPE_REG_CFG_PARAMS_NUM 63
 
 #define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-7-2-2)
@@ -427,6 +427,8 @@
     uint32_t pv[7]  ;
     PoolingOperationSwitch  meth;
     DataType                dt  ;
+
+    Enable nan_to_zero_input;
   }ConfigPPE;
 
   typedef struct ConfigREGPPE{

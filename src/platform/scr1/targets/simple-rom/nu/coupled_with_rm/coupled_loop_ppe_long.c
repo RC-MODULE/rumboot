@@ -105,6 +105,7 @@ int main() {
 
     iteration_desc.cfg_reg->rOpEn  = 0x0;
     iteration_desc.cfg_reg->wOpEn  = 0x0;
+
 #if SKIP_ITERATIONS != 0
       // Print Them When We Debug
     nu_ppe_print_config(iteration_desc.cfg);
