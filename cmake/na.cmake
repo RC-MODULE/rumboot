@@ -1353,7 +1353,6 @@ macro(na_testsuite_add_npe_tests CONF)
         
         ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
         ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
-
  endif()  # NA_TESTGROUP MPE
 
           ################################
@@ -1428,6 +1427,12 @@ macro(na_testsuite_add_npe_tests CONF)
     
           ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
           
+          # Test on MPE::ALU
+          foreach(in_macro IN ITEMS IN_INT16 IN_INT8)
+            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_alu_${in_macro} main_mpe_alu_${in_macro} NO_TIGHT BITWISE)
+          endforeach()
+
+
       endif() # NA_TESTGROUP MPE_CFG
           ###################################################################
           # Resnet-test 
