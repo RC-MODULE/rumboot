@@ -66,14 +66,11 @@
 #define NU_PPE_DATA_C_IN            0x08C
 #define NU_PPE_DATA_W_OUT           0x090
 #define NU_PPE_DATA_H_OUT           0x094
-//#define NU_PPE_DATA_C_OUT           0x098
+
 #define NU_PPE_OP_MODE              0x09C
 #define NU_PPE_KERNEL               0x0A0
 
 #define NU_PPE_RECIP_KERNEL_WH      0x0A4
-
-//#define NU_PPE_RECIP_KERNEL_W       0x0A4
-//#define NU_PPE_RECIP_KERNEL_H       0x0A8
 
 #define NU_PPE_PADDING              0x0AC
 #define NU_PPE_PADDING_VALUE_1      0x0B0

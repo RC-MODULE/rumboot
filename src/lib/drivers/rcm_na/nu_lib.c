@@ -162,8 +162,6 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
     cfg-> Lp    =*ptr;ptr++;
     cfg-> Rp    =*ptr;ptr++;
 
-//    cfg-> Kh_r  =*ptr;ptr++;
-//    cfg-> Kw_r  =*ptr;ptr++;
     cfg-> Kwh_r  =*ptr;ptr++;
 
     cfg-> pv[0] =*ptr;ptr++;
@@ -244,9 +242,6 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
     cfg_reg->wCo    = *ptr; ptr++;
     cfg_reg->wOpM   = *ptr; ptr++;
     cfg_reg->wK     = *ptr; ptr++;
-
-//    cfg_reg->wKWr   = *ptr; ptr++;
-//    cfg_reg->wKHr   = *ptr; ptr++;
 
     cfg_reg->wKWHr   = *ptr; ptr++;
 
@@ -728,8 +723,6 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("  Kw     = %d \n" , cfg->Kw);
     rumboot_printf("  Sh     = %d \n" , cfg->Sh);
     rumboot_printf("  Sw     = %d \n" , cfg->Sw);
-//    rumboot_printf("  Kh_r   = 0x%x \n" , cfg->Kh_r);
-//    rumboot_printf("  Kw_r   = 0x%x \n" , cfg->Kw_r);
 
     rumboot_printf("  Kwh_r   = 0x%x \n" , cfg->Kwh_r);
 
@@ -807,9 +800,6 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf ("wCo   = %d\n", cfg_reg->wCo  );
   rumboot_printf ("wOpM  = 0x%x\n", cfg_reg->wOpM );
   rumboot_printf ("wK    = %d\n", cfg_reg->wK   );
-
-//  rumboot_printf ("wKWr  = 0x%x\n", cfg_reg->wKWr );
-//  rumboot_printf ("wKHr  = 0x%x\n", cfg_reg->wKHr );
 
   rumboot_printf ("wKWHr  = 0x%x\n", cfg_reg->wKWHr );
 
@@ -2200,8 +2190,6 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   cfg_reg->wOpM = mr<<28 | nan_to_zero_input<<24 | dt<<16 | fm<<8 | meth;
 
   cfg_reg->wK   = (cfg->Sh-1)<<20 | (cfg->Sw-1)<<16 | (cfg->Kh-1)<<8 | (cfg->Kw-1);
-//  cfg_reg->wKWr = cfg->Kw_r;
-//  cfg_reg->wKHr = cfg->Kh_r;
 
   cfg_reg->wKWHr = cfg->Kwh_r;
 
@@ -2272,9 +2260,6 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wHo  , wbase + NU_PPE_DATA_H_OUT         );
   iowrite32(cfg->wOpM , wbase + NU_PPE_OP_MODE            );
   iowrite32(cfg->wK   , wbase + NU_PPE_KERNEL             );
-
-//  iowrite32(cfg->wKWr , wbase + NU_PPE_RECIP_KERNEL_W     );
-//  iowrite32(cfg->wKHr , wbase + NU_PPE_RECIP_KERNEL_H     );
 
   iowrite32(cfg->wKWHr , wbase + NU_PPE_RECIP_KERNEL_WH   );
 

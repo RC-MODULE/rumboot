@@ -492,9 +492,6 @@
     uint32_t wOpM ; // PPE_OP_MODE
     uint32_t wK   ; // PPE_KERNEL
 
-//    uint32_t wKWr ; // PPE_RECIP_KERNEL_W
-//    uint32_t wKHr ; // PPE_RECIP_KERNEL_H
-
     uint32_t wKWHr ; // PPE_RECIP_KERNEL_WH
 
     uint32_t wP   ; // PPE_PADDING
