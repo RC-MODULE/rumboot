@@ -1047,7 +1047,7 @@ int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
   int16_t* e_ptr;
   int16_t ri;
   int16_t ei;
-  int16_t diff;
+  //~ int16_t diff;
   
   r_ptr = (int16_t*) res_data;
   e_ptr = (int16_t*) etalon;
@@ -1058,10 +1058,11 @@ int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
     if(ri != ei) {
       rumboot_printf("inacc == %x vs %x ===\n",ri,ei);
       
-      if(ri > ei) diff = ri - ei;
-      else        diff = ei - ri;
+        // Buggy Crutch
+      //~ if(ri > ei) diff = ri - ei;
+      //~ else        diff = ei - ri;
       
-      if(diff > eps) {
+      //~ if(diff > eps) {
         float rf;
         float ef;
         float abs_rf;
@@ -1104,7 +1105,7 @@ int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
           rumboot_printf("ERROR: Data Mismatch Address: %x, Read Data: %x, Address: %x, Read Data: %x\n", (uint32_t)r_ptr, ri, (uint32_t)e_ptr , ei);
           return 1;
         }
-      }
+      //~ }
     }
     
     r_ptr++;
