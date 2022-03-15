@@ -7,8 +7,8 @@
 
 #define NU_VPE_CFG_PARAMS_NUM 83
 #define NU_MPE_CFG_PARAMS_NUM 18
-#define NU_PPE_CFG_PARAMS_NUM 23
-#define NU_PPE_REG_CFG_PARAMS_NUM 63
+#define NU_PPE_CFG_PARAMS_NUM 22
+#define NU_PPE_REG_CFG_PARAMS_NUM 62
 
 #define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-7-2-2)
 #define NU_MPE_DMA_PARAM_TABLE_NUM_ROWS 72
@@ -418,8 +418,11 @@
     uint32_t Kw     ;
     uint32_t Sh     ;
     uint32_t Sw     ;
-    uint32_t Kh_r   ;
-    uint32_t Kw_r   ;
+//    uint32_t Kh_r   ;
+//    uint32_t Kw_r   ;
+
+    uint32_t Kwh_r   ;
+
     uint32_t Tp     ;
     uint32_t Bp     ;
     uint32_t Lp     ;
@@ -488,8 +491,12 @@
     uint32_t wCo  ; // PPE_DATA_C_OUT
     uint32_t wOpM ; // PPE_OP_MODE
     uint32_t wK   ; // PPE_KERNEL
-    uint32_t wKWr ; // PPE_RECIP_KERNEL_W
-    uint32_t wKHr ; // PPE_RECIP_KERNEL_H
+
+//    uint32_t wKWr ; // PPE_RECIP_KERNEL_W
+//    uint32_t wKHr ; // PPE_RECIP_KERNEL_H
+
+    uint32_t wKWHr ; // PPE_RECIP_KERNEL_WH
+
     uint32_t wP   ; // PPE_PADDING
     uint32_t wPV1 ; // PPE_PADDING_VALUE_1
     uint32_t wPV2 ; // PPE_PADDING_VALUE_2

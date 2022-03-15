@@ -162,8 +162,9 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
     cfg-> Lp    =*ptr;ptr++;
     cfg-> Rp    =*ptr;ptr++;
 
-    cfg-> Kh_r  =*ptr;ptr++;
-    cfg-> Kw_r  =*ptr;ptr++;
+//    cfg-> Kh_r  =*ptr;ptr++;
+//    cfg-> Kw_r  =*ptr;ptr++;
+    cfg-> Kwh_r  =*ptr;ptr++;
 
     cfg-> pv[0] =*ptr;ptr++;
     cfg-> pv[1] =*ptr;ptr++;
@@ -243,8 +244,12 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
     cfg_reg->wCo    = *ptr; ptr++;
     cfg_reg->wOpM   = *ptr; ptr++;
     cfg_reg->wK     = *ptr; ptr++;
-    cfg_reg->wKWr   = *ptr; ptr++;
-    cfg_reg->wKHr   = *ptr; ptr++;
+
+//    cfg_reg->wKWr   = *ptr; ptr++;
+//    cfg_reg->wKHr   = *ptr; ptr++;
+
+    cfg_reg->wKWHr   = *ptr; ptr++;
+
     cfg_reg->wP     = *ptr; ptr++;
     cfg_reg->wPV1   = *ptr; ptr++;
     cfg_reg->wPV2   = *ptr; ptr++;
@@ -723,8 +728,11 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("  Kw     = %d \n" , cfg->Kw);
     rumboot_printf("  Sh     = %d \n" , cfg->Sh);
     rumboot_printf("  Sw     = %d \n" , cfg->Sw);
-    rumboot_printf("  Kh_r   = 0x%x \n" , cfg->Kh_r);
-    rumboot_printf("  Kw_r   = 0x%x \n" , cfg->Kw_r);
+//    rumboot_printf("  Kh_r   = 0x%x \n" , cfg->Kh_r);
+//    rumboot_printf("  Kw_r   = 0x%x \n" , cfg->Kw_r);
+
+    rumboot_printf("  Kwh_r   = 0x%x \n" , cfg->Kwh_r);
+
     rumboot_printf("  Tp     = %d \n" , cfg->Tp);
     rumboot_printf("  Bp     = %d \n" , cfg->Bp);
     rumboot_printf("  Lp     = %d \n" , cfg->Lp);
@@ -799,8 +807,12 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf ("wCo   = %d\n", cfg_reg->wCo  );
   rumboot_printf ("wOpM  = 0x%x\n", cfg_reg->wOpM );
   rumboot_printf ("wK    = %d\n", cfg_reg->wK   );
-  rumboot_printf ("wKWr  = 0x%x\n", cfg_reg->wKWr );
-  rumboot_printf ("wKHr  = 0x%x\n", cfg_reg->wKHr );
+
+//  rumboot_printf ("wKWr  = 0x%x\n", cfg_reg->wKWr );
+//  rumboot_printf ("wKHr  = 0x%x\n", cfg_reg->wKHr );
+
+  rumboot_printf ("wKWHr  = 0x%x\n", cfg_reg->wKWHr );
+
   rumboot_printf ("wP    = 0x%x\n", cfg_reg->wP   );
   rumboot_printf ("wPV1  = 0x%x\n", cfg_reg->wPV1 );
   rumboot_printf ("wPV2  = 0x%x\n", cfg_reg->wPV2 );
@@ -2188,8 +2200,11 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   cfg_reg->wOpM = mr<<28 | nan_to_zero_input<<24 | dt<<16 | fm<<8 | meth;
 
   cfg_reg->wK   = (cfg->Sh-1)<<20 | (cfg->Sw-1)<<16 | (cfg->Kh-1)<<8 | (cfg->Kw-1);
-  cfg_reg->wKWr = cfg->Kw_r;
-  cfg_reg->wKHr = cfg->Kh_r;
+//  cfg_reg->wKWr = cfg->Kw_r;
+//  cfg_reg->wKHr = cfg->Kh_r;
+
+  cfg_reg->wKWHr = cfg->Kwh_r;
+
   cfg_reg->wP   = cfg->Bp<<12 | cfg->Rp<<8 | cfg->Tp<<4 | cfg->Lp;
   cfg_reg->wPV1 = cfg->pv[0];
   cfg_reg->wPV2 = cfg->pv[1];
@@ -2257,8 +2272,12 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wHo  , wbase + NU_PPE_DATA_H_OUT         );
   iowrite32(cfg->wOpM , wbase + NU_PPE_OP_MODE            );
   iowrite32(cfg->wK   , wbase + NU_PPE_KERNEL             );
-  iowrite32(cfg->wKWr , wbase + NU_PPE_RECIP_KERNEL_W     );
-  iowrite32(cfg->wKHr , wbase + NU_PPE_RECIP_KERNEL_H     );
+
+//  iowrite32(cfg->wKWr , wbase + NU_PPE_RECIP_KERNEL_W     );
+//  iowrite32(cfg->wKHr , wbase + NU_PPE_RECIP_KERNEL_H     );
+
+  iowrite32(cfg->wKWHr , wbase + NU_PPE_RECIP_KERNEL_WH   );
+
   iowrite32(cfg->wP   , wbase + NU_PPE_PADDING            );
   iowrite32(cfg->wPV1 , wbase + NU_PPE_PADDING_VALUE_1    );
   iowrite32(cfg->wPV2 , wbase + NU_PPE_PADDING_VALUE_2    );
