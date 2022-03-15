@@ -232,6 +232,21 @@ int main() {
     }
 #endif
 
+#ifdef MPE_CFG_TESTPLAN_RDMA_WRCH
+      // Shift Biases
+    for (int shifts=i;shifts>0;shifts--) {
+      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.wdma.Thre_PLC);
+      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.wdma.Thre_VLC);
+      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.wdma.Dec_PLC);
+      for (int j=5;j>0;j--) {
+        iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j].CntSha = iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j-1].CntSha;
+        iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j].CntCmp = iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j-1].CntCmp;
+      }
+      iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[0].CntSha = 0;
+      iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[0].CntSha = 0;
+    }
+#endif
+
     //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
     //~ nu_vpe_print_config(iteration_desc.cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
