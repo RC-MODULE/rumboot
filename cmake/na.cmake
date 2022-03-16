@@ -397,12 +397,12 @@ endmacro()
       endif()  # MAKE_TIGHT
     endmacro()
 
-    macro(ADD_NPE_MPE_RDMA_RDCH_VPE_TEST CONF name rm_bin_name)
+    macro(ADD_NPE_MPE_CFG_TEST CONF name rm_bin_name)
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS -DDONT_USE_PPE=1 -DMPE_CFG_TESTPLAN_RDMA_RDCH
+        CFLAGS -DDONT_USE_PPE=1 -D${name}
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
@@ -1424,7 +1424,9 @@ macro(na_testsuite_add_npe_tests CONF)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
           endforeach()
 
-          ADD_NPE_MPE_RDMA_RDCH_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
+          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
+          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
+          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_POWER main_mpe_direct_ex_MPE_CFG_POWER)
     
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
