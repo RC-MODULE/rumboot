@@ -467,8 +467,7 @@ cfg_ppe->   Kh     = 1              ;
 cfg_ppe->   Kw     = 1              ;
 cfg_ppe->   Sh     = 2              ;
 cfg_ppe->   Sw     = 2              ;
-cfg_ppe->   Kh_r   = 0x1000000      ;
-cfg_ppe->   Kw_r   = 0x1000000      ;
+cfg_ppe->   Kwh_r  = 0x1000000      ;
 cfg_ppe->   Tp     = 0              ;
 cfg_ppe->   Bp     = 0              ;
 cfg_ppe->   Lp     = 0              ;
@@ -482,6 +481,7 @@ cfg_ppe->   pv[5]  = 0x7fff         ;
 cfg_ppe->   pv[6]  = 0x7fff         ;
 cfg_ppe->   meth     = PoolingOperationSwitch_Min ;
 cfg_ppe->   dt       = DataType_Int16;
+cfg_ppe->   nan_to_zero_input = Enable_NotEn;
 
 }
 
