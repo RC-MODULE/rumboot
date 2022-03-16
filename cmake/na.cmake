@@ -348,6 +348,10 @@ endmacro()
 
       # Tests Use MPE+VPE (Without PPE)
       macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
+        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
+      endmacro()
+      
+      macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
       if("${comparer}" STREQUAL "EPS")
         set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
       else()
@@ -362,6 +366,7 @@ endmacro()
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
           ${RM_TF_KEYS}
+          --seed ${seed_value}
           > ${RM_LOGFILE} &&
 
           ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
@@ -1450,7 +1455,9 @@ macro(na_testsuite_add_npe_tests CONF)
           
           # Test on MPE::ALU
           foreach(in_macro IN ITEMS IN_INT16 IN_INT8)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_alu_${in_macro} main_mpe_alu_${in_macro} NO_TIGHT BITWISE)
+            foreach(walking_item IN ITEMS 64 1 2 3)
+              ADD_NPE_MPE_VPE_TEST_SEED(${CONF} npe_mpe_alu_${in_macro}_${walking_item} main_mpe_alu_${in_macro} NO_TIGHT BITWISE ${walking_item})
+            endforeach()
           endforeach()
 
 
