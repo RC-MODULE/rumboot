@@ -397,12 +397,12 @@ endmacro()
       endif()  # MAKE_TIGHT
     endmacro()
 
-    macro(ADD_NPE_MPE_RDMA_TEST CONF name rm_bin_name)
+    macro(ADD_NPE_MPE_RDMA_RDCH_VPE_TEST CONF name rm_bin_name)
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS -DDONT_USE_PPE=1 -D${name}
+        CFLAGS -DDONT_USE_PPE=1 -DMPE_CFG_TESTPLAN_RDMA_RDCH
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
@@ -1177,11 +1177,30 @@ macro (ADD_PPE_PY_TESTS CONF)
       #message("Warning: scenario__path_mode ${scenario__path_mode} For Test ${test_name} Not Supported")
       set(LBS SPL)
     endif()
+
+    if ("${test_name}" MATCHES "^22_.+")
+      execute_process(
+        COMMAND             grep reduction ${file}
+        WORKING_DIRECTORY   ${CMAKE_BINARY_DIR}
+        OUTPUT_VARIABLE     REDUCTION_LINE
+      )
+      string(REGEX MATCH "\\[[12]\\]" reduction_value ${REDUCTION_LINE})
+      if ("${reduction_value}" STREQUAL "[1]")
+        set(MAX_RED MAX_RED_0)
+      elseif("${reduction_value}" STREQUAL "[2]")
+        set(MAX_RED MAX_RED_1)
+      else()
+        message(FATAL_ERROR "Undefined MAX_RED ${reduction_value} in file ${file}")
+      endif()
+    else()
+      set(MAX_RED DO_NOT_SET)
+    endif()
+
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
-      CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1
+      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1
       PREPCMD 
         cp ${file} . 
         &&
@@ -1405,8 +1424,7 @@ macro(na_testsuite_add_npe_tests CONF)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
           endforeach()
 
-          ADD_NPE_MPE_RDMA_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
-          ADD_NPE_MPE_RDMA_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
+          ADD_NPE_MPE_RDMA_RDCH_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
     
           ##################################
           ## Direct Complex Tests On Important Cube Sizes

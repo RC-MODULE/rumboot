@@ -1750,16 +1750,19 @@ int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations
   test_desc->array_of_cfg_reg = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
   if(test_desc->array_of_cfg==NULL || test_desc->array_of_cfg_reg==NULL)return -1;
   if(nu_ppe_load_array_of_cfg(heap_id, test_desc->array_of_cfg, iterations) !=0) return -1;
-  
-  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
-  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id,"metrics_in_tag", iterations);
+
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id,"metrics_etalon_tag", iterations);
   
   if(test_desc->array_of_in_metrics  ==NULL ||
      test_desc->array_of_res_metrics ==NULL ) return -1;
   
   test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,test_desc->in_file_tag,test_desc->array_of_in_metrics ,iterations);
-  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
-  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
+
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,"etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,test_desc->array_of_res_metrics,iterations);
   
   if(test_desc->array_of_in_data ==NULL || 
      test_desc->array_of_etalon  ==NULL || 

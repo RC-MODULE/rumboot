@@ -1988,8 +1988,11 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   uint32_t fm = cfg_reg->wOpM >> 8;
 
-  uint32_t mr = fm&0x1 && dt || !(fm&0x1) && (dt&&(Ci>8) || Ci>16) ? 0x1 : 0x0;
-//  uint32_t mr = 0;
+  // OP_MODE[29] reserved bit may be used here
+  uint32_t mr = (cfg_reg->wOpM >> 29)&0x1 ?
+                (cfg_reg->wOpM >> 28)&0x1 :
+                fm&0x1 && dt || !(fm&0x1) && (dt&&(Ci>8) || Ci>16) ? 0x1 : 0x0
+  ;
 
   int el_s      = dt ? 0x2 : 0x1; // element size in bytes
   int rwdma_thr = 0x10;           // rdma throughput in bytes; wdma_thr is the same

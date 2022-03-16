@@ -16,6 +16,7 @@ void nu_ppe_decide_dma_config(
   CubeMetrics* res_metrics, 
   ConfigREGPPE* cfg_reg,
   uint32_t flying_mode,
+  uint32_t max_red,
   void* in_data,
   void* res_data
 ) {
@@ -23,6 +24,10 @@ void nu_ppe_decide_dma_config(
   cfg_reg->wBALo = nu_virt_to_dma(res_data);
 
   cfg_reg->wOpM = flying_mode << 8;
+
+  // OP_MODE[29] reserved bit is used
+  if (max_red) cfg_reg->wOpM = cfg_reg->wOpM | 1<<29 | max_red << 28;
+
   nu_ppe_decide_dma_config_trivial(cfg, res_metrics, cfg_reg);
 }
 
@@ -36,7 +41,12 @@ int main() {
   int res;
   int skip;
 
-  uint32_t flying_mode, lbs, mv;
+  uint32_t flying_mode, lbs, mv, max_red;
+
+  flying_mode = 0x0;
+  lbs         = 0x0;
+  mv          = 0x0;
+  max_red     = 0x0;
 
   rumboot_printf("coupled_loop_ppe\n");
 
@@ -59,6 +69,13 @@ int main() {
   #endif
   #ifdef VPEtoPPE
     mv = 0x1;
+  #endif
+
+  #ifdef MAX_RED_0
+    max_red = 0x1<<1 | 0x0;
+  #endif
+  #ifdef MAX_RED_1
+    max_red = 0x1<<1 | 0x1;
   #endif
 
   flying_mode = ((lbs&0x3)<<1) | (mv&0x1);
@@ -99,6 +116,7 @@ int main() {
       iteration_desc.res_metrics,
       iteration_desc.cfg_reg,
       flying_mode,
+      max_red,
       iteration_desc.in_data,
       iteration_desc.res_data
     );
