@@ -2503,15 +2503,13 @@ void nu_na_vpe_dev_resume(uintptr_t npe_base){
 }
 void nu_vpe_dev_pause_resume(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Start after stop VPE  begin...\n");
-	iowrite32(/*temp |*/ (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	iowrite32( (0<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 7) & 1) !=1) {}
 	rumboot_printf("Done VPE start after stop\n");
 }
 void nu_na_vpe_dev_pause_resume(uintptr_t npe_base){
     rumboot_printf("Start after stop NA_VPE  begin...\n");
 	iowrite32( (0<<1),npe_base + NA_CU_REGS_BASE  + NA_PAUSE);
-//	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 14) & 1) !=1) {}
-//	iowrite32( (0<<14),npe_base + NA_CU_REGS_BASE  + NA_INT_UNITS_RESET);
 	rumboot_printf("Done VPE start after stop\n");
 }
 void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base, ConfigVPE* cfg){
@@ -2522,7 +2520,7 @@ void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base, ConfigVPE* cfg){
 	rumboot_printf("Done VPE start after stop\n");
 }
 void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
-	rumboot_printf("Wait VPE context got\n");
+	rumboot_printf("Wait VPE context \n");
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 4) & 1) !=1) {}
     iowrite32((1<<4),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 8) & 1) !=1) {}
@@ -2537,6 +2535,66 @@ void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg){
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 16) & 1) !=1) {}
 	rumboot_printf("Done VPE soft reset passed\n");	
 }
+void nu_npe_mpe_set_int_mask(uintptr_t npe_base){
+
+	if (( (ioread32(npe_base  + NA_CU_REGS_BASE + NA_UNITS_MODE) >> 0) & 1) ==0 )
+	iowrite32((1<<0) | (1<<1)| (1<<2) | (1<<3) |(1<<4) | (1<<5) | (1<<6) | (1<<7) | (1<<8)	|(1<<9)	|(1<<10)
+		| (1<<11) | (1<<12)| (1<<13) |(1<<14) | (1<<15) | (1<<16) | (1<<17) | (1<<18)	|(1<<19), //????
+	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
+	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
+}
+void nu_na_mpe_soft_reset(uintptr_t npe_base){
+    rumboot_printf("Soft reset NA_MPE ...\n");	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE) >> 16) & 1) !=1) {}
+	iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 4) & 1) !=1) {} //IRQ_MPE_RESET_COMPL
+	rumboot_printf("Done NA_MPE soft reset\n");	 
+}
+void nu_na_mpe_pause(uintptr_t npe_base){
+  uint32_t temp;
+    rumboot_printf("Stop NA_MPE  begin...\n");	
+	temp = ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE);
+	iowrite32(temp | (1<<0),npe_base + NA_CU_REGS_BASE + NA_PAUSE); //mpe_pause
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE) >> 16) & 1) !=1) {}	
+	rumboot_printf("Done NA_MPE stop\n");
+	iowrite32((0x00000405),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+}
+
+void nu_na_mpe_dev_pause_resume(uintptr_t npe_base){
+    rumboot_printf("Start after stop NA_MPE  begin...\n");
+	iowrite32( (0<<0),npe_base + NA_CU_REGS_BASE  + NA_PAUSE);
+	rumboot_printf("Done MPE start after stop\n");
+}
+
+void nu_na_mpe_wait_int_pause(uintptr_t npe_base){
+	rumboot_printf("Wait NA_MPE context\n");
+    while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 1) & 1) !=1) {}
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 3 ) & 1) !=1) {}   
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 4 ) & 1) !=1) {}
+		while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 14) & 1) !=1) {} //MPE+VPE
+	iowrite32(((1<<0) | (1<<1) |  (1<<2) | (1<<3) |  (1<<4)  |  (1<<10)  |  (1<<11) |  (1<<14) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Done NA_MPE context\n");
+}
+
+void nu_na_mpe_dev_resume(uintptr_t npe_base){
+    rumboot_printf(" NA_MPE finished cube handle ...\n");
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 0) & 1) !=1) {}
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 10) & 1) !=1) {}	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 9) & 1) !=1) {}
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 8) & 1) !=1) {}
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 1) & 1) !=1) {}	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 7) & 1) !=1) {}
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 6) & 1) !=1) {}
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 19) & 1) !=1) {} //MPE+VPE
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 17) & 1) !=1) {} //MPE+VPE
+//	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 11) & 1) !=1) {} //MPE+VPE
+//	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 14) & 1) !=1) {} //MPE+VPE
+	iowrite32(((1<<0) | (1<<1) | (1<<6)  | (1<<7)  | (1<<8)  | (1<<9)  | (1<<10) | (1<<11) |(1<<17)| (1<<19)  ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Done NA_MPE_VPE end \n");
+}	
+	
 void nu_na_ppe_soft_reset(uintptr_t npe_base){
     rumboot_printf("Soft NA reset PPE ...\n");	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_PAUSE) >> 18) & 1) !=1) {}
@@ -2559,7 +2617,8 @@ void nu_na_vpe_soft_reset(uintptr_t npe_base){
 	iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET);
 	//rumboot_printf("Soft reset done ...\n");	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 15) & 1) !=1) {} //IRQ_VPE_RESET_COMPL
-	rumboot_printf("Done NA_VPE soft reset passed\n");
+	iowrite32((1<<15) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Done NA_VPE soft reset\n");
 }
 
 uint32_t nu_vpe_busy(uintptr_t vpe_base) {
@@ -2608,7 +2667,7 @@ void nu_na_ppe_dev_pause_norst_resume(uintptr_t npe_base){
 	iowrite32((1<<28),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 	
 	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 27) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
- 	rumboot_printf("Wait NA_PPE context got\n");   
+ 	rumboot_printf("Wait NA_PPE context \n");   
 	iowrite32(((1<<27) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	
 	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 22) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
@@ -2628,14 +2687,20 @@ void nu_na_ppe_dev_pause_resume(uintptr_t npe_base){
 	rumboot_printf("Done NA_PPE start after stop after soft reset\n");
 }
 void nu_na_vpe_wait_int_pause(uintptr_t npe_base){
-	rumboot_printf("Wait_ NA_VPE context got\n");
+	rumboot_printf("Wait_ NA_VPE context \n");
     while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 23) & 1) !=1) {}
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 24 ) & 1) !=1) {}
     while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 25 ) & 1) !=1) {}
     iowrite32(((1<<11) | (1<<12) |  (1<<13) | (1<<14) |  (1<<15) |  (1<<19) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	rumboot_printf("Done NA_VPE context\n");
 }
+void nu_na_vpe_wait(uintptr_t npe_base, ConfigVPE* cfg){
 
+    rumboot_printf("Wait NA_VPE complete...\n");
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 12) & 1) !=1) {}
+	iowrite32((1<<12),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf(" VPE wait is completed\n");
+}
 
 void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   uint32_t temp;
