@@ -1313,11 +1313,11 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME NPE_1
-    FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
-  )
+#add_rumboot_target(
+# CONFIGURATION ${CONF}
+#   NAME NPE_1
+#   FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+# )
 
   add_rumboot_target(
     CONFIGURATION ${CONF}
@@ -1404,7 +1404,12 @@ macro(na_testsuite_add_npe_tests CONF)
     
           ##########################################
           ## NPE Reg Test
-        ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
+		  add_rumboot_target(
+		  CONFIGURATION ${CONF}
+		  NAME NPE_1
+		  FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+        )	  
+      # ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)    	  
       endif() # NA_TESTGROUP CU
     
           ##########################################
