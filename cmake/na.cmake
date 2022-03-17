@@ -424,7 +424,35 @@ endmacro()
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
+   macro(ADD_NPE_MPE_VPE_RST_TEST CONF name rm_bin_name make_tight comparer)
+      if("${comparer}" STREQUAL "EPS")
+        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+      else()
+        set(COMPARER_OPT)
+      endif()
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_rst
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_rst_long.c
+        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
 
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+
+ 
+    endmacro()
       # Tests Use All 3 Units
     macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight comparer)
       if("${comparer}" STREQUAL "EPS")
@@ -1437,7 +1465,7 @@ macro(na_testsuite_add_npe_tests CONF)
           ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
           ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
           ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_POWER main_mpe_direct_ex_MPE_CFG_POWER)
-    
+          ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
         foreach(label RANGE 49 72)
