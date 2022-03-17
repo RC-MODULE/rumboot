@@ -2097,4 +2097,28 @@ int nu_ppe_regs_check(uintptr_t base, int num, int iteration) {
   }
 return 0;  
 }
-    
+  int nu_mpe_regs_check(uintptr_t base, int num, int iteration) {
+	 int res_mpe;
+
+	for( int i =num; i< iteration;i++) {	
+	if ( (i !=4) & (i !=10) & (i !=11) & (i !=12)&(i!=13)& (i!=14)& (i !=15) & (i!=16) & (i !=17) 
+		 &(i!=18)& (i !=19) &(i!=20)& (i !=21)& (i !=22)& (i !=23)&(i !=24)& (i !=25)&(i!=26)& (i !=30)& (i !=31)	
+		&(i	!=5) //vALUE !=etalon	
+		) 
+		{res_mpe = ioread32(base + 4*i);}
+		if(((res_mpe != 0x00000000) & (i !=4) & (i !=5)& (i !=6) & (i !=7) & (i !=10)& (i !=14)
+			& (i !=11) & (i !=13)& (i !=15) & (i !=17) & (i !=19) & (i !=21)& (i !=22)& (i !=23)& (i !=24)& (i !=25)
+			& (i !=26)& (i !=27) &(i !=28)& (i !=29) & (i !=32)
+			& (i !=29) |      		
+			((res_mpe != 0x00000100) & (i==6)) ) | 
+		//	((res_mpe != 0x00070000) & (i==5) ) 
+			((res_mpe != 0x00000001) & (i=7)  ) 	
+		  ) {
+		rumboot_printf("res_mpe_invalid =%x\n",res_mpe);
+		rumboot_printf("addr =%x\n",(base + 4*i));
+		rumboot_printf("i =%d\n",i);
+		return  -1;
+		}
+  }
+return 0;  
+}     
