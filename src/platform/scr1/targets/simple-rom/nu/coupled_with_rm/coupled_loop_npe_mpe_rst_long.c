@@ -273,12 +273,7 @@ int main() {
 		rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}
-/*
-	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_SRC_RDMA),0,31) != 0){
-		 rumboot_printf("Test FAILED at iteration %d\n",i);
-      return 1;
-	}	 */
-	
+
 	if	(nu_vpe_regs_check((MY_VPE_REGS_BASE + NU_VPE),2,64) != 0){
 		rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
@@ -304,8 +299,8 @@ int main() {
 		
       nu_ppe_wait_complete(MY_PPE_REGS_BASE);
     else
-		{nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
-		rumboot_printf("Iteration= %d \n",i);
+	//	{nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
+		{rumboot_printf("Iteration= %d \n",i);
 		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //???
 		}
 }  
