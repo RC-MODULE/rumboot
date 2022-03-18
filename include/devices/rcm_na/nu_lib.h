@@ -10,7 +10,8 @@
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 62
 
-#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-7-2-2)
+//#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-2*(7+2+2))
+#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE 268
 #define NU_MPE_DMA_PARAM_TABLE_NUM_ROWS 72
 #define NU_MPE_DMA_PARAM_TABLE_SIZE (NU_MPE_DMA_PARAM_TABLE_ROW_SIZE*4*NU_MPE_DMA_PARAM_TABLE_NUM_ROWS + 4)
 
@@ -641,7 +642,7 @@ void nu_na_vpe_soft_reset(uintptr_t npe_base);
 void nu_na_vpe_dev_pause_resume(uintptr_t npe_base);
 void nu_na_vpe_wait_int_pause_cntx_appl(uintptr_t npe_base);
 void nu_na_vpe_dev_resume(uintptr_t npe_base);
-
+void nu_na_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_na_wait_int(uintptr_t npe_base);
 
 void nu_mpe_wait_ready(uintptr_t base);
@@ -673,6 +674,13 @@ void nu_na_ppe_rdma_wait_complete(uintptr_t npe_base);
 void nu_na_ppe_wait_complete(uintptr_t npe_base);
 void nu_na_ppe_dev_resume(uintptr_t npe_base);
 void nu_na_ppe_dev_pause_norst_resume(uintptr_t npe_base);
+
+void nu_npe_mpe_set_int_mask(uintptr_t npe_base);
+void nu_na_mpe_soft_reset(uintptr_t npe_base); 
+void nu_na_mpe_pause(uintptr_t npe_base);
+void nu_na_mpe_dev_pause_resume(uintptr_t npe_base);
+void nu_na_mpe_wait_int_pause(uintptr_t npe_base);
+void nu_na_mpe_dev_resume(uintptr_t npe_base);
 
 int out_dim_comp(int in_dim, int k_dim, int k_str);
 void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m);

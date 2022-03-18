@@ -348,6 +348,10 @@ endmacro()
 
       # Tests Use MPE+VPE (Without PPE)
       macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
+        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
+      endmacro()
+      
+      macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
       if("${comparer}" STREQUAL "EPS")
         set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
       else()
@@ -362,6 +366,7 @@ endmacro()
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
           ${RM_TF_KEYS}
+          --seed ${seed_value}
           > ${RM_LOGFILE} &&
 
           ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
@@ -397,12 +402,12 @@ endmacro()
       endif()  # MAKE_TIGHT
     endmacro()
 
-    macro(ADD_NPE_MPE_RDMA_RDCH_VPE_TEST CONF name rm_bin_name)
+    macro(ADD_NPE_MPE_CFG_TEST CONF name rm_bin_name)
       add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS -DDONT_USE_PPE=1 -DMPE_CFG_TESTPLAN_RDMA_RDCH
+        CFLAGS -DDONT_USE_PPE=1 -D${name}
         PREPCMD 
           ${NA_RM_BIN_PATH}/${rm_bin_name} 
           ${NA_RM_KEYS} 
@@ -419,7 +424,35 @@ endmacro()
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
+   macro(ADD_NPE_MPE_VPE_RST_TEST CONF name rm_bin_name make_tight comparer)
+      if("${comparer}" STREQUAL "EPS")
+        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+      else()
+        set(COMPARER_OPT)
+      endif()
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_rst
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_rst_long.c
+        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
 
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+
+ 
+    endmacro()
       # Tests Use All 3 Units
     macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight comparer)
       if("${comparer}" STREQUAL "EPS")
@@ -1308,11 +1341,11 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME NPE_1
-    FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
-  )
+#add_rumboot_target(
+# CONFIGURATION ${CONF}
+#   NAME NPE_1
+#   FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+# )
 
   add_rumboot_target(
     CONFIGURATION ${CONF}
@@ -1399,7 +1432,12 @@ macro(na_testsuite_add_npe_tests CONF)
     
           ##########################################
           ## NPE Reg Test
-        ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
+		  add_rumboot_target(
+		  CONFIGURATION ${CONF}
+		  NAME NPE_1
+		  FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+        )	  
+      # ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)    	  
       endif() # NA_TESTGROUP CU
     
           ##########################################
@@ -1424,8 +1462,10 @@ macro(na_testsuite_add_npe_tests CONF)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
           endforeach()
 
-          ADD_NPE_MPE_RDMA_RDCH_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
-    
+          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
+          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
+          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_POWER main_mpe_direct_ex_MPE_CFG_POWER)
+          ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
         foreach(label RANGE 49 72)
@@ -1448,7 +1488,22 @@ macro(na_testsuite_add_npe_tests CONF)
           
           # Test on MPE::ALU
           foreach(in_macro IN ITEMS IN_INT16 IN_INT8)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_alu_${in_macro} main_mpe_alu_${in_macro} NO_TIGHT BITWISE)
+            foreach(walking_item IN ITEMS 64 1 2 3)
+              ADD_NPE_MPE_VPE_TEST_SEED(
+                ${CONF} 
+                npe_mpe_alu_${in_macro}_${walking_item} 
+                main_mpe_alu_${in_macro} # not-zero walking in data
+                NO_TIGHT BITWISE 
+                ${walking_item}
+              )
+              ADD_NPE_MPE_VPE_TEST_SEED(
+                ${CONF} 
+                npe_mpe_alu_${in_macro}_ZEROWARR_${walking_item} 
+                main_mpe_alu_${in_macro}_ZEROWARR # not-zero walking in kernels
+                NO_TIGHT BITWISE 
+                ${walking_item}
+              )
+            endforeach()
           endforeach()
 
 

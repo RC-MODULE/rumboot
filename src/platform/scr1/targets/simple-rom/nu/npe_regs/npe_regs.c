@@ -30,7 +30,7 @@ int na_cu_rd_regs() {
 		{res2 =0;} 
  	
 		res3 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT);
-		if ((0x00000000) !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT))& 0x000F0000) 	
+		if ((0x00000000) !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT)& 0x000F0000)) 	
 		{res3 =1;
 		rumboot_printf("Unexpected NA_STAT=0x%x\n",res3);}
 		else 
@@ -237,11 +237,11 @@ int na_cu_rd_regs() {
  } 
  int na_cu_wr_rd_regs(uint32_t data) {
 
-     int res;	 
+   //int res;	 
 	
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE);
-		if((data & 0x00000007) != ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE)) 
-		{rumboot_printf("Unexpected NA_UNITS_MODE =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_ID));	
+		if	((data & 0x00000107) != ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE)) 
+		{rumboot_printf("Unexpected NA_UNITS_MODE =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE));	
 		return 1;} 
   	
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET); // THERE INSERT  DELAY BEFORE READ SOFT RESET
