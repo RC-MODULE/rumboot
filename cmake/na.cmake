@@ -1466,6 +1466,7 @@ macro(na_testsuite_add_npe_tests CONF)
           ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
           ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_POWER main_mpe_direct_ex_MPE_CFG_POWER)
           ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
+          ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_MPE_CFG_AUTO main_mpe_auto_tests_MPE_CFG_AUTO   MAKE_TIGHT BITWISE)
           ##################################
           ## Direct Complex Tests On Important Cube Sizes
         foreach(label RANGE 49 72)
