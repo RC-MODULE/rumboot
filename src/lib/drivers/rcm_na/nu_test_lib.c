@@ -2099,7 +2099,6 @@ return 0;
 }
   int nu_mpe_regs_check(uintptr_t base, int num, int iteration) {
 	 int res_mpe;
-
 	res_mpe = ioread32(base + 4*num); 
 	
 	for( int i = num; i< iteration;i++) {	
@@ -2114,7 +2113,7 @@ return 0;
 			& (i !=29) ) |      		
 			((res_mpe != 0x00000001) & (i==7))  |
 			((res_mpe != 0x00070100) & (i==5) ) |
-			((res_mpe != 0x00000100) & (i==6)) 		
+			((res_mpe != 0x00000100) & (i=6)) 		
 		  ) {
 		rumboot_printf("res_mpe_invalid =%x\n",ioread32(base + 4*i));
 		rumboot_printf("addr =%x\n",(base + 4*i));

@@ -299,7 +299,7 @@ int main() {
 		
       nu_ppe_wait_complete(MY_PPE_REGS_BASE);
     else
-	//	{nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
+
 		{rumboot_printf("Iteration= %d \n",i);
 		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //???
 		}
