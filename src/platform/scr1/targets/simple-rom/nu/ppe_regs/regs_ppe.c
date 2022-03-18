@@ -18,7 +18,7 @@
 	  int resw0,resw1,resw2,resw3,resw4,resw5,resw6,resw7,resw8,resw9,resw10,resw11,resw12,
 		  resw13,resw14,resw15,resw16,resw17,resw18,resw19,resw20,resw21,resw22,resw23,resw24,
 		  resw25,resw26,resw27,resw28,resw29,resw30,resw31,resw32,resw33,resw34, resw35,resw36,
-		  resw37, resw38, resw39, resw40,resw41,resw42,resw43,resw44,resw45, resw46,resw47,resw48,
+		  resw37, resw38, /*resw39,*/ resw40,resw41,resw42,resw43,resw44,resw45, resw46,resw47,resw48,
 		  resw49,resw50, resw51;
 
 	  int resr;
@@ -394,17 +394,17 @@
 		else 
 		{resw37=0;}
 	
-	if ((0x00000000) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_W)& 0x00FF0707))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_WH)& 0x00FFFFFF))
 		{resw38 =1;
 		rumboot_printf("resw38 error\n");}
 		else 
 		{resw38=0;}
 	
-	if ((0x00000000) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
+/*	if ((0x00000000) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
 		{resw39 =1;
 		rumboot_printf("resw39 error\n");}
 		else 
-		{resw39=0;}
+		{resw39=0;} */
 	
 	if ((0x00000000) != (ioread32(wbase +NU_PPE_PADDING)& 0x00077777)) 	
 	{resw40 =1;
@@ -479,7 +479,7 @@
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
 				resw18 || resw19 || resw20  || resw21 || resw22 || resw23 || resw24 || resw25 ||
 				resw26 || resw27 || resw28 || resw29 || resw30 || resw31 || resw32 || resw33 ||
-				resw34 /*||resw35 */|| resw36 || resw37 || resw38 || resw39 || resw40 || resw41 ||
+				resw34 /*||resw35 */|| resw36 || resw37 || resw38 || /*resw39 ||*/ resw40 || resw41 ||
 				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 || resw48 || resw49 || resw50 || resw51; 
 	   		
 	res = resr  || resw;
@@ -499,7 +499,7 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 	  int resw0,resw3,resw4,resw5,resw6,resw7,resw8,resw9,resw10,resw11,resw12,
 		  resw13,resw14,resw15,resw16,resw17,resw18,resw19,/*resw20,*/resw21,resw22,resw23,resw24,
 		  resw25,resw26,resw27,resw28,resw29,resw30,resw31,resw32,resw33,resw34,/* resw35,*/resw36,
-		  resw37, resw38, resw39, resw40,resw41,resw42,resw43,resw44,resw45, resw46, resw47;
+		  resw37, resw38, /*resw39,*/ resw40,resw41,resw42,resw43,resw44,resw45, resw46, resw47;
 
 	  int resr;
 	  int resw;
@@ -936,19 +936,20 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 		else 
 		{resw37=0;}
 	
-		iowrite32(tmpr,wbase + NU_PPE_RECIP_KERNEL_W);
-	if ((tmpr & 0x00FF0707) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_W)& 0x00FF0707))
+		iowrite32(tmpr,wbase + NU_PPE_RECIP_KERNEL_WH);
+	if ((tmpr & 0x00FFFFFF) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_WH)& 0x00FFFFFF))
 		{resw38 =1;
 		rumboot_printf("resw38 error\n");}
 		else 
 		{resw38=0;}
 	
-		iowrite32(tmpr,wbase + NU_PPE_RECIP_KERNEL_H);
+/*		iowrite32(tmpr,wbase + NU_PPE_RECIP_KERNEL_H);
 	if ((tmpr & 0x00FFFFFF) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
 		{resw39 =1;
 		rumboot_printf("resw39 error\n");}
 		else 
 		{resw39=0;}
+	*/
 	
 		iowrite32(tmpr,wbase + NU_PPE_PADDING);
 	if ((tmpr & 0x00007777) != (ioread32(wbase + NU_PPE_PADDING)& 0x00007777)) 	
@@ -1013,7 +1014,7 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
 				resw18 || resw19 || /*resw20 || */ resw21 || resw22 || resw23 || resw24 || resw25 ||
 				resw26 || resw27 || resw28 || resw29 || resw30 || resw31 || resw32 || resw33 ||
-				resw34 /*||resw35*/ || resw36 ||resw37 ||resw38 || resw39 || resw40 || resw41 ||
+				resw34 /*||resw35*/ || resw36 ||resw37 ||resw38 ||/* resw39 || */ resw40 || resw41 ||
 				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 ; 
 	   		
 	res = resr  || resw;
