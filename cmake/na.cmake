@@ -451,8 +451,48 @@ endmacro()
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
 
+add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_pause
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_pause_long.c
+        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
  
-    endmacro()
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_rst_fail
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_int_long.c
+        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+        PREPCMD 
+          ${NA_RM_BIN_PATH}/${rm_bin_name} 
+          ${NA_RM_KEYS} 
+          ${RM_TF_KEYS}
+          > ${RM_LOGFILE} &&
+
+          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+          &&
+          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+          || exit 1
+
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      ) 
+    endmacro()	
       # Tests Use All 3 Units
     macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight comparer)
       if("${comparer}" STREQUAL "EPS")
