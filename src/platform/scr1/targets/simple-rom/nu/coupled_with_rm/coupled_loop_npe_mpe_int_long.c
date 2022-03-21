@@ -118,7 +118,6 @@ int main() {
   #if DUT_IS_NPE
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
   nu_npe_mpe_set_int_mask(NPE_BASE);
-//nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
   #endif
   
     // Read The Number Of Test Iterations
@@ -261,30 +260,46 @@ int main() {
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
     
-     if ((i== (iterations-1))  |  (i == 0)){
-		nu_na_mpe_pause(NPE_BASE);
-		nu_na_vpe_pause(NPE_BASE);
-		nu_na_mpe_soft_reset(NPE_BASE);
-		nu_na_vpe_soft_reset(NPE_BASE);
-		nu_na_mpe_dev_pause_resume(NPE_BASE);
-		nu_na_vpe_dev_pause_resume(NPE_BASE);
+     if	(i == 0){
+			
+		nu_na_mpe_pause_fail_stop(NPE_BASE);
+		nu_na_vpe_fail_mpe_srst_stop(NPE_BASE);		
 
-	if	(nu_mpe_regs_check((MY_MPE_REGS_BASE+MPE_MA_BASE),4,33) != 0){
+	if	(nu_mpe_regs_check((MY_MPE_REGS_BASE+MPE_MA_BASE),4,29) != 0){
 		rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}
 
-	if	(nu_vpe_regs_check((MY_VPE_REGS_BASE + NU_VPE),2,64) != 0){
+	if	(nu_vpe_regs_check((MY_VPE_REGS_BASE + NU_VPE),2,64) == 0){
 		rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}
 	
-	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_SRC_RDMA),0,31) != 0){
+	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_SRC_RDMA),0,31) == 0){
 		 rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}	
+/*
+	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_OP1_RDMA),0,31) != 0){
+		 rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
+	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_OP2_RDMA),0,31) != 0){
+		 rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
 	
-	nu_na_mpe_wait_int_pause(NPE_BASE);
+	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_DST_WDMA),0,31) != 0){
+		 rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
+*/
+
+	nu_na_mpe_wait_int_dev_off(NPE_BASE);
+	nu_na_mpe_wait_complete(NPE_BASE);
+	
+//nu_na_vpe_wait_int_dev_off(NPE_BASE);
+//	nu_na_vpe_wait_complete(NPE_BASE);	
 	} 	
 	else
 	{
@@ -301,14 +316,15 @@ int main() {
     else
 
 		{rumboot_printf("Iteration= %d \n",i);
-		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //???
+		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //
 		}
 }  
     rumboot_printf("Comparing..\n");
   	  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
   	  nu_npe_iterate_desc(&iteration_desc);
-	for(i=1;i<(iterations-1);i++ ){     
+ for(i=1;i<(iterations);i++ ){     
       // Result vs Etalon Comparision
+//if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
 	if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
 	else {
