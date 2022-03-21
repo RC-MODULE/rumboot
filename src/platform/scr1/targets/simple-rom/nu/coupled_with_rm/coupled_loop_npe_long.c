@@ -247,6 +247,10 @@ int main() {
     }
 #endif
 
+#ifdef MPE_CFG_POWER
+  iteration_desc.cfg_mpe->rnd_size = 6;
+#endif
+
     //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
     //~ nu_vpe_print_config(iteration_desc.cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
