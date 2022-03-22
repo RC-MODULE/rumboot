@@ -1445,7 +1445,35 @@ macro(na_testsuite_add_npe_tests CONF)
         
         ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
         ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
- endif()  # NA_TESTGROUP MPE
+
+    # Test on MPE::ALU
+    foreach(in_macro IN ITEMS IN_INT16 IN_INT8)
+      foreach(walking_item IN ITEMS 64 1 2 3)
+        ADD_NPE_MPE_VPE_TEST_SEED(
+          ${CONF} 
+          npe_mpe_alu_${in_macro}_${walking_item} 
+          main_mpe_alu_${in_macro} # not-zero walking in data
+          NO_TIGHT BITWISE 
+          ${walking_item}
+        )
+        ADD_NPE_MPE_VPE_TEST_SEED(
+          ${CONF} 
+          npe_mpe_alu_${in_macro}_ZEROWARR_${walking_item} 
+          main_mpe_alu_${in_macro}_ZEROWARR # not-zero walking in kernels
+          NO_TIGHT BITWISE 
+          ${walking_item}
+        )
+      endforeach()
+    endforeach()
+
+    # Test on MPE. FP16. special cases, null column.
+    ADD_NPE_MPE_VPE_TEST(
+      ${CONF} 
+      npe_mpe_null_column
+      main_mpe_null_column
+      NO_TIGHT EPS 
+    )
+  endif()  # NA_TESTGROUP MPE
 
           ################################
           ### Control Unit Tests
@@ -1526,34 +1554,6 @@ macro(na_testsuite_add_npe_tests CONF)
           endforeach()
     
           ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
-          
-          # Test on MPE::ALU
-          foreach(in_macro IN ITEMS IN_INT16 IN_INT8)
-            foreach(walking_item IN ITEMS 64 1 2 3)
-              ADD_NPE_MPE_VPE_TEST_SEED(
-                ${CONF} 
-                npe_mpe_alu_${in_macro}_${walking_item} 
-                main_mpe_alu_${in_macro} # not-zero walking in data
-                NO_TIGHT BITWISE 
-                ${walking_item}
-              )
-              ADD_NPE_MPE_VPE_TEST_SEED(
-                ${CONF} 
-                npe_mpe_alu_${in_macro}_ZEROWARR_${walking_item} 
-                main_mpe_alu_${in_macro}_ZEROWARR # not-zero walking in kernels
-                NO_TIGHT BITWISE 
-                ${walking_item}
-              )
-            endforeach()
-          endforeach()
-
-          # Test on MPE. FP16. special cases, null column.
-          ADD_NPE_MPE_VPE_TEST(
-            ${CONF} 
-            npe_mpe_null_column
-            main_mpe_null_column
-            NO_TIGHT EPS 
-          )
       endif() # NA_TESTGROUP MPE_CFG
           ###################################################################
           # Resnet-test 
