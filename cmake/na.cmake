@@ -1547,7 +1547,13 @@ macro(na_testsuite_add_npe_tests CONF)
             endforeach()
           endforeach()
 
-
+          # Test on MPE. FP16. special cases, null column.
+          ADD_NPE_MPE_VPE_TEST(
+            ${CONF} 
+            npe_mpe_null_column
+            main_mpe_null_column
+            NO_TIGHT EPS 
+          )
       endif() # NA_TESTGROUP MPE_CFG
           ###################################################################
           # Resnet-test 
