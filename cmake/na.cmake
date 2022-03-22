@@ -65,6 +65,7 @@ macro(_na_init_variables DUT)
   set(NA_TEST_status_regs_file status_regs.bin)
   #set(NA_TEST_mpe_cfg_lut_file ${CMAKE_SOURCE_DIR}/src/lib/drivers/rcm_na/mpe_regs_table_macro.bin)
   set(NA_TEST_mpe_cfg_lut_file mpe_regs_table_macro.bin)
+  set(NA_TEST_metrics_mpe_cfg_lut ${NA_TEST_mpe_cfg_lut_file}.metrics)
 
   ###################
 
@@ -162,6 +163,7 @@ macro(_na_init_variables DUT)
 
   set(PLUSARG_status_regs_file_tag status_regs_file_tag)
   set(PLUSARG_mpe_cfg_lut_file_tag mpe_cfg_lut_file_tag)
+  set(PLUSARG_metrics_mpe_cfg_lut_tag metrics_mpe_cfg_lut_tag)
 
   set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/npe_rm/rm_core/rtl-tests)
   set(NA_RM_PLUSARGS +${PLUSARG_in_file_tag}=${NA_TEST_in_file}
@@ -218,13 +220,14 @@ macro(_na_init_variables DUT)
 
                      +${PLUSARG_status_regs_file_tag}=${NA_TEST_status_regs_file}
                      +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
+                     +${PLUSARG_metrics_mpe_cfg_lut_tag}=${NA_TEST_metrics_mpe_cfg_lut}
 
                      +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file}
-                     +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
   )
   set(NA_RM_PLUSARGS_LOOP 
     +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file}
     +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
+    +${PLUSARG_metrics_mpe_cfg_lut_tag}=${NA_TEST_metrics_mpe_cfg_lut}
   )
   foreach(i RANGE 0 31)
     set(NA_RM_PLUSARGS_LOOP ${NA_RM_PLUSARGS_LOOP} 

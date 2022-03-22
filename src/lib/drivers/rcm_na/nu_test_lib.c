@@ -121,13 +121,16 @@ void* nu_mpe_load_cfg_lut(int heap_id) { // :-( Returns A Pointer - Bahaves Not 
   void* lut;
   uint32_t size;
   
-  size = NU_MPE_DMA_PARAM_TABLE_SIZE;
+  size = 0;
+  rumboot_platform_request_file_ex("metrics_mpe_cfg_lut_tag", (uintptr_t) &size, sizeof (size) ); // Read The Size Of MPE CFG LUT
+  if(size==0)
+    return NULL;
   
-  lut = rumboot_malloc_from_heap_aligned(heap_id,size,sizeof(uint32_t));
+  lut = rumboot_malloc_from_heap_aligned(heap_id,size+sizeof(uint32_t),sizeof(uint32_t));
   if(lut ==NULL)
     return NULL;
   
-  memset(lut,0,NU_MPE_DMA_PARAM_TABLE_SIZE); // Init - Because The Table Seeker Searches For Zero As The End Of A Table
+  memset(lut,0,size+sizeof(uint32_t)); // Init - Because The Table Seeker Searches For Zero As The End Of A Table
   rumboot_platform_request_file_ex("mpe_cfg_lut_file_tag",(uintptr_t)lut,size);
   
   return lut;
