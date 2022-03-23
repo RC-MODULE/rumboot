@@ -12,8 +12,6 @@
 
 //#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-2*(7+2+2))
 #define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE 268
-#define NU_MPE_DMA_PARAM_TABLE_NUM_ROWS 72
-#define NU_MPE_DMA_PARAM_TABLE_SIZE (NU_MPE_DMA_PARAM_TABLE_ROW_SIZE*4*NU_MPE_DMA_PARAM_TABLE_NUM_ROWS + 4)
 
 #define NU_VPE_LUT1_SIZE 257
 #define NU_VPE_LUT2_SIZE 65
@@ -552,6 +550,12 @@
     /** Кол-во совместных попаданий в TAB0 и TAB1. */
     uint32_t lut_cnt_hit_hybr;
   } VPEStatusRegs;
+
+  typedef struct NPEReg {
+    uint32_t address;
+    uint32_t value;
+  } NPEReg;
+  
 #define SIZEOF_VPEStatusRegs_BIN sizeof(VPEStatusRegs)
   
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
@@ -637,6 +641,7 @@ void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg);
 
+void nu_na_vpe_dev_pause_norst_resume(uintptr_t npe_base);
 void nu_na_vpe_pause(uintptr_t npe_base );
 void nu_na_vpe_soft_reset(uintptr_t npe_base);
 void nu_na_vpe_dev_pause_resume(uintptr_t npe_base);
@@ -644,7 +649,11 @@ void nu_na_vpe_wait_int_pause_cntx_appl(uintptr_t npe_base);
 void nu_na_vpe_dev_resume(uintptr_t npe_base);
 void nu_na_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_na_wait_int(uintptr_t npe_base);
+void nu_na_vpe_wait_int_dev_off(uintptr_t npe_base);
+void nu_na_vpe_wait_complete(uintptr_t npe_base);
 
+
+void nu_na_mpe_dev_resume(uintptr_t npe_base);
 void nu_mpe_wait_ready(uintptr_t base);
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
@@ -675,16 +684,53 @@ void nu_na_ppe_wait_complete(uintptr_t npe_base);
 void nu_na_ppe_dev_resume(uintptr_t npe_base);
 void nu_na_ppe_dev_pause_norst_resume(uintptr_t npe_base);
 
+void nu_na_mpe_dev_pause_norst_resume(uintptr_t npe_base);
 void nu_npe_mpe_set_int_mask(uintptr_t npe_base);
 void nu_na_mpe_soft_reset(uintptr_t npe_base); 
 void nu_na_mpe_pause(uintptr_t npe_base);
 void nu_na_mpe_dev_pause_resume(uintptr_t npe_base);
 void nu_na_mpe_wait_int_pause(uintptr_t npe_base);
 void nu_na_mpe_dev_resume(uintptr_t npe_base);
+void nu_na_mpe_wait_int_dev_off(uintptr_t npe_base);
+void nu_na_mpe_wait_complete(uintptr_t npe_base);
+
 
 int out_dim_comp(int in_dim, int k_dim, int k_str);
 void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m);
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
 int nu_regs_check(uintptr_t base,int num, int iteration);
 void nu_na_ppe_wait_int_dev_off(uintptr_t npe_base);
+
+NPEReg* nu_mpe_diff_reg_map(uint32_t mpe_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+NPEReg* nu_mpe_dma_diff_reg_map(uint32_t mpe_dma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+NPEReg* nu_mpe_ma_diff_reg_map(uint32_t mpe_ma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+
+NPEReg* nu_vpe_diff_reg_map(uint32_t vpe_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, Enable lut_en);
+NPEReg* nu_vpe_dma_diff_reg_map(uint32_t vpe_dma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+NPEReg* nu_vpe_op01_diff_reg_map(uint32_t vpe_op01_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+NPEReg* nu_vpe_op2_diff_reg_map(uint32_t vpe_op2_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, Enable lut_en);
+NPEReg* nu_vpe_lut_diff_reg_map(uint32_t vpe_lut_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+
+NPEReg* nu_ppe_diff_reg_map(uint32_t rdma_base, uint32_t wdma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr);
+
+NPEReg* diff(uint32_t device_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, uint32_t base_shift, uint32_t end_shift);
+
+void nu_setup(uint32_t base, NPEReg* cfg_diff, uint32_t* cfg_diff_metrics);
+
+void nu_print_cfg_diff(NPEReg* cfg_diff, uint32_t* cfg_diff_metrics);
+
+void nu_mpe_print_reg_map(uint32_t mpe_base);
+void nu_mpe_dma_print_reg_map(uint32_t mpe_dma_base);
+void nu_mpe_ma_print_reg_map(uint32_t mpe_ma_base);
+
+void nu_vpe_print_reg_map(uint32_t vpe_base, Enable lut_en);
+void nu_vpe_dma_print_reg_map(uint32_t vpe_dma_base);
+void nu_vpe_op01_print_reg_map(uint32_t vpe_op01_base);
+void nu_vpe_op2_print_reg_map(uint32_t vpe_op2_base, Enable lut_en);
+void nu_vpe_lut_print_reg_map(uint32_t vpe_lut_base);
+
+void nu_ppe_print_reg_map(uint32_t rbase, uint32_t wbase);
+
+void print_part_of_memory(uint32_t base, uint32_t start_addr, uint32_t end_addr);
+
 #endif

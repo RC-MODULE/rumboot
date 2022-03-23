@@ -1758,9 +1758,12 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
                (cfg->Bias[i].CntOffsetEn<<8) | (cfg->Bias[i].CntOffset<<0),
                base + temp_BiasBase +  Bias1CntOffset_MSha
       );
+      iowrite32(cfg->Bias[i].CntThresholdSha, base + temp_BiasBase + Bias1CntThresholdSha_MSha);
     }
-
-    iowrite32(cfg->Bias[i].CntThresholdSha, base + temp_BiasBase + Bias1CntThresholdSha_MSha);
+    
+    if (i==6) {
+      temp_BiasBase -= 0x4;
+    }
     iowrite32(cfg->Bias[i].CntCmp , base + temp_BiasBase + RD_Bias1CntCmp_MSha);
     
       // Accumulate Common Regs
@@ -2392,9 +2395,9 @@ void nu_vpe_wait_int_pause_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
 void nu_na_vpe_wait_int_pause_cntx_appl(uintptr_t npe_base){
 	rumboot_printf("Wait_ NA_VPE context got\n");
     while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 12) & 1) !=1) {}
+	iowrite32( (1<<12),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 14 ) & 1) !=1) {}
-    while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 15 ) & 1) !=1) {}
-    iowrite32(((1<<11) | (1<<12) |  (1<<13) | (1<<14) |  (1<<15) |  (1<<19) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	iowrite32( (1<<14),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	rumboot_printf("Done NA_VPE context\n");
 }
 
@@ -2439,7 +2442,12 @@ void nu_vpe_wait_int_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
     iowrite32( (1<<8),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
 	rumboot_printf("Done VPE context\n");
 }
-
+void nu_na_vpe_wait_int_dev_off(uintptr_t npe_base){
+	rumboot_printf("Wait NA_VPE dev off got\n");
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 12) & 1) !=1) {}
+    iowrite32( (1<<12),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	rumboot_printf("Done VPE dev off\n");
+}
 void nu_na_ppe_wait_int(uintptr_t npe_base){
 	rumboot_printf("Wait PPE context got\n");
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 8) & 1) !=1) {}
@@ -2455,6 +2463,7 @@ void nu_na_wait_int(uintptr_t npe_base){
 	
 	rumboot_printf("Done NA context\n");		
 }
+
 void nu_na_ppe_wait_int_dev_off(uintptr_t npe_base){
 	rumboot_printf("Wait PPE dev off got\n");
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 22) & 1) !=1) {}
@@ -2535,6 +2544,29 @@ void nu_vpe_soft_reset(uintptr_t vpe_base, ConfigVPE* cfg){
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 16) & 1) !=1) {}
 	rumboot_printf("Done VPE soft reset passed\n");	
 }
+
+void nu_na_vpe_wait_complete(uintptr_t npe_base){
+  rumboot_printf("Wait VPE WDMA...\n");
+  //	rumboot_printf("Writing VPE WDMA [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS));
+  while (( (ioread32(npe_base + NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS)>> 17) & 1) !=1) {}
+  	  {iowrite32( (1<<17),npe_base + NA_CU_REGS_BASE   + NA_INT_UNITS_STATUS);
+	  rumboot_printf("Done VPE WDMA...\n");}
+}
+
+void nu_na_mpe_wait_int_dev_off(uintptr_t npe_base){
+	rumboot_printf("Wait NA_MPE dev off\n");
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 1) & 1) !=1) {}
+    iowrite32( (1<<1),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	rumboot_printf("Done NA_MPE dev off\n");
+}
+
+void nu_na_mpe_wait_complete(uintptr_t npe_base){
+  rumboot_printf("Wait MPE WDMA...\n");
+  //	rumboot_printf("Writing MPE WDMA [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS));
+  while (( (ioread32(npe_base + NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS)>> 7) & 1) !=1) {}
+  	  {iowrite32( (1<<7),npe_base + NA_CU_REGS_BASE   + NA_INT_UNITS_STATUS);
+	  rumboot_printf("Done MPE WDMA...\n");}
+}
 void nu_npe_mpe_set_int_mask(uintptr_t npe_base){
 
 	if (( (ioread32(npe_base  + NA_CU_REGS_BASE + NA_UNITS_MODE) >> 0) & 1) ==0 )
@@ -2565,7 +2597,40 @@ void nu_na_mpe_dev_pause_resume(uintptr_t npe_base){
 	iowrite32( (0<<0),npe_base + NA_CU_REGS_BASE  + NA_PAUSE);
 	rumboot_printf("Done MPE start after stop\n");
 }
+void nu_na_mpe_dev_pause_norst_resume(uintptr_t npe_base){
+    rumboot_printf("Start after stop NA_MPE  begin...\n");
+	iowrite32((0<<2),npe_base + NA_CU_REGS_BASE + NA_PAUSE);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 8) & 1) !=1) {}
+	iowrite32((1<<8) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 9) & 1) !=1) {}
+	iowrite32((1<<9) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	rumboot_printf("Done NA_MPE start after stop\n");
+	
+    while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 3) & 1) !=1) {} // IRQ_PPE_WDMA_CMPL 
+	iowrite32((1<<3),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 	
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 14)& 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+	rumboot_printf("Wait NA_MPE context \n");   
+	iowrite32((1<<14),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 	
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 17) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+ 	rumboot_printf("NA_MPE context got\n");   
+	iowrite32((1<<17),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);  
+			
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 7) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL 
+	iowrite32((1<<7 ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	
+ 
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 6) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+ 	rumboot_printf("Wait NA_MPE context \n");   
+	iowrite32((1<<6 ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 1 & 1) !=1)	){} // IRQ_PPE_RDMA_CMPL
+ 	rumboot_printf("NA_MPE context got\n");   
+	iowrite32((1<<1 ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 
+	rumboot_printf("Done NA_MPE context\n");
+
+}
 void nu_na_mpe_wait_int_pause(uintptr_t npe_base){
 	rumboot_printf("Wait NA_MPE context\n");
     while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 1) & 1) !=1) {}
@@ -2589,8 +2654,7 @@ void nu_na_mpe_dev_resume(uintptr_t npe_base){
 	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 19) & 1) !=1) {} //MPE+VPE
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 17) & 1) !=1) {} //MPE+VPE
-//	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 11) & 1) !=1) {} //MPE+VPE
-//	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 14) & 1) !=1) {} //MPE+VPE
+
 	iowrite32(((1<<0) | (1<<1) | (1<<6)  | (1<<7)  | (1<<8)  | (1<<9)  | (1<<10) | (1<<11) |(1<<17)| (1<<19)  ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	rumboot_printf("Done NA_MPE_VPE end \n");
 }	
@@ -2701,7 +2765,30 @@ void nu_na_vpe_wait(uintptr_t npe_base, ConfigVPE* cfg){
 	iowrite32((1<<12),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	rumboot_printf(" VPE wait is completed\n");
 }
+void nu_na_vpe_dev_pause_norst_resume(uintptr_t npe_base){
+    rumboot_printf("Start after stop VPE 	55 begin...\n");
+	iowrite32((0<<2),npe_base + NA_CU_REGS_BASE + NA_PAUSE);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 30) & 1) !=1) {}
+	iowrite32((1<<30) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE+ NA_INT_UNITS_STATUS) >> 24) & 1) !=1) {}
+	iowrite32((1<<24) ,npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	rumboot_printf("Done NA_PPE start after stop\n");
+	
+    while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 28) & 1) !=1) {} // IRQ_PPE_WDMA_CMPL 
+	iowrite32((1<<28),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 	
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 27) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+ 	rumboot_printf("Wait NA_PPE context \n");   
+	iowrite32(((1<<27) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	
+	
+	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 22) & 1) !=1) {} // IRQ_PPE_RDMA_CMPL
+ 	rumboot_printf("NA_PPE context got\n");   
+	iowrite32(((1<<22) ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	    
+	
+	rumboot_printf("Done NA_VPE context\n");
 
+
+}
 void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   uint32_t temp;
   temp = ioread32(base + NA_UNITS_MODE);
@@ -2710,3 +2797,281 @@ void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   iowrite32(temp,base + NA_UNITS_MODE);
 }
 
+NPEReg* nu_mpe_diff_reg_map(uint32_t mpe_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  rumboot_printf("MPE diff reg memory map..\n");
+  // MPE_RDMA_D
+  cfg_diff_ptr = nu_mpe_dma_diff_reg_map(mpe_base + MPE_RDMA_D_BASE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  // MPE_RDMA_W
+  cfg_diff_ptr = nu_mpe_dma_diff_reg_map(mpe_base + MPE_RDMA_W_BASE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  // MPE_MA
+  cfg_diff_ptr = nu_mpe_ma_diff_reg_map(mpe_base + MPE_MA_BASE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_mpe_ma_diff_reg_map(uint32_t mpe_ma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  cfg_diff_ptr = diff(mpe_ma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, 0,              MPE_COMMON_D_BIAS);
+  cfg_diff_ptr = diff(mpe_ma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, MPE_ADD_CountM, MPE_NULL);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_mpe_dma_diff_reg_map(uint32_t mpe_dma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, MAINCNT_Sha        , MAINCNT_Sha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, X_Cfg_MSha         , PLC_ThreSha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, VLC_CntSha_MSha    , VLC_ThreSha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, WR_Bias1CntSha_MSha, WR_Bias1CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, WR_Bias2CntSha_MSha, WR_Bias2CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, WR_Bias3CntSha_MSha, WR_Bias3CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, WR_Bias4CntSha_MSha, WR_Bias4CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, WR_Bias5CntSha_MSha, WR_Bias5CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, WR_Bias6CntSha_MSha, WR_Bias6CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, BIASCtrl_MSha      , AOffset_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, LPXOffset_MSha     , RPXOffset_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, TPadYOffset_MSha   , BPadYOffset_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, CntSha_MSha        , CntThresholdSha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias1Sha_MSha      , Bias1Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, RD_Bias1CntSha_MSha, RD_Bias1CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias2Sha_MSha      , Bias2Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, RD_Bias2CntSha_MSha, RD_Bias2CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias3Sha_MSha      , Bias3Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, RD_Bias3CntSha_MSha, RD_Bias3CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias4Sha_MSha      , Bias4Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, RD_Bias4CntSha_MSha, RD_Bias4CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias5Sha_MSha      , Bias5Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, RD_Bias5CntSha_MSha, RD_Bias5CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias6Sha_MSha      , Bias6Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias6CntSha_MSha   , Bias6CntCmp_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias7Sha_MSha      , Bias7Sha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias7CntSha_MSha   , Bias7CntSha_MSha);
+  cfg_diff_ptr = diff(mpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, Bias7BCnt          , BPYDR_MSha);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_vpe_diff_reg_map(uint32_t vpe_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, Enable lut_en) {
+  rumboot_printf("VPE diff reg memory map..\n");
+  cfg_diff_ptr = diff(vpe_base + NU_VPE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_CUBE_SIZE         , NU_VPE + NU_VPE_CUBE_SIZE);
+  cfg_diff_ptr = diff(vpe_base + NU_VPE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_CUBE_SIZE_C       , NU_VPE + NU_VPE_OP_MODE);
+  cfg_diff_ptr = diff(vpe_base + NU_VPE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL, NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL);
+
+  cfg_diff_ptr = nu_vpe_op01_diff_reg_map(vpe_base + NU_VPE                                  , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_ptr = nu_vpe_op01_diff_reg_map(vpe_base + NU_VPE + (NU_VPE_OP1_CFG-NU_VPE_OP0_CFG), cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_ptr = nu_vpe_op2_diff_reg_map( vpe_base + NU_VPE                                  , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, lut_en);
+  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_DST_WDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_SRC_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP0_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP1_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP2_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_vpe_op01_diff_reg_map(uint32_t vpe_op01_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  cfg_diff_ptr = diff(vpe_op01_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_OP0_CFG, NU_VPE_OP0_NORM_PARAM);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_vpe_op2_diff_reg_map(uint32_t vpe_op2_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, Enable lut_en) {
+  cfg_diff_ptr = diff(vpe_op2_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_OP2_CFG    , NU_VPE_OP2_ALU_CVT_TRUNC_VAL);
+  cfg_diff_ptr = diff(vpe_op2_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_OP2_MUL_CFG, NU_VPE_OP2_NORM_PARAM);
+
+  if(lut_en) {
+    cfg_diff_ptr = nu_vpe_lut_diff_reg_map(vpe_op2_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  }
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_vpe_lut_diff_reg_map(uint32_t vpe_op2_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  cfg_diff_ptr = diff(vpe_op2_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_LUT_CFG, NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_vpe_dma_diff_reg_map(uint32_t vpe_dma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  cfg_diff_ptr = diff(vpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_DMA_CFG, NU_VPE_DMA_CFG);
+  cfg_diff_ptr = diff(vpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_DMA_AXI_PARAM, NU_VPE_DMA_AXI_PARAM);
+  cfg_diff_ptr = diff(vpe_dma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE_DMA_BASE, NU_VPE_DMA_BATCH_STRIDE);
+  return cfg_diff_ptr;
+}
+
+NPEReg* nu_ppe_diff_reg_map(uint32_t rdma_base, uint32_t wdma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  rumboot_printf("PPE diff reg map..\n");
+  // PPE RDMA
+  cfg_diff_ptr = diff(rdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_RDMA_BASE_ADDR, NU_PPE_RDMA_BASE_ADDR);
+  cfg_diff_ptr = diff(rdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_RDMA_BORDER_X , NU_PPE_RDMA_BOX_OFFSET_Z);
+
+  // PPE WDMA
+  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_WDMA_BASE_ADDR, NU_PPE_WDMA_BASE_ADDR);
+  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_WDMA_BORDER_X , NU_PPE_DATA_H_OUT);
+  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_OP_MODE       , NU_PPE_RECIP_KERNEL_WH);
+  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_PADDING       , NU_PPE_PADDING_VALUE_7);
+  return cfg_diff_ptr;
+}
+
+NPEReg* diff(uint32_t device_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, uint32_t base_shift, uint32_t end_shift) {
+  NPEReg temp_reg;
+
+  curr_cfg_ptr = curr_cfg_ptr + device_base;
+  next_cfg_ptr = next_cfg_ptr + device_base;
+
+  for (uint32_t curr_shift = base_shift; curr_shift <= end_shift;curr_shift+=0x4) {
+    if ((uint32_t)curr_cfg_ptr == device_base) {
+      temp_reg.address = device_base + curr_shift;
+      temp_reg.value   = ioread32(next_cfg_ptr + curr_shift);
+      *cfg_diff_ptr = temp_reg;
+      cfg_diff_ptr++;
+    }
+    else if (ioread32(curr_cfg_ptr + curr_shift) != ioread32(next_cfg_ptr + curr_shift)) {
+      temp_reg.address = device_base + curr_shift;
+      temp_reg.value   = ioread32(next_cfg_ptr + curr_shift);
+      *cfg_diff_ptr = temp_reg;
+      cfg_diff_ptr++;
+    }
+  }
+  return cfg_diff_ptr;
+}
+
+void nu_print_cfg_diff(NPEReg* cfg_diff, uint32_t* cfg_diff_metrics) {
+#ifndef NU_NO_PRINT
+  uint32_t i;
+  rumboot_printf("Print cfg diff\n");
+  rumboot_printf("cfg_diff address = %x, cfg_diff_metrics = %x\n", cfg_diff, *cfg_diff_metrics);
+
+  for (i = 0; i < *cfg_diff_metrics; i++) {
+    rumboot_printf("Reg: address = %x, value = %x\n", cfg_diff[i].address, cfg_diff[i].value);
+  }
+#endif // NU_NO_PRINT
+}
+
+void nu_mpe_print_reg_map(uint32_t mpe_base) {
+#ifndef NU_NO_PRINT
+  // MPE_RDMA_D
+  rumboot_printf("MPE RDMA_D print reg memory map..\n");
+  nu_mpe_dma_print_reg_map(mpe_base + MPE_RDMA_D_BASE);
+  // MPE_RDMA_W
+  rumboot_printf("MPE RDMA_W print reg memory map..\n");
+  nu_mpe_dma_print_reg_map(mpe_base + MPE_RDMA_W_BASE);
+  // MPE_MA
+  rumboot_printf("MPE MPE_MA print reg memory map..\n");
+  nu_mpe_ma_print_reg_map(mpe_base + MPE_MA_BASE);
+#endif // NU_NO_PRINT
+}
+
+void nu_mpe_dma_print_reg_map(uint32_t mpe_dma_base) {
+  print_part_of_memory(mpe_dma_base, MAINCNT_Sha,         MAINCNT_Sha);
+  print_part_of_memory(mpe_dma_base, X_Cfg_MSha,          PLC_ThreSha_MSha);
+  print_part_of_memory(mpe_dma_base, VLC_CntSha_MSha,     VLC_ThreSha_MSha);
+  print_part_of_memory(mpe_dma_base, WR_Bias1CntSha_MSha, WR_Bias1CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, WR_Bias2CntSha_MSha, WR_Bias2CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, WR_Bias3CntSha_MSha, WR_Bias3CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, WR_Bias4CntSha_MSha, WR_Bias4CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, WR_Bias5CntSha_MSha, WR_Bias5CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, WR_Bias6CntSha_MSha, WR_Bias6CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, BIASCtrl_MSha,       AOffset_MSha);
+  print_part_of_memory(mpe_dma_base, LPXOffset_MSha,      RPXOffset_MSha);
+  print_part_of_memory(mpe_dma_base, TPadYOffset_MSha,    BPadYOffset_MSha);
+  print_part_of_memory(mpe_dma_base, CntSha_MSha,         CntThresholdSha_MSha);
+  print_part_of_memory(mpe_dma_base, Bias1Sha_MSha,       Bias1Sha_MSha);
+  print_part_of_memory(mpe_dma_base, RD_Bias1CntSha_MSha, RD_Bias1CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, Bias2Sha_MSha,       Bias2Sha_MSha);
+  print_part_of_memory(mpe_dma_base, RD_Bias2CntSha_MSha, RD_Bias2CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, Bias3Sha_MSha,       Bias3Sha_MSha);
+  print_part_of_memory(mpe_dma_base, RD_Bias3CntSha_MSha, RD_Bias3CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, Bias4Sha_MSha,       Bias4Sha_MSha);
+  print_part_of_memory(mpe_dma_base, RD_Bias4CntSha_MSha, RD_Bias4CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, Bias5Sha_MSha,       Bias5Sha_MSha);
+  print_part_of_memory(mpe_dma_base, RD_Bias5CntSha_MSha, RD_Bias5CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, Bias6Sha_MSha,       Bias6Sha_MSha);
+  print_part_of_memory(mpe_dma_base, Bias6CntSha_MSha,    Bias6CntCmp_MSha);
+  print_part_of_memory(mpe_dma_base, Bias7Sha_MSha,       Bias7Sha_MSha);
+  print_part_of_memory(mpe_dma_base, Bias7CntSha_MSha,    Bias7CntSha_MSha);
+  print_part_of_memory(mpe_dma_base, Bias7BCnt,           BPYDR_MSha);
+}
+
+void nu_mpe_ma_print_reg_map(uint32_t mpe_ma_base) {
+  print_part_of_memory(mpe_ma_base, 0,              MPE_COMMON_D_BIAS);
+  print_part_of_memory(mpe_ma_base, MPE_ADD_CountM, MPE_NULL);
+}
+
+void nu_vpe_print_reg_map(uint32_t vpe_base, Enable lut_en) {
+#ifndef NU_NO_PRINT
+  rumboot_printf("VPE print reg memory map..\n");
+  print_part_of_memory(vpe_base, NU_VPE + NU_VPE_CUBE_SIZE         , NU_VPE + NU_VPE_CUBE_SIZE);
+  print_part_of_memory(vpe_base, NU_VPE + NU_VPE_CUBE_SIZE_C       , NU_VPE + NU_VPE_OP_MODE);
+  print_part_of_memory(vpe_base, NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL, NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL);
+
+  rumboot_printf("VPE op0 print reg memory map..\n");
+  nu_vpe_op01_print_reg_map(vpe_base + NU_VPE);
+
+  rumboot_printf("VPE op1 print reg memory map..\n");
+  nu_vpe_op01_print_reg_map(vpe_base + NU_VPE + (NU_VPE_OP1_CFG-NU_VPE_OP0_CFG));
+
+  rumboot_printf("VPE op2 print reg memory map..\n");
+  nu_vpe_op2_print_reg_map( vpe_base + NU_VPE, lut_en);
+
+  rumboot_printf("VPE DST_WDMA print reg memory map..\n");
+  nu_vpe_dma_print_reg_map( vpe_base + NU_VPE_DST_WDMA);
+
+  rumboot_printf("VPE SRC_RDMA print reg memory map..\n");
+  nu_vpe_dma_print_reg_map( vpe_base + NU_VPE_SRC_RDMA);
+
+  rumboot_printf("VPE OP0_RDMA print reg memory map..\n");
+  nu_vpe_dma_print_reg_map( vpe_base + NU_VPE_OP0_RDMA);
+
+  rumboot_printf("VPE OP1_RDMA print reg memory map..\n");
+  nu_vpe_dma_print_reg_map( vpe_base + NU_VPE_OP1_RDMA);
+
+  rumboot_printf("VPE OP2_RDMA print reg memory map..\n");
+  nu_vpe_dma_print_reg_map( vpe_base + NU_VPE_OP2_RDMA);
+#endif // NU_NO_PRINT
+}
+
+void nu_vpe_op01_print_reg_map(uint32_t vpe_op01_base) {
+  print_part_of_memory(vpe_op01_base, NU_VPE_OP0_CFG, NU_VPE_OP0_NORM_PARAM);
+}
+
+void nu_vpe_op2_print_reg_map(uint32_t vpe_op2_base, Enable lut_en) {
+  print_part_of_memory(vpe_op2_base, NU_VPE_OP2_CFG    , NU_VPE_OP2_ALU_CVT_TRUNC_VAL);
+  print_part_of_memory(vpe_op2_base, NU_VPE_OP2_MUL_CFG, NU_VPE_OP2_NORM_PARAM);
+
+  if(lut_en) {
+    rumboot_printf("VPE LUT print reg memory map..\n");
+    nu_vpe_lut_print_reg_map(vpe_op2_base);
+  }
+}
+
+void nu_vpe_lut_print_reg_map(uint32_t vpe_lut_base) {
+  print_part_of_memory(vpe_lut_base, NU_VPE_LUT_CFG, NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+}
+
+void nu_vpe_dma_print_reg_map(uint32_t vpe_dma_base) {
+  print_part_of_memory(vpe_dma_base, NU_VPE_DMA_CFG      , NU_VPE_DMA_CFG);
+  print_part_of_memory(vpe_dma_base, NU_VPE_DMA_AXI_PARAM, NU_VPE_DMA_AXI_PARAM);
+  print_part_of_memory(vpe_dma_base, NU_VPE_DMA_BASE     , NU_VPE_DMA_BATCH_STRIDE);
+}
+
+void nu_ppe_print_reg_map(uint32_t rbase, uint32_t wbase) {
+#ifndef NU_NO_PRINT
+  rumboot_printf("PPE RDMA print reg memory map..\n");
+  print_part_of_memory(rbase, NU_PPE_RDMA_BASE_ADDR, NU_PPE_RDMA_BASE_ADDR);
+  print_part_of_memory(rbase, NU_PPE_RDMA_BORDER_X , NU_PPE_RDMA_BOX_OFFSET_Z);
+
+  rumboot_printf("PPE WDMA print reg memory map..\n");
+  print_part_of_memory(wbase, NU_PPE_WDMA_BASE_ADDR, NU_PPE_WDMA_BASE_ADDR);
+  print_part_of_memory(wbase, NU_PPE_WDMA_BORDER_X , NU_PPE_DATA_H_OUT);
+  print_part_of_memory(wbase, NU_PPE_OP_MODE       , NU_PPE_RECIP_KERNEL_WH);
+  print_part_of_memory(wbase, NU_PPE_PADDING       , NU_PPE_PADDING_VALUE_7);
+#endif // NU_NO_PRINT
+}
+
+void print_part_of_memory(uint32_t base, uint32_t start_addr, uint32_t end_addr) {
+  start_addr = start_addr + base;
+  end_addr = end_addr + base;
+  for (uint32_t cur_mem_ptr = start_addr; cur_mem_ptr <= end_addr;cur_mem_ptr += 0x4) {
+    rumboot_printf("  Address = %x, Value = %x\n", cur_mem_ptr - base, ioread32(cur_mem_ptr));
+  }
+}
+
+void nu_setup(uint32_t base, NPEReg* cfg_diff, uint32_t* cfg_diff_metrics) {
+  int i;
+  rumboot_printf("Configuration unit..\n");
+  for (i = 0; i < *cfg_diff_metrics; i++)
+    iowrite32(cfg_diff[i].value, base + cfg_diff[i].address);
+  rumboot_printf("Configuration unit done..\n");
+}

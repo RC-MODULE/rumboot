@@ -9,6 +9,8 @@
 #include <devices/rcm_na/nu_test_lib.h> 
 #include <devices/rcm_na/nu_test_macro.h> 
 
+#include <regs/regs_na.h>
+#include <platform/devices.h>
 
 int nu_mpe_decide_dma_config(
   ConfigMPE* cfg, 
@@ -108,9 +110,16 @@ int main() {
   int iterations;
   uint8_t  axi_len;
   
-  rumboot_printf("Hellooooooo\n");
+  rumboot_printf("Hello\n");
 
   heap_id = nu_get_heap_id();
+  
+    
+  #if DUT_IS_NPE
+  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
+  nu_npe_mpe_set_int_mask(NPE_BASE);
+//nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
+  #endif
   
     // Read The Number Of Test Iterations
   rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
@@ -124,7 +133,7 @@ int main() {
 #ifdef DONT_USE_PPE
   test_desc.PPE_ENABLED=Enable_NotEn;
 #endif
-  axi_len = 15; // 15 - Most Performance-Friendly Option
+  axi_len =15;		 // 15 - Most Performance-Friendly Option
   
     // Load All The Test Data Into Memory
   if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
@@ -133,7 +142,7 @@ int main() {
   nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
   
     // Program The CU To Enable Direct Mode For All Units // Again - If You Want Otherwise - Write Another Program
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
+//na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
   
     // Main Loop 
   for(i=0;i<iterations;i++) {
@@ -232,32 +241,13 @@ int main() {
     }
 #endif
 
-#ifdef MPE_CFG_TESTPLAN_RDMA_WRCH
-      // Shift Biases
-    for (int shifts=i;shifts>0;shifts--) {
-      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.wdma.Thre_PLC);
-      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.wdma.Thre_VLC);
-      inc_if_not_zero(&iteration_desc.cfg_mpe->dma_d_config.wdma.Dec_PLC);
-      for (int j=5;j>0;j--) {
-        iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j].CntSha = iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j-1].CntSha;
-        iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j].CntCmp = iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[j-1].CntCmp;
-      }
-      iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[0].CntSha = 0;
-      iteration_desc.cfg_mpe->dma_d_config.wdma.Bias[0].CntSha = 0;
-    }
-#endif
-
-#ifdef MPE_CFG_POWER
-  iteration_desc.cfg_mpe->rnd_size = 6;
-#endif
-
     //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
     //~ nu_vpe_print_config(iteration_desc.cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
-    if(iteration_desc.PPE_ENABLED==Enable_En) {
-      nu_ppe_print_config(iteration_desc.cfg_ppe);
-      nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
-    }
+    // if(iteration_desc.PPE_ENABLED==Enable_En) {
+      // nu_ppe_print_config(iteration_desc.cfg_ppe);
+      // nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
+    // }
     
       // Program The VPE, MPE And PPE (Single Run)
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
@@ -271,31 +261,50 @@ int main() {
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
     
-    
+  //   if ((i== (iterations-1))  |  (i == 0)){
+		nu_na_mpe_pause(NPE_BASE);
+		nu_na_vpe_pause(NPE_BASE);
+		nu_na_mpe_dev_pause_norst_resume(NPE_BASE);
+	//	nu_na_vpe_dev_pause_norst_resume(NPE_BASE);
+
+	nu_na_wait_int(NPE_BASE); //reset NA interrupts
+//	nu_na_mpe_wait_int_pause(NPE_BASE);
+//	} 	
+
+	if(i!=iterations-1)
+	nu_npe_iterate_desc(&iteration_desc);
+
       // Wait For The Corresponding DMA Channels To Complete
     if(iteration_desc.PPE_ENABLED==Enable_En)
+		
       nu_ppe_wait_complete(MY_PPE_REGS_BASE);
     else
-      nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-    
-    rumboot_printf("Comparing..\n");
-    
+
+		{rumboot_printf("Iteration= %d \n",i);
+		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //???
+		}
+}  
+	rumboot_printf("Comparing..\n");
+  	  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+  	  nu_npe_iterate_desc(&iteration_desc);
+ for(i=1;i<(iterations-1);i++ ){     
       // Result vs Etalon Comparision
-    if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
+	if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
-    else {
-      //nu_mpe_print_config(iteration_desc.cfg_mpe);
-      //nu_vpe_print_config(iteration_desc.cfg_vpe);
-      //if(iteration_desc.PPE_ENABLED==Enable_En)
-      //  nu_ppe_print_config(iteration_desc.cfg_ppe);
+	else {
+      nu_mpe_print_config(iteration_desc.cfg_mpe);
+      nu_vpe_print_config(iteration_desc.cfg_vpe);
+      if(iteration_desc.PPE_ENABLED==Enable_En)
+        nu_ppe_print_config(iteration_desc.cfg_ppe);
       
       rumboot_printf("Test FAILED at iteration %d\n",i);
 
       return 1;
-    }
-
+		}
+	 
       // Point At The Next Iteration Data
     nu_npe_iterate_desc(&iteration_desc);
+
   }
   
   rumboot_printf("Test Passed\n");
