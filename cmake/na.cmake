@@ -930,7 +930,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
  macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_SRST_LONG CONF name rm_bin_name)
   add_rumboot_target(
       CONFIGURATION ${CONF}
-      NAME ${name}_tight_rst
+      NAME ${name}_tight_vpe_rst
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_rst_long.c
       CFLAGS -DFORCE_VPE_WDMA_EN=1 -DVPE_CUBE_CMPL=1 -DDUT=${DUT_LETTER_QUOTED}
       PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
@@ -949,7 +949,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
 
   add_rumboot_target(
       CONFIGURATION ${CONF}
-      NAME ${name}_tight_pause
+      NAME ${name}_tight_vpe_pause
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_pause_long.c
       CFLAGS -DFORCE_VPE_WDMA_EN=1 -DVPE_CUBE_CMPL=1 -DDUT=${DUT_LETTER_QUOTED}
       PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
@@ -958,13 +958,31 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
   ) 
  add_rumboot_target(
       CONFIGURATION ${CONF}
-      NAME ${name}_na_tight_rst
+      NAME ${name}_na_tight_vpe_rst
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_na_vpe_rst_long.c
       CFLAGS -DFORCE_VPE_WDMA_EN=1  -DDUT=${DUT_LETTER_QUOTED}
       PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   ) 
+ add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_na_tight_vpe_rst_fail
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_na_vpe_int_long.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1  -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+ add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_na_tight_vpe_pause
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_na_vpe_pause_long.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1  -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )     
 endmacro()
 
 
