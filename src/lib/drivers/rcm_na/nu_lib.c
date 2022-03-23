@@ -2010,12 +2010,12 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   int frglo = Co_s % frgs; // output fragment last size
 
   int Kh_d_Sh, rndup_Kh_d_Sh;
-  int Buffer_md = 4096;
+  int Buffer_md = 2048;
 
-  if (Sh>0 && Kh>0) Kh_d_Sh = Kh%Sh == 0 ? Kh/Sh : Kh/Sh + 1; // Kh/Sh
+  if (Sh>0 && Kh>0) Kh_d_Sh = (Kh-1)%Sh == 0 ? (Kh-1)/Sh : (Kh-1)/Sh + 1; // Kh/Sh
   else rumboot_printf("Error:nu_ppe_decide_dma_config_trivial: cfg->Sh<=0 || cfg->Kh<=0\n");
 
-  rndup_Kh_d_Sh = Kh_d_Sh == 1 ? 1 :
+  rndup_Kh_d_Sh = Kh_d_Sh == 0 || Kh_d_Sh == 1 ? 1 :
                   Kh_d_Sh == 2 ? 2 :
                   Kh_d_Sh == 3 || Kh_d_Sh == 4 ? 4 :
                   Kh_d_Sh > 4 ? 8 : 8
