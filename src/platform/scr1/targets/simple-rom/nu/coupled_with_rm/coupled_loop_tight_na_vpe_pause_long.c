@@ -180,9 +180,9 @@ nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);    
 	nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
 
-		nu_na_vpe_pause(NPE_BASE);		
-		nu_na_vpe_dev_pause_norst_resume(NPE_BASE);			
-		nu_na_wait_int(NPE_BASE); //reset NA interrupts
+	nu_na_vpe_pause(NPE_BASE);		
+	nu_na_vpe_dev_pause_norst_resume(NPE_BASE);			
+	nu_na_wait_int(NPE_BASE); //reset NA interrupts
 
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);

@@ -214,7 +214,6 @@ nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
 	else
 	{	
 	nu_na_vpe_dev_resume(NPE_BASE);
-//	nu_na_wait_int(NPE_BASE); //reset NA interrupts
 	}	
 	nu_na_wait_int(NPE_BASE); //reset NA interrupts
     
