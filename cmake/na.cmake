@@ -547,6 +547,36 @@ add_rumboot_target(
       endif()  # MAKE_TIGHT
     endmacro()
 
+    macro(ADD_NPE_COMPLEX_TEST_TIGHT CONF name rm_bin_name make_tight comparer)
+      if("${comparer}" STREQUAL "EPS")
+        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+      else()
+        set(COMPARER_OPT)
+      endif()
+      if("${make_tight}" STREQUAL "MAKE_TIGHT")
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME ${name}_tight
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_complex_npe.c
+          CFLAGS ${COMPARER_OPT}
+          PREPCMD 
+            ${NA_RM_BIN_PATH}/${rm_bin_name} 
+            ${NA_RM_KEYS} 
+            ${RM_TF_KEYS}
+            > ${RM_LOGFILE} &&
+
+            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+            &&
+            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+            || exit 1
+
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+        )
+      endif()  # MAKE_TIGHT
+    endmacro()
+
 macro (ADD_MPE_CONV_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
 set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
 add_rumboot_target(
@@ -1557,6 +1587,9 @@ macro(na_testsuite_add_npe_tests CONF)
           endforeach()
     
           ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
+
+          ADD_NPE_COMPLEX_TEST_TIGHT(${CONF} npe_tight_complex main_npe_tight_complex MAKE_TIGHT BITWISE)
+
       endif() # NA_TESTGROUP MPE_CFG
           ###################################################################
           # Resnet-test 

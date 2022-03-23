@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include "devices/rcm_na/nu_lib.h"
 
+#define NU_MPE_REG_MAP_SIZE 0x21C
+#define NU_VPE_REG_MAP_SIZE 0x1DC
+#define NU_PPE_REG_MAP_SIZE 0x32
+
 int nu_get_heap_id();
 uintptr_t nu_virt_to_dma(volatile const void *addr);
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);
@@ -229,6 +233,15 @@ typedef struct NPETestDescriptor {
   ConfigPPE* array_of_cfg_ppe;
   
   ConfigREGPPE* array_of_cfg_reg_ppe;
+
+  NPEReg* array_of_cfg_diff_mpe;
+  uint32_t* array_of_cfg_diff_mpe_metrics;
+
+  NPEReg* array_of_cfg_diff_vpe;
+  uint32_t* array_of_cfg_diff_vpe_metrics;
+
+  NPEReg* array_of_cfg_diff_ppe;
+  uint32_t* array_of_cfg_diff_ppe_metrics;
   
   WarrMetrics* array_of_warr_metrics;
   CubeMetrics* array_of_in_metrics;
@@ -260,7 +273,16 @@ typedef struct NPEIterationDescriptor {
   ConfigPPE* cfg_ppe;
 
   ConfigREGPPE*  cfg_reg_ppe;
-  
+
+  NPEReg* cfg_diff_mpe;
+  uint32_t* cfg_diff_mpe_metrics;
+
+  NPEReg* cfg_diff_vpe;
+  uint32_t* cfg_diff_vpe_metrics;
+
+  NPEReg* cfg_diff_ppe;
+  uint32_t* cfg_diff_ppe_metrics;
+
   void *warr;
   void *in_data;
   void *etalon;

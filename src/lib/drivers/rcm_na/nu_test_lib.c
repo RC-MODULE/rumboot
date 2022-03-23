@@ -1802,6 +1802,15 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
 
   //~ test_desc-> array_of_status_regs_etalon=NULL;
   
+  test_desc-> array_of_cfg_diff_mpe=NULL;
+  test_desc-> array_of_cfg_diff_mpe_metrics=NULL;
+
+  test_desc-> array_of_cfg_diff_vpe=NULL;
+  test_desc-> array_of_cfg_diff_vpe_metrics=NULL;
+
+  test_desc-> array_of_cfg_diff_ppe=NULL;
+  test_desc-> array_of_cfg_diff_ppe_metrics=NULL;
+
 }
 
 
@@ -1842,7 +1851,16 @@ void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescri
   iteration_desc->warr_metrics       = test_desc->array_of_warr_metrics;
   iteration_desc->in_metrics         = test_desc->array_of_in_metrics;
   iteration_desc->res_metrics        = test_desc->array_of_res_metrics;
-  
+
+  iteration_desc->cfg_diff_mpe           = test_desc->array_of_cfg_diff_mpe;
+  iteration_desc->cfg_diff_mpe_metrics   = test_desc->array_of_cfg_diff_mpe_metrics;
+
+  iteration_desc->cfg_diff_vpe           = test_desc->array_of_cfg_diff_vpe;
+  iteration_desc->cfg_diff_vpe_metrics   = test_desc->array_of_cfg_diff_vpe_metrics;
+
+  iteration_desc->cfg_diff_ppe           = test_desc->array_of_cfg_diff_ppe;
+  iteration_desc->cfg_diff_ppe_metrics   = test_desc->array_of_cfg_diff_ppe_metrics;
+
 }
 
 void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty Copypaste
@@ -1950,6 +1968,16 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     desc->cfg_ppe += 1;
     desc->cfg_reg_ppe += 1;
   }
+
+  desc->cfg_diff_mpe += 0x21C;
+  desc->cfg_diff_mpe_metrics += 1;
+
+  desc->cfg_diff_vpe += 0x1DC;
+  desc->cfg_diff_vpe_metrics += 1;
+
+  desc->cfg_diff_ppe += 0x32;
+  desc->cfg_diff_ppe_metrics += 1;
+
 }
 
 
@@ -1963,7 +1991,7 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)*iterations,sizeof(uint32_t));
     test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
   }
-  
+
   if((test_desc->array_of_cfg_mpe==NULL && test_desc->MPE_ENABLED==Enable_En) ||
      test_desc->array_of_cfg_vpe==NULL ||
    ((test_desc->array_of_cfg_ppe==NULL || test_desc->array_of_cfg_reg_ppe==NULL) && test_desc->PPE_ENABLED==Enable_En) 
@@ -2023,9 +2051,17 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   
   //~ test_desc->array_of_status_regs_etalon = nu_vpe_load_array_of_status_regs(heap_id,iterations);
   //~ if(test_desc->array_of_status_regs_etalon==NULL)return -1;
-  
+  test_desc->array_of_cfg_diff_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(NPEReg)*NU_MPE_REG_MAP_SIZE*iterations,sizeof(uint32_t));
+  test_desc->array_of_cfg_diff_mpe_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(uint32_t)*iterations,sizeof(uint32_t));
+
+  test_desc->array_of_cfg_diff_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(NPEReg)*NU_VPE_REG_MAP_SIZE*iterations,sizeof(uint32_t));
+  test_desc->array_of_cfg_diff_vpe_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(uint32_t)*iterations,sizeof(uint32_t));
+
+  test_desc->array_of_cfg_diff_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(NPEReg)*NU_PPE_REG_MAP_SIZE*iterations,sizeof(uint32_t));
+  test_desc->array_of_cfg_diff_ppe_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(uint32_t)*iterations,sizeof(uint32_t));
+
   return 0;
-  
+
 }
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Prepare for Stop VPE begin...\n");
