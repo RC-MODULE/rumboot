@@ -1478,13 +1478,13 @@ macro(na_testsuite_add_npe_tests CONF)
   ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
   
             ###
-          add_rumboot_target(
-            CONFIGURATION ${CONF}
-            NAME RESNET
-            FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
-            PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
-            IRUN_FLAGS ${NA_RM_PLUSARGS}
-          )
+          #add_rumboot_target(
+          #  CONFIGURATION ${CONF}
+          #  NAME RESNET
+          #  FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
+          #  PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
+          #  IRUN_FLAGS ${NA_RM_PLUSARGS}
+          #)
     
           ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
               ## NOT EXPERIMENT_STAGE_2_SUB_2
