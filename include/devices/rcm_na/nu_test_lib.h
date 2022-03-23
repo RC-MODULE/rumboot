@@ -327,6 +327,7 @@ int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
 int nu_regs_check(uintptr_t base,int num, int iteration);
 int nu_ppe_regs_check(uintptr_t base,int num, int iteration);
 void nu_na_mpe_pause_fail_stop(uintptr_t npe_base);
+void nu_na_vpe_pause_fail_stop(uintptr_t npe_base);
 void nu_na_vpe_fail_mpe_srst_stop(uintptr_t npe_base);
 void nu_na_ppe_pause_fail_stop(uintptr_t npe_base); 
 int nu_mpe_regs_check(uintptr_t base, int num, int iteration);
