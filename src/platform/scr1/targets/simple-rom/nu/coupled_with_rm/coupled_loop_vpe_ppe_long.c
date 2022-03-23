@@ -133,9 +133,9 @@ int main() {
       iteration_desc.res_data
     );
     
-    nu_vpe_print_config(iteration_desc.cfg_vpe);
-    nu_ppe_print_config(iteration_desc.cfg_ppe);
-    nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
+    //nu_vpe_print_config(iteration_desc.cfg_vpe);
+    //nu_ppe_print_config(iteration_desc.cfg_ppe);
+    //nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
     
       // Program The VPE And PPE (Single Run)
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
