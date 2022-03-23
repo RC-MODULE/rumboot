@@ -1284,22 +1284,24 @@ macro (ADD_PPE_PY_TESTS CONF)
       set(LBS SPL)
     endif()
 
-    if ("${test_name}" MATCHES "^22_.+")
-      execute_process(
-        COMMAND             grep reduction ${file}
-        WORKING_DIRECTORY   ${CMAKE_BINARY_DIR}
-        OUTPUT_VARIABLE     REDUCTION_LINE
-      )
-      string(REGEX MATCH "\\[[12]\\]" reduction_value ${REDUCTION_LINE})
-      if ("${reduction_value}" STREQUAL "[1]")
-        set(MAX_RED MAX_RED_0)
-      elseif("${reduction_value}" STREQUAL "[2]")
-        set(MAX_RED MAX_RED_1)
-      else()
-        message(FATAL_ERROR "Undefined MAX_RED ${reduction_value} in file ${file}")
-      endif()
+    execute_process(
+      COMMAND             grep reduction ${file}
+      WORKING_DIRECTORY   ${CMAKE_BINARY_DIR}
+      OUTPUT_VARIABLE     REDUCTION_LINE
+    )
+    string(REGEX MATCH "\\[[12]\\]" reduction_value ${REDUCTION_LINE})
+    if ("${reduction_value}" STREQUAL "[1]")
+      set(MAX_RED MAX_RED_0)
+    elseif("${reduction_value}" STREQUAL "[2]")
+      set(MAX_RED MAX_RED_1)
     else()
-      set(MAX_RED DO_NOT_SET)
+      message(FATAL_ERROR "Undefined MAX_RED ${reduction_value} in file ${file}")
+    endif()
+
+    if ("${test_name}" MATCHES "^30_.+") 
+      set (AXI_BLOCKINGS "+axi128_latency=12 +axi128_blockings")
+    else()
+      set (AXI_BLOCKINGS "")
     endif()
 
     add_rumboot_target(
@@ -1317,9 +1319,10 @@ macro (ADD_PPE_PY_TESTS CONF)
         ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
         ||
         exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      IRUN_FLAGS ${NA_RM_PLUSARGS} ${AXI_BLOCKINGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
     )
+
   endforeach()
 endmacro()
 
