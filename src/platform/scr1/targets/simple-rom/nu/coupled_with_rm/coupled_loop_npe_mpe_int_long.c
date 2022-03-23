@@ -297,18 +297,16 @@ int main() {
 
 	nu_na_mpe_wait_int_dev_off(NPE_BASE);
 	nu_na_mpe_wait_complete(NPE_BASE);
-	
-//nu_na_vpe_wait_int_dev_off(NPE_BASE);
-//	nu_na_vpe_wait_complete(NPE_BASE);	
+		
 	} 	
 	else
 	{
 	nu_na_mpe_dev_resume(NPE_BASE);
-//nu_na_wait_int(NPE_BASE); //reset NA interrupts
+
 	}
 	if(i!=iterations-1)
 	nu_npe_iterate_desc(&iteration_desc);
-
+	
       // Wait For The Corresponding DMA Channels To Complete
     if(iteration_desc.PPE_ENABLED==Enable_En)
 		
@@ -324,7 +322,6 @@ int main() {
   	  nu_npe_iterate_desc(&iteration_desc);
  for(i=1;i<(iterations);i++ ){     
       // Result vs Etalon Comparision
-//if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
 	if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
 	else {

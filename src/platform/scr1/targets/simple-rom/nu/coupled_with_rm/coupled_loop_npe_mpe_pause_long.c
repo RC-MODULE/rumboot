@@ -261,15 +261,11 @@ int main() {
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
     
-  //   if ((i== (iterations-1))  |  (i == 0)){
 		nu_na_mpe_pause(NPE_BASE);
 		nu_na_vpe_pause(NPE_BASE);
 		nu_na_mpe_dev_pause_norst_resume(NPE_BASE);
-	//	nu_na_vpe_dev_pause_norst_resume(NPE_BASE);
 
 	nu_na_wait_int(NPE_BASE); //reset NA interrupts
-//	nu_na_mpe_wait_int_pause(NPE_BASE);
-//	} 	
 
 	if(i!=iterations-1)
 	nu_npe_iterate_desc(&iteration_desc);
@@ -287,7 +283,7 @@ int main() {
 	rumboot_printf("Comparing..\n");
   	  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
   	  nu_npe_iterate_desc(&iteration_desc);
- for(i=1;i<(iterations-1);i++ ){     
+	for(i=1;i<(iterations-1);i++ ){     
       // Result vs Etalon Comparision
 	if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
