@@ -672,9 +672,9 @@ void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base);
 void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_ppe_run_rd_main_channel(uintptr_t dma_base);
 void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base);
-void nu_ppe_set_wdma_int_mask(uintptr_t vpe_base, ConfigPPE* cfg);
+void nu_ppe_set_wdma_int_mask(uintptr_t vpe_base);
 
-void nu_npe_ppe_set_int_mask(uintptr_t npe_base, ConfigPPE* cfg);
+void nu_npe_ppe_set_int_mask(uintptr_t npe_base);
 void nu_na_ppe_pause(uintptr_t npe_base );
 void nu_na_ppe_soft_reset(uintptr_t npe_base);
 void nu_na_ppe_dev_pause_resume(uintptr_t npe_base);

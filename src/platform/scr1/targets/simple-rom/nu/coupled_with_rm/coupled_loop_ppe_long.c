@@ -89,6 +89,10 @@ int main() {
     na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
   #endif
 
+  #ifdef PPE_INT
+  nu_npe_ppe_set_int_mask(NPE_BASE);
+  #endif
+
   nu_ppe_init_test_desc(&test_desc);
 
   res = nu_ppe_place_arrays(heap_id,&test_desc,it_nmb);
@@ -139,6 +143,11 @@ int main() {
     nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg); // rdma start
     #endif
 
+    #ifdef PPE_PAUSE
+    nu_na_ppe_pause(NPE_BASE);
+    nu_na_ppe_dev_pause_norst_resume(NPE_BASE);
+    #endif
+
     clk_cnt = rumboot_platform_get_uptime();
 
     while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
@@ -149,6 +158,10 @@ int main() {
     #endif
 
     nu_ppe_wait_complete(MY_PPE_REGS_BASE);
+
+    #ifdef PPE_PAUSE
+    nu_na_wait_int(NPE_BASE);
+    #endif
 
     dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
     clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;

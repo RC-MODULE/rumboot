@@ -1322,11 +1322,21 @@ macro (ADD_PPE_PY_TESTS CONF)
       set (AXI_BLOCKINGS "")
     endif()
 
+    if ("${test_name}" MATCHES "^25_.+") 
+      set (PPE_INT 1)
+      set (PPE_PAUSE 1)
+    else()
+      set (PPE_INT 0)
+      set (PPE_PAUSE 0)
+    endif()
+
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
-      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1
+ 
+      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -DPPE_INT=${PPE_INT} -DPPE_PAUSE=${PPE_PAUSE}
+
       PREPCMD 
         cp ${file} . 
         &&
@@ -2588,8 +2598,7 @@ if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
   ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
   ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-  ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
-  ADD_PPE_RST_TESTS(${CONF} ppe_i16_max_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_max})
+  #ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
 endif() # NA_TESTGROUP PPE_BASE
 
   if(NOT DEFINED NA_TESTGROUP AND "${USE_PPE_PY_TESTS}" STREQUAL "Yes" OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")  
