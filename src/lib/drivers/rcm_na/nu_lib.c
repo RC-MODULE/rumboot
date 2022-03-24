@@ -1018,9 +1018,10 @@ void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config, TraceMode trace_mo
   iowrite32(tmp_data, base_ + NU_VPE_DMA_AXI_PARAM );
 
   iowrite32(dma_config->dma_baddr           , base_ + NU_VPE_DMA_BASE                ) ;
-  iowrite32(dma_config->dma_cube_size_c     , base_ + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
-  iowrite32(dma_config->dma_cube_size_w     , base_ + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
-  iowrite32(dma_config->dma_cube_size_h     , base_ + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
+  iowrite32(((dma_config->dma_cube_size_c-1)/16 + 1)*dma_config->dma_cube_size_w*dma_config->dma_cube_size_h - 1     , base_ + NU_VPE_DMA_AXI_PARAM-4         ) ;  // ?????
+  iowrite32(dma_config->dma_cube_size_c-1   , base_ + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
+  iowrite32(dma_config->dma_cube_size_w-1   , base_ + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
+  iowrite32(dma_config->dma_cube_size_h-1   , base_ + NU_VPE_DMA_CUBE_SIZE_H         ) ;  // ?????
   iowrite32(dma_config->dma_border_x        , base_ + NU_VPE_DMA_BORDER_X            ) ;
   iowrite32(dma_config->dma_border_y        , base_ + NU_VPE_DMA_BORDER_Y            ) ;
   iowrite32(dma_config->dma_border_z        , base_ + NU_VPE_DMA_BORDER_Z            ) ;
