@@ -105,7 +105,7 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
  #ifdef VPE_CUBE_CMPL
-  nu_vpe_set_int_mask(MY_VPE_REGS_BASE,iteration_desc.cfg); 	
+  nu_vpe_set_int_mask(MY_VPE_REGS_BASE); 	
 #endif      
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
@@ -207,13 +207,13 @@ if  (i == 0){
 	}
 	
 
-	nu_vpe_wait_int_dev_off(MY_VPE_REGS_BASE, iteration_desc.cfg);
-	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);	
+	nu_vpe_wait_int_dev_off(MY_VPE_REGS_BASE);
+	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE);	
 	}  	
 	else
 	{
-	nu_vpe_dev_resume(MY_VPE_REGS_BASE, iteration_desc.cfg);
-	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);}	
+	nu_vpe_dev_resume(MY_VPE_REGS_BASE);
+	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE);}	
 
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);

@@ -73,10 +73,10 @@ int main() {
   
 	
   #ifdef PPE_CUBE_CMPL
-  nu_ppe_set_wdma_int_mask(MY_PPE_REGS_BASE, iteration_desc.cfg);  
+  nu_ppe_set_wdma_int_mask(MY_PPE_REGS_BASE);  
   #else 
   { rumboot_printf("NPE_BASE= %x\n",NPE_BASE);
-  nu_npe_ppe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
+  nu_npe_ppe_set_int_mask(NPE_BASE);}
   #endif
   
   nu_ppe_init_test_desc(&test_desc);
