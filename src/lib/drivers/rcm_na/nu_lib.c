@@ -2809,15 +2809,17 @@ void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   iowrite32(temp,base + NA_UNITS_MODE);
 }
 
-NPEReg* nu_mpe_diff_reg_map(uint32_t mpe_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+uint32_t nu_mpe_diff_reg_map(uint32_t mpe_base, NPEReg* cfg_diff_mpe, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  NPEReg* cfg_diff_mpe_ptr;
+
   rumboot_printf("MPE diff reg memory map..\n");
   // MPE_RDMA_D
-  cfg_diff_ptr = nu_mpe_dma_diff_reg_map(mpe_base + MPE_RDMA_D_BASE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_mpe_ptr = nu_mpe_dma_diff_reg_map(mpe_base + MPE_RDMA_D_BASE, cfg_diff_mpe, curr_cfg_ptr, next_cfg_ptr);
   // MPE_RDMA_W
-  cfg_diff_ptr = nu_mpe_dma_diff_reg_map(mpe_base + MPE_RDMA_W_BASE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_mpe_ptr = nu_mpe_dma_diff_reg_map(mpe_base + MPE_RDMA_W_BASE, cfg_diff_mpe_ptr, curr_cfg_ptr, next_cfg_ptr);
   // MPE_MA
-  cfg_diff_ptr = nu_mpe_ma_diff_reg_map(mpe_base + MPE_MA_BASE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  return cfg_diff_ptr;
+  cfg_diff_mpe_ptr = nu_mpe_ma_diff_reg_map(mpe_base + MPE_MA_BASE, cfg_diff_mpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  return cfg_diff_mpe_ptr - cfg_diff_mpe;
 }
 
 NPEReg* nu_mpe_ma_diff_reg_map(uint32_t mpe_ma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
@@ -2858,21 +2860,23 @@ NPEReg* nu_mpe_dma_diff_reg_map(uint32_t mpe_dma_base, NPEReg* cfg_diff_ptr, uin
   return cfg_diff_ptr;
 }
 
-NPEReg* nu_vpe_diff_reg_map(uint32_t vpe_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, Enable lut_en) {
+uint32_t nu_vpe_diff_reg_map(uint32_t vpe_base, NPEReg* cfg_diff_vpe, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, Enable lut_en) {
+  NPEReg* cfg_diff_vpe_ptr;
+  
   rumboot_printf("VPE diff reg memory map..\n");
-  cfg_diff_ptr = diff(vpe_base + NU_VPE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_CUBE_SIZE         , NU_VPE + NU_VPE_CUBE_SIZE);
-  cfg_diff_ptr = diff(vpe_base + NU_VPE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_CUBE_SIZE_C       , NU_VPE + NU_VPE_OP_MODE);
-  cfg_diff_ptr = diff(vpe_base + NU_VPE, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL, NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL);
+  cfg_diff_vpe_ptr = diff(vpe_base + NU_VPE, cfg_diff_vpe, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_CUBE_SIZE         , NU_VPE + NU_VPE_CUBE_SIZE);
+  cfg_diff_vpe_ptr = diff(vpe_base + NU_VPE, cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_CUBE_SIZE_C       , NU_VPE + NU_VPE_OP_MODE);
+  cfg_diff_vpe_ptr = diff(vpe_base + NU_VPE, cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL, NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL);
 
-  cfg_diff_ptr = nu_vpe_op01_diff_reg_map(vpe_base + NU_VPE                                  , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  cfg_diff_ptr = nu_vpe_op01_diff_reg_map(vpe_base + NU_VPE + (NU_VPE_OP1_CFG-NU_VPE_OP0_CFG), cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  cfg_diff_ptr = nu_vpe_op2_diff_reg_map( vpe_base + NU_VPE                                  , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, lut_en);
-  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_DST_WDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_SRC_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP0_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP1_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  cfg_diff_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP2_RDMA                         , cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr);
-  return cfg_diff_ptr;
+  cfg_diff_vpe_ptr = nu_vpe_op01_diff_reg_map(vpe_base + NU_VPE                                  , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_vpe_ptr = nu_vpe_op01_diff_reg_map(vpe_base + NU_VPE + (NU_VPE_OP1_CFG-NU_VPE_OP0_CFG), cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_vpe_ptr = nu_vpe_op2_diff_reg_map( vpe_base + NU_VPE                                  , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr, lut_en);
+  cfg_diff_vpe_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_DST_WDMA                         , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_vpe_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_SRC_RDMA                         , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_vpe_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP0_RDMA                         , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_vpe_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP1_RDMA                         , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  cfg_diff_vpe_ptr = nu_vpe_dma_diff_reg_map( vpe_base + NU_VPE_OP2_RDMA                         , cfg_diff_vpe_ptr, curr_cfg_ptr, next_cfg_ptr);
+  return cfg_diff_vpe_ptr - cfg_diff_vpe;
 }
 
 NPEReg* nu_vpe_op01_diff_reg_map(uint32_t vpe_op01_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
@@ -2902,18 +2906,19 @@ NPEReg* nu_vpe_dma_diff_reg_map(uint32_t vpe_dma_base, NPEReg* cfg_diff_ptr, uin
   return cfg_diff_ptr;
 }
 
-NPEReg* nu_ppe_diff_reg_map(uint32_t rdma_base, uint32_t wdma_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+uint32_t nu_ppe_diff_reg_map(uint32_t rdma_base, uint32_t wdma_base, NPEReg* cfg_diff_ppe, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr) {
+  NPEReg* cfg_diff_ppe_ptr;
   rumboot_printf("PPE diff reg map..\n");
   // PPE RDMA
-  cfg_diff_ptr = diff(rdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_RDMA_BASE_ADDR, NU_PPE_RDMA_BASE_ADDR);
-  cfg_diff_ptr = diff(rdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_RDMA_BORDER_X , NU_PPE_RDMA_BOX_OFFSET_Z);
+  cfg_diff_ppe_ptr = diff(rdma_base, cfg_diff_ppe, curr_cfg_ptr, next_cfg_ptr, NU_PPE_RDMA_BASE_ADDR, NU_PPE_RDMA_BASE_ADDR);
+  cfg_diff_ppe_ptr = diff(rdma_base, cfg_diff_ppe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_RDMA_BORDER_X , NU_PPE_RDMA_BOX_OFFSET_Z);
 
   // PPE WDMA
-  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_WDMA_BASE_ADDR, NU_PPE_WDMA_BASE_ADDR);
-  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_WDMA_BORDER_X , NU_PPE_DATA_H_OUT);
-  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_OP_MODE       , NU_PPE_RECIP_KERNEL_WH);
-  cfg_diff_ptr = diff(wdma_base, cfg_diff_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_PADDING       , NU_PPE_PADDING_VALUE_7);
-  return cfg_diff_ptr;
+  cfg_diff_ppe_ptr = diff(wdma_base, cfg_diff_ppe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_WDMA_BASE_ADDR, NU_PPE_WDMA_BASE_ADDR);
+  cfg_diff_ppe_ptr = diff(wdma_base, cfg_diff_ppe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_WDMA_BORDER_X , NU_PPE_DATA_H_OUT);
+  cfg_diff_ppe_ptr = diff(wdma_base, cfg_diff_ppe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_OP_MODE       , NU_PPE_RECIP_KERNEL_WH);
+  cfg_diff_ppe_ptr = diff(wdma_base, cfg_diff_ppe_ptr, curr_cfg_ptr, next_cfg_ptr, NU_PPE_PADDING       , NU_PPE_PADDING_VALUE_7);
+  return cfg_diff_ppe_ptr - cfg_diff_ppe;
 }
 
 NPEReg* diff(uint32_t device_base, NPEReg* cfg_diff_ptr, uint32_t curr_cfg_ptr, uint32_t next_cfg_ptr, uint32_t base_shift, uint32_t end_shift) {
@@ -2943,10 +2948,10 @@ void nu_print_cfg_diff(NPEReg* cfg_diff, uint32_t* cfg_diff_metrics) {
 #ifndef NU_NO_PRINT
   uint32_t i;
   rumboot_printf("Print cfg diff\n");
-  rumboot_printf("cfg_diff address = %x, cfg_diff_metrics = %x\n", cfg_diff, *cfg_diff_metrics);
+  rumboot_printf("  Cfg_diff address = %x, cfg_diff_metrics = %x\n", cfg_diff, *cfg_diff_metrics);
 
   for (i = 0; i < *cfg_diff_metrics; i++) {
-    rumboot_printf("Reg: address = %x, value = %x\n", cfg_diff[i].address, cfg_diff[i].value);
+    rumboot_printf("    Reg: address = %x, value = %x\n", cfg_diff[i].address, cfg_diff[i].value);
   }
 #endif // NU_NO_PRINT
 }

@@ -222,26 +222,18 @@ int main() {
             nu_ppe_print_reg_map(next_regs_dump + NA_PPE_RDMA_BASE, next_regs_dump + NA_PPE_WDMA_BASE);
         }
 
-        NPEReg* cfg_diff_mpe_ptr = NULL;
-        NPEReg* cfg_diff_vpe_ptr = NULL;
-        NPEReg* cfg_diff_ppe_ptr = NULL;
         if (i == 0) {
-            cfg_diff_mpe_ptr = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, 0, next_regs_dump);
-            cfg_diff_vpe_ptr = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, 0, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
+            *iteration_desc.cfg_diff_mpe_metrics = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, 0, next_regs_dump);
+            *iteration_desc.cfg_diff_vpe_metrics = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, 0, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
             if(iteration_desc.PPE_ENABLED==Enable_En)
-                cfg_diff_ppe_ptr = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, 0, next_regs_dump);
+                *iteration_desc.cfg_diff_ppe_metrics = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, 0, next_regs_dump);
         }
         else {
-            cfg_diff_mpe_ptr = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, curr_regs_dump, next_regs_dump);
-            cfg_diff_vpe_ptr = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, curr_regs_dump, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
+            *iteration_desc.cfg_diff_mpe_metrics = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, curr_regs_dump, next_regs_dump);
+            *iteration_desc.cfg_diff_vpe_metrics = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, curr_regs_dump, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
             if(iteration_desc.PPE_ENABLED==Enable_En) {
-                cfg_diff_ppe_ptr = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, curr_regs_dump, next_regs_dump);
+                *iteration_desc.cfg_diff_ppe_metrics = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, curr_regs_dump, next_regs_dump);
             }
-        }
-        *iteration_desc.cfg_diff_mpe_metrics = cfg_diff_mpe_ptr - iteration_desc.cfg_diff_mpe;
-        *iteration_desc.cfg_diff_vpe_metrics = cfg_diff_vpe_ptr - iteration_desc.cfg_diff_vpe;
-        if(iteration_desc.PPE_ENABLED==Enable_En) {
-            *iteration_desc.cfg_diff_ppe_metrics = cfg_diff_ppe_ptr - iteration_desc.cfg_diff_ppe;
         }
         swap_regs_dump = curr_regs_dump;
         curr_regs_dump = next_regs_dump;
