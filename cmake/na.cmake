@@ -1323,11 +1323,11 @@ macro (ADD_PPE_PY_TESTS CONF)
     endif()
 
     if ("${test_name}" MATCHES "^25_.+") 
-      set (PPE_INT 1)
-      set (PPE_PAUSE 1)
+      set (PPE_INT "PPE_INT")
+      set (PPE_PAUSE "PPE_PAUSE")
     else()
-      set (PPE_INT 0)
-      set (PPE_PAUSE 0)
+      set (PPE_INT "NO_PPE_INT")
+      set (PPE_PAUSE "NO_PPE_PAUSE")
     endif()
 
     add_rumboot_target(
@@ -1335,7 +1335,7 @@ macro (ADD_PPE_PY_TESTS CONF)
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
  
-      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -DPPE_INT=${PPE_INT} -DPPE_PAUSE=${PPE_PAUSE}
+      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_INT} -D${PPE_PAUSE}
 
       PREPCMD 
         cp ${file} . 

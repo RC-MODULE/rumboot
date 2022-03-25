@@ -2041,7 +2041,10 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   if (fm&0x2) {
 
-    Wout_box_st = Wi/Win_box >= 1 ? (Win_box_st + Lp - Kw)/Sw + 1 :
+//    Wout_box_st = Wi/Win_box >= 1 ? (Win_box_st + Lp - Kw)/Sw + 1 :
+//    (Win_box_st + Lp + Rp - Kw)/Sw + 1;
+
+    Wout_box_st = Wi/Win_box > 1 ? (Win_box_st + Lp - Kw)/Sw + 1 :
     (Win_box_st + Lp + Rp - Kw)/Sw + 1;
 
     rem_Wout_box_st = Kw>Sw ? Kw-Sw + (Win_box_st + Lp - Kw)%Sw : (Win_box_st + Lp)%Sw;
