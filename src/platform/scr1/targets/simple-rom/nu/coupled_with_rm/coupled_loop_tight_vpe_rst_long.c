@@ -106,7 +106,7 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
  #ifdef VPE_CUBE_CMPL
-  nu_vpe_set_int_mask(MY_VPE_REGS_BASE, &iteration_desc); 	
+  nu_vpe_set_int_mask(MY_VPE_REGS_BASE); 	
 #endif      
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
@@ -179,9 +179,9 @@ int main() {
 	nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
 if ((i== (iterations-1))  | (i == 0)){
 	 
-		nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE, iteration_desc.cfg);		
-		nu_vpe_soft_reset(MY_VPE_REGS_BASE, iteration_desc.cfg);	
-		nu_vpe_dev_pause_resume(MY_VPE_REGS_BASE,iteration_desc.cfg);			
+		nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE);		
+		nu_vpe_soft_reset(MY_VPE_REGS_BASE);	
+		nu_vpe_dev_pause_resume(MY_VPE_REGS_BASE);			
 	if	(nu_vpe_regs_check((MY_VPE_REGS_BASE + NU_VPE),2,64) != 0){
 		rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
@@ -209,13 +209,13 @@ if ((i== (iterations-1))  | (i == 0)){
       return 1;
 	}
 		
-	nu_vpe_wait_int_pause_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);
+	nu_vpe_wait_int_pause_cntx_appl(MY_VPE_REGS_BASE);
 
 	} 	
 	else
 	{
-	nu_vpe_dev_resume(MY_VPE_REGS_BASE, iteration_desc.cfg);
-	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);}	
+	nu_vpe_dev_resume(MY_VPE_REGS_BASE);
+	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE);}	
 
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
