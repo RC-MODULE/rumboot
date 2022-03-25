@@ -185,8 +185,7 @@ int main() {
       nu_vpe_iterate_desc(&iteration_desc);
   	else
 	{rumboot_printf("marked_cube_iteration = %d \n",i);
-	nu_vpe_wait_marked_cube_complete(NPE_BASE);	
-	rumboot_printf("Marked cube = %x \n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NU_VPE_INT_STATUS));
+	nu_vpe_wait_marked_cube_complete(MY_VPE_REGS_BASE);	
 	} 
   
   }

@@ -205,8 +205,6 @@ if  (i == 0){
 		 rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}
-	
-
 	nu_vpe_wait_int_dev_off(MY_VPE_REGS_BASE);
 	nu_vpe_wait_int_cntx_appl(MY_VPE_REGS_BASE);	
 	}  	
@@ -217,6 +215,11 @@ if  (i == 0){
 
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
+	else
+  	{rumboot_printf("marked_cube_iteration = %d \n",i);
+	nu_vpe_wait_marked_cube_complete(MY_VPE_REGS_BASE);	
+	} 
+  
   }
   
     // And Third Turn - Check The Data
