@@ -301,7 +301,7 @@ int main() {
     else
 
 		{rumboot_printf("Iteration= %d \n",i);
-		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //???
+		nu_na_vpe_wait(NPE_BASE);
 		}
 }  
     rumboot_printf("Comparing..\n");

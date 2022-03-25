@@ -118,7 +118,6 @@ int main() {
   #if DUT_IS_NPE
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
   nu_npe_mpe_set_int_mask(NPE_BASE);
-//nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
   #endif
   
     // Read The Number Of Test Iterations
@@ -277,7 +276,7 @@ int main() {
     else
 
 		{rumboot_printf("Iteration= %d \n",i);
-		nu_na_vpe_wait(NPE_BASE, iteration_desc.cfg_vpe);   //???
+		nu_na_vpe_wait(NPE_BASE);
 		}
 }  
 	rumboot_printf("Comparing..\n");

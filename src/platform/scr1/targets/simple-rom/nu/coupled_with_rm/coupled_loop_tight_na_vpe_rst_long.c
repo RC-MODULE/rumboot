@@ -110,7 +110,7 @@ int main() {
   nu_vpe_set_int_mask(MY_VPE_REGS_BASE, iteration_desc.cfg);  
 #else 
 { rumboot_printf("NPE_BASE= %x\n",NPE_BASE);
-nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
+nu_npe_vpe_set_int_mask(NPE_BASE);}
 #endif     
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;

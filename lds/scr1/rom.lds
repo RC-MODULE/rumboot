@@ -3,8 +3,9 @@ OUTPUT_ARCH( "riscv" )
 ENTRY(_start)
 
 MEMORY {
-  RAM (rwx) : ORIGIN = 0x0, LENGTH = 1M
-  EMEM (rwx): ORIGIN = 0x01000000, LENGTH = 0xfeffffff
+  RAM (rwx)  : ORIGIN = 0x0, LENGTH = 1M
+  EMEM0 (rwx): ORIGIN = 0x01000000, LENGTH = 0x7effffff
+  EMEM1 (rwx): ORIGIN = 0x80000000, LENGTH = 0x7fffffff
 }
 
 STACK_SIZE = 1024;
@@ -41,11 +42,17 @@ SECTIONS {
     . = ALIGN(CL_SIZE);
   } >RAM
 
- .extmem (NOLOAD): {
-   rumboot_emem_heap_start = .;
-   . = . + 2048M;
-   rumboot_emem_heap_end = .;
- } > EMEM
+ .extmem0 (NOLOAD): {
+   rumboot_emem0_heap_start = .;
+   . = . + 1024M;
+   rumboot_emem0_heap_end = .;
+ } > EMEM0
+
+ .extmem1 (NOLOAD): {
+   rumboot_emem1_heap_start = .;
+   . = . + 1024M;
+   rumboot_emem1_heap_end = .;
+ } > EMEM1
 
  .runtime 0xfc00 (NOLOAD):
  {
@@ -81,7 +88,8 @@ SECTIONS {
     rumboot_IRAM_heap_start = . ;
     . = . + 4K;
     rumboot_IRAM_heap_end = . ;
-  }
+  } > RAM
+
   /* bss segment */
   .sbss : {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)

@@ -20,6 +20,13 @@ int nu_get_heap_id() {
   return 1; 
 #endif
 }
+int nu_get_add_heap_id() {
+#ifdef RUMBOOT_NATIVE
+  return 2; 
+#else
+  return 2; 
+#endif
+}
 
 uintptr_t nu_virt_to_dma(volatile const void *addr) {
   if(addr==NULL)

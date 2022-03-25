@@ -107,10 +107,10 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
 #endif
  #ifdef VPE_CUBE_CMPL
-  nu_vpe_set_int_mask(MY_VPE_REGS_BASE, iteration_desc.cfg);  
+  nu_vpe_set_int_mask(MY_VPE_REGS_BASE);  
 #else 
 { rumboot_printf("NPE_BASE= %x\n",NPE_BASE);
-nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
+nu_npe_vpe_set_int_mask(NPE_BASE);}
 #endif     
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
