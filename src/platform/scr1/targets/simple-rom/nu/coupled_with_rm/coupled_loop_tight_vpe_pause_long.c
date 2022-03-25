@@ -105,7 +105,7 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
 #ifdef VPE_CUBE_CMPL
-  nu_vpe_set_int_mask(MY_VPE_REGS_BASE, iteration_desc.cfg); 	
+  nu_vpe_set_int_mask(MY_VPE_REGS_BASE); 	
 #endif       
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
@@ -177,12 +177,18 @@ int main() {
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
     // vpe received pause
-	nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE, iteration_desc.cfg);			
-	nu_vpe_dev_pause_norst_resume(MY_VPE_REGS_BASE,iteration_desc.cfg);
-	nu_vpe_wait_int_pause_norst_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);
+	nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE);			
+	nu_vpe_dev_pause_norst_resume(MY_VPE_REGS_BASE);
+	nu_vpe_wait_int_pause_norst_cntx_appl(MY_VPE_REGS_BASE);
 	
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
+  	else
+	{rumboot_printf("marked_cube_iteration = %d \n",i);
+	nu_vpe_wait_marked_cube_complete(NPE_BASE);	
+	rumboot_printf("Marked cube = %x \n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NU_VPE_INT_STATUS));
+	} 
+  
   }
   
   nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg);
