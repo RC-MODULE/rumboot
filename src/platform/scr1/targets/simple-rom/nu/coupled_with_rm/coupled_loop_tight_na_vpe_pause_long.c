@@ -110,7 +110,7 @@ int main() {
   nu_vpe_set_int_mask(MY_VPE_REGS_BASE, iteration_desc.cfg);  
 #else 
 { rumboot_printf("NPE_BASE= %x\n",NPE_BASE);
-nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
+nu_npe_vpe_set_int_mask(NPE_BASE);}
 #endif     
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
@@ -189,7 +189,7 @@ nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg);}
 	else
 	{rumboot_printf("marked_cube_iteration = %d \n",i);
 	nu_na_vpe_wait_marked_cube_complete(NPE_BASE);	
-	rumboot_printf("Marked cube = %x \n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS));
+	rumboot_printf("Marked cube = %x \n",ioread32(MY_VPE_REGS_BASE + NU_VPE + NA_INT_UNITS_STATUS));
 	} 
   
   }
