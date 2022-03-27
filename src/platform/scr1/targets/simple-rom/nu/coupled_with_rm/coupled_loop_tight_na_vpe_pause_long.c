@@ -186,11 +186,11 @@ nu_npe_vpe_set_int_mask(NPE_BASE);}
 
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
-	else
-	{rumboot_printf("marked_cube_iteration = %d \n",i);
-	nu_na_vpe_wait_marked_cube_complete(NPE_BASE);	
-	rumboot_printf("Marked cube = %x \n",ioread32(MY_VPE_REGS_BASE + NU_VPE + NA_INT_UNITS_STATUS));
-	} 
+	//else
+	//{rumboot_printf("marked_cube_iteration = %d \n",i);
+	//nu_na_vpe_wait_marked_cube_complete(NPE_BASE);	
+	//rumboot_printf("Marked cube = %x \n",ioread32(MY_VPE_REGS_BASE + NU_VPE + NA_INT_UNITS_STATUS));
+	//} 
   
   }
   
