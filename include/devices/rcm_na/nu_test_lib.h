@@ -236,13 +236,13 @@ typedef struct NPETestDescriptor {
   ConfigREGPPE* array_of_cfg_reg_ppe;
 
   NPEReg* array_of_cfg_diff_mpe;
-  uint32_t* array_of_cfg_diff_mpe_metrics;
+  uint32_t* array_of_cfg_diff_mpe_size;
 
   NPEReg* array_of_cfg_diff_vpe;
-  uint32_t* array_of_cfg_diff_vpe_metrics;
+  uint32_t* array_of_cfg_diff_vpe_size;
 
   NPEReg* array_of_cfg_diff_ppe;
-  uint32_t* array_of_cfg_diff_ppe_metrics;
+  uint32_t* array_of_cfg_diff_ppe_size;
   
   WarrMetrics* array_of_warr_metrics;
   CubeMetrics* array_of_in_metrics;
@@ -276,13 +276,13 @@ typedef struct NPEIterationDescriptor {
   ConfigREGPPE*  cfg_reg_ppe;
 
   NPEReg* cfg_diff_mpe;
-  uint32_t* cfg_diff_mpe_metrics;
+  uint32_t* cfg_diff_mpe_size;
 
   NPEReg* cfg_diff_vpe;
-  uint32_t* cfg_diff_vpe_metrics;
+  uint32_t* cfg_diff_vpe_size;
 
   NPEReg* cfg_diff_ppe;
-  uint32_t* cfg_diff_ppe_metrics;
+  uint32_t* cfg_diff_ppe_size;
 
   void *warr;
   void *in_data;
