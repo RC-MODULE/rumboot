@@ -223,25 +223,25 @@ int main() {
         }
 
         if (i == 0) {
-            *iteration_desc.cfg_diff_mpe_metrics = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, 0, next_regs_dump);
-            *iteration_desc.cfg_diff_vpe_metrics = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, 0, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
+            *iteration_desc.cfg_diff_mpe_size = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, 0, next_regs_dump);
+            *iteration_desc.cfg_diff_vpe_size = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, 0, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
             if(iteration_desc.PPE_ENABLED==Enable_En)
-                *iteration_desc.cfg_diff_ppe_metrics = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, 0, next_regs_dump);
+                *iteration_desc.cfg_diff_ppe_size = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, 0, next_regs_dump);
         }
         else {
-            *iteration_desc.cfg_diff_mpe_metrics = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, curr_regs_dump, next_regs_dump);
-            *iteration_desc.cfg_diff_vpe_metrics = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, curr_regs_dump, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
+            *iteration_desc.cfg_diff_mpe_size = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, curr_regs_dump, next_regs_dump);
+            *iteration_desc.cfg_diff_vpe_size = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, curr_regs_dump, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
             if(iteration_desc.PPE_ENABLED==Enable_En) {
-                *iteration_desc.cfg_diff_ppe_metrics = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, curr_regs_dump, next_regs_dump);
+                *iteration_desc.cfg_diff_ppe_size = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, curr_regs_dump, next_regs_dump);
             }
         }
         swap_regs_dump = curr_regs_dump;
         curr_regs_dump = next_regs_dump;
         next_regs_dump = swap_regs_dump;
-        nu_print_cfg_diff(iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_metrics);
-        nu_print_cfg_diff(iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_metrics);
+        nu_print_cfg_diff(iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_size);
+        nu_print_cfg_diff(iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_size);
         if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_print_cfg_diff(iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_metrics);
+            nu_print_cfg_diff(iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
         }
           // Print All The Configurations Got
         //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
@@ -274,13 +274,13 @@ int main() {
     
         if(i!=0)  // Before Writing VPE Regs - We Should Ensure That VPE Is Ready
               //  Dont Make It On Iteration #0 - Because nu_vpe_wait_cntx_appl Waits For A Status Of Prev Iteration
-            nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+            nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE);
     
             // Write VPE (Shadow) Regs
-        nu_setup(NPE_BASE, iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_metrics);
-        nu_setup(NPE_BASE, iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_metrics);
+        nu_setup(NPE_BASE, iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_size);
+        nu_setup(NPE_BASE, iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_size);
         if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_setup(NPE_BASE, iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_metrics);
+            nu_setup(NPE_BASE, iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
         }
             // Load LUTs If Needed
         if(lut_decision[i]==LUTLoadDecision_BlockThenLoad) { // if We Need To Reload LUT

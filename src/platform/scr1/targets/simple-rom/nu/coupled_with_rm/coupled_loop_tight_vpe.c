@@ -253,7 +253,7 @@ int main() {
       rumboot_printf("Running DMA..\n");
       
       nu_vpe_run(MY_VPE_REGS_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
-      nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, &cfg);
+      nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE);
     
       res_ptr[i] = res_data;
       etalon_ptr[i]=etalon;

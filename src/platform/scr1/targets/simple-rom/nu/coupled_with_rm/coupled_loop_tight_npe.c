@@ -232,7 +232,7 @@ int main() {
     
     if(i!=0)  // Before Writing VPE Regs - We Should Ensure That VPE Is Ready
               //  Dont Make It On Iteration #0 - Because nu_vpe_wait_cntx_appl Waits For A Status Of Prev Iteration
-      nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+      nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE);
     
       // Write VPE (Shadow) Regs
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
