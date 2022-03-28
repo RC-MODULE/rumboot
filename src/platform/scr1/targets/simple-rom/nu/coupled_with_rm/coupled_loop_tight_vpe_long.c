@@ -174,7 +174,7 @@ int main() {
     
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
-    nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, iteration_desc.cfg);
+    nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE);
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
   }
