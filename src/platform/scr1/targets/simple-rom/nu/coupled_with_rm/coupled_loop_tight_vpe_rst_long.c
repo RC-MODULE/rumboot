@@ -178,7 +178,9 @@ int main() {
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);    
 	nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
 if ((i== (iterations-1))  | (i == 0)){
-	 
+	    if (i== (iterations-1))
+		{nu_vpe_wait_marked_cube_complete(MY_VPE_REGS_BASE);
+		rumboot_printf("Wait marked cube complete...\n");}
 		nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE);		
 		nu_vpe_soft_reset(MY_VPE_REGS_BASE);	
 		nu_vpe_dev_pause_resume(MY_VPE_REGS_BASE);			
