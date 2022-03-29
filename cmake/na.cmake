@@ -402,10 +402,15 @@ endmacro()
       endif()  # MAKE_TIGHT
     endmacro()
 
-    macro(ADD_NPE_MPE_CFG_TEST CONF name rm_bin_name)
+    macro(ADD_NPE_MPE_TEST CONF name number rm_bin_name)
+      if (${number} EQUAL 0)
+        set(TESTNAME ${name})
+      else()
+        set(TESTNAME "MPE_${number}")
+      endif()
       add_rumboot_target(
         CONFIGURATION ${CONF}
-        NAME ${name}
+        NAME ${TESTNAME}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
         CFLAGS -DDONT_USE_PPE=1 -D${name}
         PREPCMD 
@@ -1484,6 +1489,10 @@ macro(na_testsuite_add_npe_tests CONF)
   ADD_MPE_SINGLE_TEST(${CONF} MPE_15 TRUNC0) # mu int norm test
   ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
   
+  ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH 19 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
+  ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH 20 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
+  ADD_NPE_MPE_TEST(${CONF} MPE_CFG_POWER 0 main_mpe_direct_ex_MPE_CFG_POWER)
+
             ###
           #add_rumboot_target(
           #  CONFIGURATION ${CONF}
@@ -1591,9 +1600,6 @@ macro(na_testsuite_add_npe_tests CONF)
             ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
           endforeach()
 
-          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
-          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
-          ADD_NPE_MPE_CFG_TEST(${CONF} MPE_CFG_POWER main_mpe_direct_ex_MPE_CFG_POWER)
           ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
           ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_MPE_CFG_AUTO main_mpe_auto_tests_MPE_CFG_AUTO   MAKE_TIGHT BITWISE)
           ##################################
