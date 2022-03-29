@@ -2484,12 +2484,23 @@ void nu_na_ppe_wait_int_dev_off(uintptr_t npe_base){
 void nu_vpe_pause_next_cntx(uintptr_t vpe_base){
   uint32_t temp;
     rumboot_printf("Stop VPE begin...\n");
-	while( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) == 0x00000041) !=1) {}
+	while(( (ioread32(vpe_base +  NU_VPE  + NU_VPE_INT_STATUS) >> 0) & 1) !=1) {}
+	iowrite32((0x00000001),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	while(( (ioread32(vpe_base +  NU_VPE  + NU_VPE_INT_STATUS) >> 6) & 1) !=1) {}
+	iowrite32((1<<6),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	
+	while(( (ioread32(vpe_base +  NU_VPE  + NU_VPE_INT_STATUS) >> 4) & 1) !=1) {}
+	iowrite32((1<<4),vpe_base + NU_VPE + NU_VPE_INT_RESET);	
+	
+	//rumboot_printf("Stop check...\n");
+	iowrite32((0x00000091),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	while( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) == 0x00000100) !=1) {}
 	temp = ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
-	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}	
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}
+	iowrite32((1<<5),vpe_base + NU_VPE + NU_VPE_INT_RESET);
 	rumboot_printf("Done VPE stop\n");
-	iowrite32((0x00000061),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	iowrite32((0x00000100),vpe_base + NU_VPE + NU_VPE_INT_RESET);
 }
 
 void nu_na_vpe_pause(uintptr_t npe_base ){
@@ -2585,7 +2596,6 @@ void nu_na_mpe_wait_complete(uintptr_t npe_base){
 	 rumboot_printf("Done MPE WDMA...\n");}
 }
 void nu_npe_mpe_set_int_mask(uintptr_t npe_base){
-
 	if (( (ioread32(npe_base  + NA_CU_REGS_BASE + NA_UNITS_MODE) >> 0) & 1) ==0 )
 	iowrite32((1<<0) | (1<<1)| (1<<2) | (1<<3) |(1<<4) | (1<<5) | (1<<6) | (1<<7) | (1<<8)	|(1<<9)	|(1<<10)
 		| (1<<11) | (1<<12)| (1<<13) |(1<<14) | (1<<15) | (1<<16) | (1<<17) | (1<<18)	|(1<<19), //????
