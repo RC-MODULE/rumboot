@@ -1,6 +1,3 @@
-#TODO:
-# - Вычистить останки EXPERIMENT_STAGE_XXXXX из кода
-# - Директории PPE_EXPER_DIR & MPE_TEST_SHEETS_DIR. Из-за них не будет работать standalone сборка№
 
 macro(_na_init_variables DUT)
   set(MISALIGN_COUNT 0)
