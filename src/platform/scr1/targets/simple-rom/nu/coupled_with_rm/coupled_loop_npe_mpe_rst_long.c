@@ -268,6 +268,7 @@ int main() {
 		nu_na_vpe_soft_reset(NPE_BASE);
 		nu_na_mpe_dev_pause_resume(NPE_BASE);
 		nu_na_vpe_dev_pause_resume(NPE_BASE);
+		iowrite32(0x0,NPE_BASE+NA_MPE_BASE+MPE_CMD_IRCW);
 
 	if	(nu_mpe_regs_check((MY_MPE_REGS_BASE+MPE_MA_BASE),4,33) != 0){
 		rumboot_printf("Test FAILED at iteration %d\n",i);
