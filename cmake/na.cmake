@@ -1493,7 +1493,7 @@ macro(na_testsuite_add_npe_tests CONF)
           #  IRUN_FLAGS ${NA_RM_PLUSARGS}
           #)
     
-          ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
+          #ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
               ## NOT EXPERIMENT_STAGE_2_SUB_2
     
         add_rumboot_target(
