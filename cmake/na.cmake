@@ -737,7 +737,7 @@ macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
 endmacro()
 
-macro (ADD_PPE_RST_TESTS CONF name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
+macro (ADD_PPE_RST_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
 add_rumboot_target(
     CONFIGURATION ${CONF}
