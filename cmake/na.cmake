@@ -698,47 +698,14 @@ foreach(name_in ${${test_list_name}})
 endforeach()
 endmacro()
 
-macro (ADD_PPE_TESTS CONF name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
-set (TST_NMB 1)
-set (name "${name_in}")
-set (Sh_is_1 "--set_Sh 1 --Sh 1")
-set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
-
-if (EXPERIMENT_STAGE_2_SUB_2)
-  string(REPLACE "ppe_i8_max_ml"    "PPE_2_i8_max_ml"     name  ${name})
-  string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name  ${name})
-  string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name  ${name})
-  string(REPLACE "ppe_i8_min_ml"    "PPE_5_i8_min_ml"     name  ${name})
-  string(REPLACE "ppe_i16_min_ml"   "PPE_6_i16_min_ml"    name  ${name})
-  string(REPLACE "ppe_fp16_min_ml"  "PPE_7_fp16_min_ml"   name  ${name})
-  string(REPLACE "ppe_i8_avg_ml"    "PPE_8_i8_avg_ml"     name  ${name})
-  string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name  ${name})
-  string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name  ${name})
-
-  if (${name} STREQUAL "PPE_10_fp16_avg_ml")
-    set (TST_NMB 1)
-  else()
-    set (TST_NMB 0)
-  endif()
-
-endif()
-
-foreach(i RANGE ${TST_NMB})
-
-  if (i EQUAL TST_NMB)
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
-
-    string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name  ${name})
-  else()
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
-  endif()
+macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
   add_rumboot_target(
     CONFIGURATION ${CONF}
-    NAME ${name}_${i}
+    NAME ${name}
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
@@ -750,10 +717,10 @@ foreach(i RANGE ${TST_NMB})
   if(${LBS} STREQUAL "LIN")
     add_rumboot_target(
       CONFIGURATION ${CONF}
-      NAME ${name}_tight_${i}
+      NAME ${name}_tight
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_ppe.c
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
       CFLAGS -DDUT=${DUT_LETTER_QUOTED}
 
@@ -763,51 +730,16 @@ foreach(i RANGE ${TST_NMB})
     )
   endif()
 
-  if (i EQUAL TST_NMB)
-    math (EXPR NU_SEED "${NU_SEED} + 1")
-  endif()
-endforeach()
 endmacro()
 
 macro (ADD_PPE_RST_TESTS CONF name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
-set (name "${name_in}")
-set (ShowPerf "NotShowPerf")
-set (TST_NMB 1)
-set (Sh_is_1 "--set_Sh 1 --Sh 1")
-set (Sw_is_1 "--set_Sw 1 --Sw 1 --w_max 128")
-
-if (EXPERIMENT_STAGE_2_SUB_2)
-  string(REPLACE "ppe_i16_max_ml"   "PPE_3_i16_max_ml"    name  ${name})
-  string(REPLACE "ppe_fp16_max_ml"  "PPE_4_fp16_max_ml"   name  ${name})
-
- # string(REPLACE "ppe_i16_avg_ml"   "PPE_9_i16_avg_ml"    name  ${name})
- # string(REPLACE "ppe_fp16_avg_ml"  "PPE_10_fp16_avg_ml"  name  ${name})
-
-  if (${name} STREQUAL "PPE_10_fp16_avg_ml")
-    set (TST_NMB 1)
-  else()
-    set (TST_NMB 0)
-  endif()
-
-endif()
-
-foreach(i RANGE ${TST_NMB})
-
-  if (i EQUAL TST_NMB)
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} ${Sh_is_1} ${Sw_is_1}")
-
-    string(REPLACE "PPE_10_fp16_avg_ml"  "PPE_11_fp16_avg_ml"  name  ${name})
-  else()
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM}")
-  endif()
-  
 add_rumboot_target(
     CONFIGURATION ${CONF}
-    NAME ${name}_na_rst_fail_${i}
+    NAME ${name}_na_rst_fail
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_int_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
@@ -818,10 +750,10 @@ add_rumboot_target(
 
 add_rumboot_target(
     CONFIGURATION ${CONF}
-    NAME ${name}_na_rst_${i}
+    NAME ${name}_na_rst
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_rst_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
@@ -832,10 +764,10 @@ add_rumboot_target(
   
 add_rumboot_target(
     CONFIGURATION ${CONF}
-    NAME ${name}_na_ppe_pause_${i}
+    NAME ${name}_na_ppe_pause
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_pause_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
     CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
@@ -843,11 +775,7 @@ add_rumboot_target(
 
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
-  
-if (i EQUAL TST_NMB)
-    math (EXPR NU_SEED "${NU_SEED} + 1")
-  endif()
-endforeach()  
+
 endmacro()
 
 macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
@@ -1383,15 +1311,6 @@ foreach(name_in ${${test_list_name}})
     set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
     set (LBS "BOX")
     set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-  endif()
-
-  if (EXPERIMENT_STAGE_2_SUB_2)
-    if (${name} MATCHES "_8b")
-      set (name "NA_3_${name}")
-    endif()
-    if (${name} MATCHES "_16b")
-      set (name "NA_4_${name}")
-    endif()
   endif()
 
   add_rumboot_target(
