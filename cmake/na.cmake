@@ -769,7 +769,7 @@ add_rumboot_target(
   
 add_rumboot_target(
     CONFIGURATION ${CONF}
-    NAME ${name}_na_ppe_pause
+    NAME ${name}_pause
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_pause_long.c
 
     PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
