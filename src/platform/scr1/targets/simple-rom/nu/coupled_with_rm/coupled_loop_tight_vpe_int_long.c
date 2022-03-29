@@ -104,9 +104,9 @@ int main() {
 #if DUT_IS_NPE
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
- #ifdef VPE_CUBE_CMPL
+
   nu_vpe_set_int_mask(MY_VPE_REGS_BASE); 	
-#endif      
+      
   lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
   lut1_prev=NULL;lut2_prev=NULL;
   //~ cfg_prev=NULL;

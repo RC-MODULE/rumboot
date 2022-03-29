@@ -12,7 +12,7 @@
 int na_cu_rd_regs() {
 
      int res;	 
-	 int res1,res2, res3,/*res4,*/res5,res6,res7,res8,res9,res91,res92,
+	 int res1,res2, res3,res5,res6,res7,res8,res9,res91,res92,
 		 res93,res94,res95,res96,res10,res11,res12,
 		 res13,res14,res15,res16,res17,res18,res19,res20,res21,res22;	 
   
@@ -35,19 +35,8 @@ int na_cu_rd_regs() {
 		rumboot_printf("Unexpected NA_STAT=0x%x\n",res3);}
 		else 
 		{res3=0;}
-	/*
-		res4 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PAUSE);
-		if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE +NA_PAUSE)& 0x0000000F))
-		{res4 =1;
-		rumboot_printf("Unexpected NA_PAUSE=0x%x\n",res4);}
-		else 
-		{res4=0;}
-*/
-	///////////////////////////////////////////////////////////////////////////////////////
-	//
-	// Register NA_PAUSE is not ended in RTL. The bits 16,18 19 are BROKEN as INPUTs     //
-	//
-	//////////////////////////////////////////////////////////////////////////////////////
+	
+
 		res5 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET);
 	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET)& 0x00000001)) 
 		{res5 =1;
@@ -124,11 +113,7 @@ int na_cu_rd_regs() {
 		else 
 		{res96=0;}
 	
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	// Register NA_CMD_FIFO_STAT is not ended in RTL. The bits 32-16; 7-0  are BROKEN as INPUTs //
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////
+
 	
 	res10 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL);
 	if ((0x000000FF)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x000000FF)) 	
@@ -237,8 +222,7 @@ int na_cu_rd_regs() {
  } 
  int na_cu_wr_rd_regs(uint32_t data) {
 
-   //int res;	 
-	
+	 
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE);
 		if	((data & 0x00000107) != ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE)) 
 		{rumboot_printf("Unexpected NA_UNITS_MODE =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE));	
@@ -246,39 +230,29 @@ int na_cu_rd_regs() {
   	
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET); // THERE INSERT  DELAY BEFORE READ SOFT RESET
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET);  // THERE INSERT  DELAY BEFORE READ SOFT RESET
-	///////////////////////////////////////////////////////////////////////////////////////
-	//
-	// Register NA_PAUSE is not ended in RTL. The bits 16,18 19 are BROKEN as INPUTs     //
-	//
-	//////////////////////////////////////////////////////////////////////////////////////
+
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET);
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
 	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET)& 0x00000001))
 		{rumboot_printf("Unexpected NA_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET));
 		return 1;}
 	
-	//	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET);
+
 	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET)& 0x00000001))
 		{rumboot_printf("Unexpected NA_PPE_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET));
 		return 1;}
 	
-	//	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET); 
+
 	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET)& 0x00000001))		
 		{rumboot_printf("Unexpected NA_VPE_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET));
 		return 1;}
 		
-	//iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
+
 	if((0x00000000)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET)& 0x00000001)) 	
 		{rumboot_printf("Unexpected NA_MPE_SOFT_RESE=0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET));
 		return 1;}
 	
-	
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	// Register NA_CMD_FIFO_STAT is not ended in RTL. The bits 32-16; 7-0  are BROKEN as INPUTs //
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	
+		
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL);
 	if ((data & 0x0000007F)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x0000007F))  // why 7F	?????
 		{rumboot_printf("Unexpectedd NA_CMD_FIFO_LEVEL =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL));
@@ -307,7 +281,7 @@ int na_cu_rd_regs() {
 		return 1;}
 		
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET);
-	if ((/*data & 0x0000007F*/0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET)&  0x0000007F))
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET)&  0x0000007F))
 		{rumboot_printf("Unexpected NA_INT_SET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET));
 		return 1;}
 	
@@ -315,36 +289,8 @@ int na_cu_rd_regs() {
 	if ((data & 0x0000007F)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK)& 0x0000007F))  
 		{rumboot_printf("Unexpected NA_INT_MASK =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK));
 		return 1;}
-	//Not finished in RTL
-/*	
-	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + AXI_INT_RESET);
-	if ((data & 0x07FFFFFF) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_RESET)& 0x07FFFFFF))
-		{res =1;
-		rumboot_printf("Unexpected AXI_INT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_RESET));}
-		else 
-		{res=0;}
-	
-	//Not finished in RTL
-	
-	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + AXI_INT_SET);
-	if ((data & 0x07FFFFFF) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_SET)& 0x07FFFFFF))
-		{res =1;
-		rumboot_printf("Unexpected AXI_INT_SET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_SET));}
-		else 
-		{res=0;}
 
-		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + AXI_INT_MASK);
-  if ((data & 0x07FFFFFF) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_MASK)& 0x07FFFFFF))
-		{res =1;
-		rumboot_printf("Unexpected AXI_INT_MASK =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_MASK));}
-		else 
-		{res=0;}
-	*/	
-/*	if( res ==1) {
-	 rumboot_printf("READ_REGS_CU ERROR\n");
-		return -1;} */
 			
-
  return 0; 
  } 
 int main() {
