@@ -198,7 +198,7 @@ nu_npe_vpe_set_int_mask(NPE_BASE);}
   rumboot_printf("Comparing..\n");
   nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
   	   nu_vpe_iterate_desc(&iteration_desc);
- for(i=1;i<(iterations-1);i++ ){
+ for(i=1;i<(iterations);i++ ){
 	   nu_vpe_iteration_start(&iteration_desc);
     if(nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s) == 0)
 		rumboot_printf("Iteration %d PASSED\n",i);
