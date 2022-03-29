@@ -1976,13 +1976,13 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     desc->cfg_reg_ppe += 1;
   }
 
-  desc->cfg_diff_mpe += 0x21C;
+  desc->cfg_diff_mpe += NU_MPE_REG_MAP_SIZE;
   desc->cfg_diff_mpe_size += 1;
 
-  desc->cfg_diff_vpe += 0x1DC;
+  desc->cfg_diff_vpe += NU_VPE_REG_MAP_SIZE;
   desc->cfg_diff_vpe_size += 1;
 
-  desc->cfg_diff_ppe += 0x32;
+  desc->cfg_diff_ppe += NU_PPE_REG_MAP_SIZE;
   desc->cfg_diff_ppe_size += 1;
 
 }

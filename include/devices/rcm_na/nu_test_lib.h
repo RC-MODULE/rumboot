@@ -6,8 +6,8 @@
 #include "devices/rcm_na/nu_lib.h"
 
 #define NU_MPE_REG_MAP_SIZE 0x21C
-#define NU_VPE_REG_MAP_SIZE 0x1DC
-#define NU_PPE_REG_MAP_SIZE 0x32
+#define NU_VPE_REG_MAP_SIZE 0x1DF
+#define NU_PPE_REG_MAP_SIZE 0x132
 
 int nu_get_heap_id();
 int nu_get_add_heap_id();
