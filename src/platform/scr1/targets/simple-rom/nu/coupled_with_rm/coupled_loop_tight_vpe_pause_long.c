@@ -95,6 +95,7 @@ int main() {
   
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
   rumboot_printf("Number of iterations %d\n",iterations);
+
   
   nu_vpe_init_test_desc(&test_desc);
   if(nu_vpe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
@@ -177,19 +178,15 @@ int main() {
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg);
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg);
     // vpe received pause
+	
 	nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE);			
 	nu_vpe_dev_pause_norst_resume(MY_VPE_REGS_BASE);
-	nu_vpe_wait_int_pause_norst_cntx_appl(MY_VPE_REGS_BASE);
 	
     if(i!=iterations-1)
       nu_vpe_iterate_desc(&iteration_desc);
-  	else
-	{rumboot_printf("marked_cube_iteration = %d \n",i);
-	nu_vpe_wait_marked_cube_complete(MY_VPE_REGS_BASE);	
-	} 
-  
+ 
   }
-  
+
   nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg);
   
     // And Third Turn - Check The Data
