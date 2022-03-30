@@ -79,11 +79,9 @@ int main() {
   LUTLoadDecision* lut_decision;
   void* lut1_prev;
   void* lut2_prev;
-  //~ ConfigVPE* cfg_prev;
-  
+ 
   uint8_t  axi_len;
   
-
 #ifdef AXI_LEN
   axi_len = AxiLen;
 #else 
