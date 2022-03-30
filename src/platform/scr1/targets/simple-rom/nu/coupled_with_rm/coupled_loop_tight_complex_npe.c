@@ -116,8 +116,6 @@ int main() {
 
 
     curr_regs_dump = (uint32_t)rumboot_malloc_from_heap(heap_id, sizeof(uint32_t)*0x732);
-    //curr_cfg_vpe = NULL;
-    //curr_cfg_reg_ppe = NULL;
     next_regs_dump = (uint32_t)rumboot_malloc_from_heap(heap_id, sizeof(uint32_t)*0x732);
 
 
@@ -243,14 +241,6 @@ int main() {
         if(iteration_desc.PPE_ENABLED==Enable_En) {
             nu_print_cfg_diff(iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
         }
-          // Print All The Configurations Got
-        //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
-        //~ nu_vpe_print_config(iteration_desc.cfg_vpe);
-        // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
-        //~ if(iteration_desc.PPE_ENABLED==Enable_En) {
-          //~ nu_ppe_print_config(iteration_desc.cfg_ppe);
-          //~ nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
-        //~ }
 
           // Point At The Next Iteration Data
         nu_npe_iterate_desc(&iteration_desc);
@@ -277,11 +267,6 @@ int main() {
             nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE);
     
             // Write VPE (Shadow) Regs
-        nu_setup(NPE_BASE, iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_size);
-        nu_setup(NPE_BASE, iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_size);
-        if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_setup(NPE_BASE, iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
-        }
             // Load LUTs If Needed
         if(lut_decision[i]==LUTLoadDecision_BlockThenLoad) { // if We Need To Reload LUT
             rumboot_printf("Blocked To Load LUT\n");  // Here We Should Block And Wait Until VPE Finish
@@ -295,10 +280,15 @@ int main() {
           // Try The Effective (But Not Safe) Run Order (MPE->VPE->PPE)
           //  Because We Are Verificators!
         nu_mpe_wait_ready(MY_MPE_REGS_BASE);
+        nu_setup(NPE_BASE, iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_size);
         nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
+        
+        nu_setup(NPE_BASE, iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_size);
         nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+        
           // PPE Should Be Run After It Finish Prev Operation
         if(iteration_desc.PPE_ENABLED==Enable_En) {
+            nu_setup(NPE_BASE, iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
             nu_ppe_dma_wait_ready_and_run(MY_PPE_REGS_BASE); // WDMA
         }
     

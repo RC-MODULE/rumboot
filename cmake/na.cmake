@@ -297,11 +297,11 @@ macro(_na_init_variables DUT)
 endmacro()
 
 macro(misalign_increment)
-if(MISALIGN_COUNT STREQUAL 15)
-  set(MISALIGN_COUNT 1)
-else()
-  MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
-endif()
+  if(MISALIGN_COUNT STREQUAL 15)
+    set(MISALIGN_COUNT 1)
+  else()
+    MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
+  endif()
 endmacro()
 
 
@@ -346,293 +346,293 @@ macro(ADD_NPE_SIMPLE_TEST CONF name filename)
 endmacro()
 
 
-      # Tests Use MPE+VPE (Without PPE)
-      macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
-        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
-      endmacro()
+# Tests Use MPE+VPE (Without PPE)
+macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
+  ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
+endmacro()
       
-      macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
-      if("${comparer}" STREQUAL "EPS")
-        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
-      else()
-        set(COMPARER_OPT)
-      endif()
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          --seed ${seed_value}
-          > ${RM_LOGFILE} &&
+macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
+  if("${comparer}" STREQUAL "EPS")
+    set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+  else()
+    set(COMPARER_OPT)
+  endif()
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+    CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      --seed ${seed_value}
+      > ${RM_LOGFILE} &&
 
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-          || exit 1
+      || exit 1
 
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
-      if("${make_tight}" STREQUAL "MAKE_TIGHT")
-        add_rumboot_target(
-          CONFIGURATION ${CONF}
-          NAME ${name}_tight
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
-          CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
-          PREPCMD 
-            ${NA_RM_BIN_PATH}/${rm_bin_name} 
-            ${NA_RM_KEYS} 
-            ${RM_TF_KEYS}
-            > ${RM_LOGFILE} &&
-
-            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-            &&
-            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
-
-            || exit 1
-
-          IRUN_FLAGS ${NA_RM_PLUSARGS}
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endif()  # MAKE_TIGHT
-    endmacro()
-
-    macro(ADD_NPE_MPE_TEST CONF name number rm_bin_name)
-      if (${number} EQUAL 0)
-        set(TESTNAME ${name})
-      else()
-        set(TESTNAME "MPE_${number}")
-      endif()
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${TESTNAME}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS -DDONT_USE_PPE=1 -D${name}
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
-
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
-
-          || exit 1
-
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
-    endmacro()
-   macro(ADD_NPE_MPE_VPE_RST_TEST CONF name rm_bin_name make_tight comparer)
-      if("${comparer}" STREQUAL "EPS")
-        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
-      else()
-        set(COMPARER_OPT)
-      endif()
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}_rst
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_rst_long.c
-        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
-
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
-
-          || exit 1
-
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
-
-add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}_pause
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_pause_long.c
-        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
-
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
-
-          || exit 1
-
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
- 
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+  if("${make_tight}" STREQUAL "MAKE_TIGHT")
     add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}_rst_fail
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_int_long.c
-        CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
+      CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+      PREPCMD 
+        ${NA_RM_BIN_PATH}/${rm_bin_name} 
+        ${NA_RM_KEYS} 
+        ${RM_TF_KEYS}
+        > ${RM_LOGFILE} &&
 
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-          || exit 1
+        || exit 1
 
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      ) 
-    endmacro()	
-      # Tests Use All 3 Units
-    macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight comparer)
-      if("${comparer}" STREQUAL "EPS")
-        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
-      else()
-        set(COMPARER_OPT)
-      endif()
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-        CFLAGS ${COMPARER_OPT}
-        PREPCMD 
-          ${NA_RM_BIN_PATH}/${rm_bin_name} 
-          ${NA_RM_KEYS} 
-          ${RM_TF_KEYS}
-          > ${RM_LOGFILE} &&
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endif()  # MAKE_TIGHT
+endmacro()
 
-          ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-          &&
-          ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+macro(ADD_NPE_MPE_TEST CONF name number rm_bin_name)
+  if (${number} EQUAL 0)
+    set(TESTNAME ${name})
+  else()
+    set(TESTNAME "MPE_${number}")
+  endif()
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${TESTNAME}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+    CFLAGS -DDONT_USE_PPE=1 -D${name}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      > ${RM_LOGFILE} &&
 
-          || exit 1
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-        IRUN_FLAGS ${NA_RM_PLUSARGS} ${COMP}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
-      if("${make_tight}" STREQUAL "MAKE_TIGHT")
-        add_rumboot_target(
-          CONFIGURATION ${CONF}
-          NAME ${name}_tight
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
-          CFLAGS ${COMPARER_OPT}
-          PREPCMD 
-            ${NA_RM_BIN_PATH}/${rm_bin_name} 
-            ${NA_RM_KEYS} 
-            ${RM_TF_KEYS}
-            > ${RM_LOGFILE} &&
+      || exit 1
 
-            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-            &&
-            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endmacro()
+macro(ADD_NPE_MPE_VPE_RST_TEST CONF name rm_bin_name make_tight comparer)
+  if("${comparer}" STREQUAL "EPS")
+    set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+  else()
+    set(COMPARER_OPT)
+  endif()
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_rst
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_rst_long.c
+    CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      > ${RM_LOGFILE} &&
 
-            || exit 1
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-          IRUN_FLAGS ${NA_RM_PLUSARGS}
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endif()  # MAKE_TIGHT
-    endmacro()
+      || exit 1
 
-    macro(ADD_NPE_COMPLEX_TEST_TIGHT CONF name rm_bin_name make_tight comparer)
-      if("${comparer}" STREQUAL "EPS")
-        set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
-      else()
-        set(COMPARER_OPT)
-      endif()
-      if("${make_tight}" STREQUAL "MAKE_TIGHT")
-        add_rumboot_target(
-          CONFIGURATION ${CONF}
-          NAME ${name}_tight
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_complex_npe.c
-          CFLAGS ${COMPARER_OPT}
-          PREPCMD 
-            ${NA_RM_BIN_PATH}/${rm_bin_name} 
-            ${NA_RM_KEYS} 
-            ${RM_TF_KEYS}
-            > ${RM_LOGFILE} &&
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
 
-            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-            &&
-            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_pause
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_pause_long.c
+    CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      > ${RM_LOGFILE} &&
 
-            || exit 1
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
 
-          IRUN_FLAGS ${NA_RM_PLUSARGS}
-          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endif()  # MAKE_TIGHT
-    endmacro()
+      || exit 1
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_rst_fail
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_int_long.c
+    CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      > ${RM_LOGFILE} &&
+
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+      || exit 1
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  ) 
+endmacro()	
+  # Tests Use All 3 Units
+macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight comparer)
+  if("${comparer}" STREQUAL "EPS")
+    set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+  else()
+    set(COMPARER_OPT)
+  endif()
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+    CFLAGS ${COMPARER_OPT}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      > ${RM_LOGFILE} &&
+
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+      || exit 1
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS} ${COMP}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+  if("${make_tight}" STREQUAL "MAKE_TIGHT")
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_npe.c
+      CFLAGS ${COMPARER_OPT}
+      PREPCMD 
+        ${NA_RM_BIN_PATH}/${rm_bin_name} 
+        ${NA_RM_KEYS} 
+        ${RM_TF_KEYS}
+        > ${RM_LOGFILE} &&
+
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+        || exit 1
+
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endif()  # MAKE_TIGHT
+endmacro()
+
+macro(ADD_NPE_COMPLEX_TEST_TIGHT CONF name rm_bin_name make_tight comparer)
+  if("${comparer}" STREQUAL "EPS")
+    set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+  else()
+    set(COMPARER_OPT)
+  endif()
+  if("${make_tight}" STREQUAL "MAKE_TIGHT")
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_complex_npe.c
+      CFLAGS ${COMPARER_OPT}
+      PREPCMD 
+        ${NA_RM_BIN_PATH}/${rm_bin_name} 
+        ${NA_RM_KEYS} 
+        ${RM_TF_KEYS}
+        > ${RM_LOGFILE} &&
+
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+        || exit 1
+
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endif()  # MAKE_TIGHT
+endmacro()
 
 macro (ADD_MPE_CONV_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
-set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
-add_rumboot_target(
-  CONFIGURATION ${CONF}
-  NAME ${name}_CONV
-  FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_conv.c
-  CFLAGS -D${trunc}
-  PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
-  IRUN_FLAGS ${NA_RM_PLUSARGS}
-)
+  set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_CONV
+    FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_conv.c
+    CFLAGS -D${trunc}
+    PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+  )
 endmacro()
 
 
 macro (ADD_MPE_SINGLE_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
-set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
-add_rumboot_target(
-  CONFIGURATION ${CONF}
-  NAME ${name}
-  FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
-  CFLAGS -D${trunc}
-  PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
-  IRUN_FLAGS ${NA_RM_PLUSARGS}
-)
+  set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
+    CFLAGS -D${trunc}
+    PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+  )
 endmacro()
 
 
 macro (ADD_MPE_VPE_BATCH_TEST CONF B C W H LP RP BP TP K S R SX SY)
-set(TEST_BINS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/BATCH/B${B})
-add_rumboot_target(
-  CONFIGURATION ${CONF}
-  NAME MPE_VPE_BATCH${B}
-  FILES scr1/targets/simple-rom/nu/npe/mpe_vpe_batch.c
-  CFLAGS -DdB=${B} -DdC=${C} -DdW=${W} -DdH=${H} -DLP=${LP} -DRP=${RP} -DBP=${BP} -DTP=${TP} -DdK=${K} -DdS=${S} -DdR=${R} -DSX=${SX} -DSY=${SY} 
-  PREPCMD cp ${TEST_BINS}/cmd.bin ${TEST_BINS}/cmd.bin.metrics ${TEST_BINS}/cube.bin ${TEST_BINS}/cube.bin.metrics ${TEST_BINS}/etalon.bin.metrics ${TEST_BINS}/warr.bin ${TEST_BINS}/warr.bin.metrics -t .
-  IRUN_FLAGS ${NA_RM_PLUSARGS}
-)
+  set(TEST_BINS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/BATCH/B${B})
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME MPE_VPE_BATCH${B}
+    FILES scr1/targets/simple-rom/nu/npe/mpe_vpe_batch.c
+    CFLAGS -DdB=${B} -DdC=${C} -DdW=${W} -DdH=${H} -DLP=${LP} -DRP=${RP} -DBP=${BP} -DTP=${TP} -DdK=${K} -DdS=${S} -DdR=${R} -DSX=${SX} -DSY=${SY} 
+    PREPCMD cp ${TEST_BINS}/cmd.bin ${TEST_BINS}/cmd.bin.metrics ${TEST_BINS}/cube.bin ${TEST_BINS}/cube.bin.metrics ${TEST_BINS}/etalon.bin.metrics ${TEST_BINS}/warr.bin ${TEST_BINS}/warr.bin.metrics -t .
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+  )
 endmacro()
 
 
 macro (ADD_MPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
-set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
-foreach(i RANGE 0 15)
-  set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${name}/${rm_bin_name}_${i}/mpe_arrays_r.txt)
-  set(ADD_MPE_COUPLED_TEST_LOOP_ARGS ${ADD_MPE_COUPLED_TEST_LOOP_ARGS} &&
-  ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file}.${i} ${NA_TEST_in_file}.${i} ${NA_TEST_warr_file}.${i} ${NA_TEST_etalon_file}.${i} < ${MPE_TEST_SHEET})
-endforeach()
-add_rumboot_target(
-  CONFIGURATION ${CONF}
-  NAME ${name}
-  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_mpe.c
-  PREPCMD ${ADD_MPE_COUPLED_TEST_LOOP_ARGS}
-  IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-  TIMEOUT_CTEST 10000
-)
+  set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
+  foreach(i RANGE 0 15)
+    set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${name}/${rm_bin_name}_${i}/mpe_arrays_r.txt)
+    set(ADD_MPE_COUPLED_TEST_LOOP_ARGS ${ADD_MPE_COUPLED_TEST_LOOP_ARGS} &&
+    ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file}.${i} ${NA_TEST_in_file}.${i} ${NA_TEST_warr_file}.${i} ${NA_TEST_etalon_file}.${i} < ${MPE_TEST_SHEET})
+  endforeach()
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_mpe.c
+    PREPCMD ${ADD_MPE_COUPLED_TEST_LOOP_ARGS}
+    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    TIMEOUT_CTEST 10000
+  )
 endmacro()
 
 
@@ -651,56 +651,56 @@ endmacro()
 
 macro (ADD_VPE_PPE_WKH_COMB_ALL CONF test_list_name)
 
-set (ShowPerf "NotShowPerf")
-set (TST_NMB 3)
-set (i 0)
+  set (ShowPerf "NotShowPerf")
+  set (TST_NMB 3)
+  set (i 0)
 
-foreach(name_in ${${test_list_name}})
-  foreach(i RANGE ${TST_NMB})
+  foreach(name_in ${${test_list_name}})
+    foreach(i RANGE ${TST_NMB})
 
-    if (i EQUAL 0)
-      set (name "vpe_ppe_${name_in}_LIN_8b")
-      set (rm_bin_name "main_vpe_ppe_IN_INT8")
-      set (LBS "LIN")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-    elseif (i EQUAL 1)
-      set (name "vpe_ppe_${name_in}_LIN_16b")
-      set (rm_bin_name "main_vpe_ppe_IN_INT16")
-      set (LBS "LIN")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-    elseif (i EQUAL 2)
-      set (name "vpe_ppe_${name_in}_BOX_8b")
-      set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
-      set (LBS "BOX")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-    elseif (i EQUAL 3)
-      set (name "vpe_ppe_${name_in}_BOX_16b")
-      set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
-      set (LBS "BOX")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-    endif()
+      if (i EQUAL 0)
+        set (name "vpe_ppe_${name_in}_LIN_8b")
+        set (rm_bin_name "main_vpe_ppe_IN_INT8")
+        set (LBS "LIN")
+        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+      elseif (i EQUAL 1)
+        set (name "vpe_ppe_${name_in}_LIN_16b")
+        set (rm_bin_name "main_vpe_ppe_IN_INT16")
+        set (LBS "LIN")
+        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+      elseif (i EQUAL 2)
+        set (name "vpe_ppe_${name_in}_BOX_8b")
+        set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
+        set (LBS "BOX")
+        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+      elseif (i EQUAL 3)
+        set (name "vpe_ppe_${name_in}_BOX_16b")
+        set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
+        set (LBS "BOX")
+        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+      endif()
 
-    add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO}} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO}} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
-      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+        CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
 
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-    )
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
 
-    if (i EQUAL TST_NMB)
-      math (EXPR NU_SEED "${NU_SEED} + 1")
-      set (i 0)
-    endif()
+      if (i EQUAL TST_NMB)
+        math (EXPR NU_SEED "${NU_SEED} + 1")
+        set (i 0)
+      endif()
 
+    endforeach()
   endforeach()
-endforeach()
 endmacro()
 
 macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
@@ -737,9 +737,9 @@ macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
 endmacro()
 
-macro (ADD_PPE_RST_TESTS CONF name_in rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
+macro (ADD_PPE_RST_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
-add_rumboot_target(
+  add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}_na_rst_fail
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_int_long.c
@@ -753,7 +753,7 @@ add_rumboot_target(
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
 
-add_rumboot_target(
+  add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}_na_rst
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_rst_long.c
@@ -767,9 +767,9 @@ add_rumboot_target(
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
   
-add_rumboot_target(
+  add_rumboot_target(
     CONFIGURATION ${CONF}
-    NAME ${name}_na_ppe_pause
+    NAME ${name}_pause
     FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_na_ppe_pause_long.c
 
     PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
@@ -784,44 +784,44 @@ add_rumboot_target(
 endmacro()
 
 macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
-misalign_increment()
-set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
-foreach(IntMisalign ${MISALIGN})
-  add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}_${IntMisalign}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1 -DDUT=${DUT_LETTER_QUOTED}
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
-endforeach()
+  misalign_increment()
+  set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
+  foreach(IntMisalign ${MISALIGN})
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_${IntMisalign}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1 -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endforeach()
 endmacro()
 
 macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA CONF name rm_bin_name)
-misalign_increment()
-set(MISALIGN 0 ${MISALIGN_COUNT})
-foreach(IntMisalign ${MISALIGN})
-  add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}_${IntMisalign}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
-  add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}_tight_${IntMisalign}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
-endforeach()
+  misalign_increment()
+  set(MISALIGN 0 ${MISALIGN_COUNT})
+  foreach(IntMisalign ${MISALIGN})
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_${IntMisalign}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_tight_${IntMisalign}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endforeach()
 endmacro()
 
 macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN CONF name rm_bin_name axi_len)
@@ -857,7 +857,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
   )
  endmacro()
  
- macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_SRST_LONG CONF name rm_bin_name)
+macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_SRST_LONG CONF name rm_bin_name)
   add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}_tight_vpe_rst
@@ -867,7 +867,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
- add_rumboot_target(
+  add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}_tight_rst_fail
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_int_long.c
@@ -886,7 +886,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   ) 
- add_rumboot_target(
+  add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}_na_tight_vpe_rst
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_na_vpe_rst_long.c
@@ -895,7 +895,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   ) 
- add_rumboot_target(
+  add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}_na_tight_vpe_rst_fail
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_na_vpe_int_long.c
@@ -904,7 +904,7 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
- add_rumboot_target(
+  add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}_na_tight_vpe_pause
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_na_vpe_pause_long.c
@@ -917,283 +917,283 @@ endmacro()
 
 
 macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA CONF name rm_bin_name)
-misalign_increment()
-set(MISALIGN 0 ${MISALIGN_COUNT})
-foreach(IntMisalign ${MISALIGN})
-  add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}_${IntMisalign}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
-endforeach()
+  misalign_increment()
+  set(MISALIGN 0 ${MISALIGN_COUNT})
+  foreach(IntMisalign ${MISALIGN})
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_${IntMisalign}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endforeach()
 endmacro()
 
 macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA CONF name rm_bin_name)
-misalign_increment()
-set(MISALIGN 0 ${MISALIGN_COUNT})
-foreach(IntMisalign ${MISALIGN})
+  misalign_increment()
+  set(MISALIGN 0 ${MISALIGN_COUNT})
+  foreach(IntMisalign ${MISALIGN})
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_${IntMisalign}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+  endforeach()
+endmacro()  
+
+macro(ADD_VPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
   add_rumboot_target(
       CONFIGURATION ${CONF}
-      NAME ${name}_${IntMisalign}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-      CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      CFLAGS -DDUT=${DUT_LETTER_QUOTED}
       PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
       IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
-endforeach()
-endmacro()  
-
-macro(ADD_VPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-    CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-)
 endmacro()
 
 macro(ADD_VPE_COUPLED_TEST_LOOP_LONG CONF name rm_bin_name)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long.c
-    CFLAGS -DDUT=${DUT_LETTER_QUOTED}
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}  || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS}
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long.c
+      CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}  || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
 endmacro()
 
 macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS CONF name rm_bin_name)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-    CFLAGS -DFORCE_VPE_WDMA_EN=1
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
 endmacro()
 
 macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL CONF name rm_bin_name)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-    CFLAGS -DFORCE_VPE_WDMA_EN=1
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
 endmacro()
 
 
 macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL CONF name bin_dir)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-    CFLAGS -DFORCE_VPE_WDMA_EN=1
-    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1
+      PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+  )
 endmacro()
 
 macro(ADD_VPE_FROM_BINARY_TEST_LOOP CONF name bin_dir)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+  )
 endmacro()
 
 macro(ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA CONF name bin_dir)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    CFLAGS -DFORCE_VPE_WDMA_EN=1
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      CFLAGS -DFORCE_VPE_WDMA_EN=1
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+  )
 endmacro()
 
 macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS CONF name bin_dir)
-add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-    CFLAGS -DFORCE_VPE_WDMA_EN=1
-    PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
-    IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+      CFLAGS -DFORCE_VPE_WDMA_EN=1
+      PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+  )
 endmacro()
 
 macro (ADD_VPE_PPE_TESTS CONF name_in RM_CFG_PARAM)
-set (ShowPerf "NotShowPerf")
-set (TST_NMB 3)
+  set (ShowPerf "NotShowPerf")
+  set (TST_NMB 3)
 
-foreach(i RANGE ${TST_NMB})
+  foreach(i RANGE ${TST_NMB})
 
-  if (i EQUAL 0)
-    set (name "${name_in}_LIN_8b")
-    set (rm_bin_name "main_vpe_ppe_IN_INT8")
-    set (LBS "LIN")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-  elseif (i EQUAL 1)
-    set (name "${name_in}_LIN_16b")
-    set (rm_bin_name "main_vpe_ppe_IN_INT16")
-    set (LBS "LIN")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-  elseif (i EQUAL 2)
-    set (name "${name_in}_BOX_8b")
-    set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
-    set (LBS "BOX")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-  elseif (i EQUAL 3)
-    set (name "${name_in}_BOX_16b")
-    set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
-    set (LBS "BOX")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-  endif()
+    if (i EQUAL 0)
+      set (name "${name_in}_LIN_8b")
+      set (rm_bin_name "main_vpe_ppe_IN_INT8")
+      set (LBS "LIN")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+    elseif (i EQUAL 1)
+      set (name "${name_in}_LIN_16b")
+      set (rm_bin_name "main_vpe_ppe_IN_INT16")
+      set (LBS "LIN")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+    elseif (i EQUAL 2)
+      set (name "${name_in}_BOX_8b")
+      set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
+      set (LBS "BOX")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+    elseif (i EQUAL 3)
+      set (name "${name_in}_BOX_16b")
+      set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
+      set (LBS "BOX")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+    endif()
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
-    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
 
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
 
-  if (i EQUAL TST_NMB)
-    math (EXPR NU_SEED "${NU_SEED} + 1")
-  endif()
+    if (i EQUAL TST_NMB)
+      math (EXPR NU_SEED "${NU_SEED} + 1")
+    endif()
 
-endforeach()
+  endforeach()
 endmacro()
 
 macro (ADD_PPE_DGTL_SLTN_TESTS CONF)
 
-set (i8    0)
-set (i16   1)
-set (fp16  2)
+  set (i8    0)
+  set (i16   1)
+  set (fp16  2)
 
-set (dt_lst
-  i8
-  i16
-  fp16
-)
+  set (dt_lst
+    i8
+    i16
+    fp16
+  )
 
-set (avg  0)
-set (max  1)
-set (min  2)
+  set (avg  0)
+  set (max  1)
+  set (min  2)
 
-set (pm_lst
-  avg
-  max
-  min
-)
+  set (pm_lst
+    avg
+    max
+    min
+  )
 
-set (sw_lst_base 1 2)
+  set (sw_lst_base 1 2)
 
-foreach (dt ${dt_lst})
-  foreach (pm ${pm_lst})
-    foreach (kw RANGE 2 8)
+  foreach (dt ${dt_lst})
+    foreach (pm ${pm_lst})
+      foreach (kw RANGE 2 8)
 
-      set (sw_lst)
+        set (sw_lst)
 
-      foreach (sw IN LISTS sw_lst_base)
-        if (NOT(${kw} EQUAL ${sw}))
-          set (sw_lst ${sw_lst} ${sw})
-        endif()
-      endforeach()
-
-      set (sw_lst ${sw_lst} ${kw})
-
-      foreach (sw IN LISTS sw_lst)
-        foreach (w RANGE 8 16)
-
-          set (kh ${kw})
-          set (sh ${sw})
-          set (h ${w})
-          set (c 32)
-
-          set (tp 0)
-          set (bp 0)
-          set (lp 0)
-          set (rp 0)
-
-          set (set_Kw_cfg "--set_Kw 1 --Kw ${kw}")
-          set (set_Sw_cfg "--set_Sw 1 --Sw ${sw}")
-          set (set_Kh_cfg "--set_Kh 1 --Kh ${kh}")
-          set (set_Sh_cfg "--set_Sh 1 --Sh ${sh}")
-          set (set_W_cfg "--w_min ${w} --w_max ${w}")
-          set (set_H_cfg "--h_min ${h} --h_max ${h}")
-          set (set_C_cfg "--c_min ${c} --c_max ${c}")
-          set (set_Tp_cfg "--set_Tp 1 --Tp ${tp}")
-          set (set_Bp_cfg "--set_Bp 1 --Bp ${bp}")
-          set (set_Lp_cfg "--set_Lp 1 --Lp ${lp}")
-          set (set_Rp_cfg "--set_Rp 1 --Rp ${rp}")
-
-          set (set_pm_cfg "--set_meth 1 --pool_meth ${${pm}}")
-          set (set_dt_cfg "--data_type ${${dt}}")
-
-          set (rm_cfg_prm "${set_pm_cfg} ${set_dt_cfg} ${set_Kw_cfg} ${set_Sw_cfg} ${set_Kh_cfg} ${set_Sh_cfg} ${set_W_cfg} ${set_H_cfg} ${set_C_cfg} ${set_Tp_cfg} ${set_Bp_cfg} ${set_Lp_cfg} ${set_Rp_cfg}")
-#          message("rm_cfg_prm ${rm_cfg_prm}")
-
-          set (name "ppe_${dt}_${pm}_${kw}_${sw}_${kh}_${sh}_${w}_${h}_${c}")
-#          message("${name}")
-
-          set (LBS "LIN")
-          set (DataSrc "MEMtoPPE")
-          set (ShowPerf "DoNotShowPerf")
-          set (main_c scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c)
-
-          if (${dt} EQUAL i8)
-            set(rm_bin_name "main_ppe_IN_INT8")
-          elseif (${dt} EQUAL i16)
-            set(rm_bin_name "main_ppe_IN_INT16")
-          elseif (${dt} EQUAL fp16)
-            set(rm_bin_name "main_ppe_IN_FP16")
+        foreach (sw IN LISTS sw_lst_base)
+          if (NOT(${kw} EQUAL ${sw}))
+            set (sw_lst ${sw_lst} ${sw})
           endif()
-
-          add_rumboot_target(
-            CONFIGURATION ${CONF}
-            NAME ${name}
-            FILES ${main_c}
-          
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS_PPE} --it_nmb 1 --seed 1 ${rm_cfg_prm} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS_PPE} || exit 1
-          
-            CFLAGS -D${LBS} -D${DataSrc} -D${ShowPerf} -DDUT=${DUT_LETTER_QUOTED}
-          
-            IRUN_FLAGS ${NA_RM_PLUSARGS}
-          
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-          )
-
         endforeach()
-      endforeach()
 
+        set (sw_lst ${sw_lst} ${kw})
+
+        foreach (sw IN LISTS sw_lst)
+          foreach (w RANGE 8 16)
+
+            set (kh ${kw})
+            set (sh ${sw})
+            set (h ${w})
+            set (c 32)
+
+            set (tp 0)
+            set (bp 0)
+            set (lp 0)
+            set (rp 0)
+
+            set (set_Kw_cfg "--set_Kw 1 --Kw ${kw}")
+            set (set_Sw_cfg "--set_Sw 1 --Sw ${sw}")
+            set (set_Kh_cfg "--set_Kh 1 --Kh ${kh}")
+            set (set_Sh_cfg "--set_Sh 1 --Sh ${sh}")
+            set (set_W_cfg "--w_min ${w} --w_max ${w}")
+            set (set_H_cfg "--h_min ${h} --h_max ${h}")
+            set (set_C_cfg "--c_min ${c} --c_max ${c}")
+            set (set_Tp_cfg "--set_Tp 1 --Tp ${tp}")
+            set (set_Bp_cfg "--set_Bp 1 --Bp ${bp}")
+            set (set_Lp_cfg "--set_Lp 1 --Lp ${lp}")
+            set (set_Rp_cfg "--set_Rp 1 --Rp ${rp}")
+
+            set (set_pm_cfg "--set_meth 1 --pool_meth ${${pm}}")
+            set (set_dt_cfg "--data_type ${${dt}}")
+
+            set (rm_cfg_prm "${set_pm_cfg} ${set_dt_cfg} ${set_Kw_cfg} ${set_Sw_cfg} ${set_Kh_cfg} ${set_Sh_cfg} ${set_W_cfg} ${set_H_cfg} ${set_C_cfg} ${set_Tp_cfg} ${set_Bp_cfg} ${set_Lp_cfg} ${set_Rp_cfg}")
+  #          message("rm_cfg_prm ${rm_cfg_prm}")
+
+            set (name "ppe_${dt}_${pm}_${kw}_${sw}_${kh}_${sh}_${w}_${h}_${c}")
+  #          message("${name}")
+
+            set (LBS "LIN")
+            set (DataSrc "MEMtoPPE")
+            set (ShowPerf "DoNotShowPerf")
+            set (main_c scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c)
+
+            if (${dt} EQUAL i8)
+              set(rm_bin_name "main_ppe_IN_INT8")
+            elseif (${dt} EQUAL i16)
+              set(rm_bin_name "main_ppe_IN_INT16")
+            elseif (${dt} EQUAL fp16)
+              set(rm_bin_name "main_ppe_IN_FP16")
+            endif()
+
+            add_rumboot_target(
+              CONFIGURATION ${CONF}
+              NAME ${name}
+              FILES ${main_c}
+            
+              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS_PPE} --it_nmb 1 --seed 1 ${rm_cfg_prm} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS_PPE} || exit 1
+            
+              CFLAGS -D${LBS} -D${DataSrc} -D${ShowPerf} -DDUT=${DUT_LETTER_QUOTED}
+            
+              IRUN_FLAGS ${NA_RM_PLUSARGS}
+            
+              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+            )
+
+          endforeach()
+        endforeach()
+
+      endforeach()
     endforeach()
   endforeach()
-endforeach()
 
 endmacro()
 
@@ -1286,71 +1286,71 @@ endmacro()
 
 
 macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
-set (ShowPerf "NotShowPerf")
-set (i 0)
+  set (ShowPerf "NotShowPerf")
+  set (i 0)
 
-foreach(name_in ${${test_list_name}})
+  foreach(name_in ${${test_list_name}})
 
-  math (EXPR j "${i} % 4")
-  math (EXPR i "${i} + 1")
+    math (EXPR j "${i} % 4")
+    math (EXPR i "${i} + 1")
 
-  set (RM_CFG_PARAM ${${name_in}})
+    set (RM_CFG_PARAM ${${name_in}})
 
-  if (j EQUAL 0)
-    set (name "vpe_ppe_${name_in}_LIN_8b")
-    set (rm_bin_name "main_vpe_ppe_IN_INT8")
-    set (LBS "LIN")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-  elseif (j EQUAL 1)
-    set (name "vpe_ppe_${name_in}_LIN_16b")
-    set (rm_bin_name "main_vpe_ppe_IN_INT16")
-    set (LBS "LIN")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-  elseif (j EQUAL 2)
-    set (name "vpe_ppe_${name_in}_BOX_8b")
-    set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
-    set (LBS "BOX")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-  elseif (j EQUAL 3)
-    set (name "vpe_ppe_${name_in}_BOX_16b")
-    set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
-    set (LBS "BOX")
-    set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-  endif()
+    if (j EQUAL 0)
+      set (name "vpe_ppe_${name_in}_LIN_8b")
+      set (rm_bin_name "main_vpe_ppe_IN_INT8")
+      set (LBS "LIN")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+    elseif (j EQUAL 1)
+      set (name "vpe_ppe_${name_in}_LIN_16b")
+      set (rm_bin_name "main_vpe_ppe_IN_INT16")
+      set (LBS "LIN")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+    elseif (j EQUAL 2)
+      set (name "vpe_ppe_${name_in}_BOX_8b")
+      set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
+      set (LBS "BOX")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+    elseif (j EQUAL 3)
+      set (name "vpe_ppe_${name_in}_BOX_16b")
+      set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
+      set (LBS "BOX")
+      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+    endif()
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
-    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
 
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}_tight
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_ppe_long.c
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_tight
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_ppe_long.c
 
-    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
-    CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
 
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
 
-  if (j EQUAL 3)
-    math (EXPR NU_SEED "${NU_SEED} + 1")
-  endif()
+    if (j EQUAL 3)
+      math (EXPR NU_SEED "${NU_SEED} + 1")
+    endif()
 
-endforeach()
+  endforeach()
 endmacro()
 
 macro(na_testsuite_add_npe_tests CONF)
@@ -1366,11 +1366,11 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
-#add_rumboot_target(
-# CONFIGURATION ${CONF}
-#   NAME NPE_1
-#   FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
-# )
+  #add_rumboot_target(
+  # CONFIGURATION ${CONF}
+  #   NAME NPE_1
+  #   FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+  # )
 
   add_rumboot_target(
     CONFIGURATION ${CONF}
@@ -1391,49 +1391,49 @@ macro(na_testsuite_add_npe_tests CONF)
 
   ################################
   ### MPE Tests
- if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE")
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_2 TRUNC0)
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_3 TRUNC0)
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_4 TRUNC0)
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_5 TRUNC0)
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_6 TRUNC0)
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_7 TRUNC0)
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_8 TRUNC0) # mu int8 test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_9 TRUNC0) # mu int16 test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_10 TRUNC0) # mu fp16 test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_11 TRUNC0) # mu fp16 NaN test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_12 TRUNC16) # mu fp16 inf test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_13 TRUNC0) # mu+acc int8 test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_14 TRUNC0) # mu+acc int16 test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_15 TRUNC0) # mu int norm test
-  ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
-  
-  ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH 19 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
-  ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH 20 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
-  ADD_NPE_MPE_TEST(${CONF} MPE_CFG_POWER 0 main_mpe_direct_ex_MPE_CFG_POWER)
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE")
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_2 TRUNC0)
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_3 TRUNC0)
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_4 TRUNC0)
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_5 TRUNC0)
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_6 TRUNC0)
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_7 TRUNC0)
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_8 TRUNC0) # mu int8 test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_9 TRUNC0) # mu int16 test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_10 TRUNC0) # mu fp16 test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_11 TRUNC0) # mu fp16 NaN test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_12 TRUNC16) # mu fp16 inf test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_13 TRUNC0) # mu+acc int8 test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_14 TRUNC0) # mu+acc int16 test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_15 TRUNC0) # mu int norm test
+    ADD_MPE_SINGLE_TEST(${CONF} MPE_16 TRUNC16) # mu+acc fp16 test
+    
+    ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH 19 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
+    ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH 20 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
+    ADD_NPE_MPE_TEST(${CONF} MPE_CFG_POWER 0 main_mpe_direct_ex_MPE_CFG_POWER)
 
-            ###
-          #add_rumboot_target(
-          #  CONFIGURATION ${CONF}
-          #  NAME RESNET
-          #  FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
-          #  PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
-          #  IRUN_FLAGS ${NA_RM_PLUSARGS}
-          #)
+        ###
+      #add_rumboot_target(
+      #  CONFIGURATION ${CONF}
+      #  NAME RESNET
+      #  FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
+      #  PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
+      #  IRUN_FLAGS ${NA_RM_PLUSARGS}
+      #)
+
+      #ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
+          ## NOT EXPERIMENT_STAGE_2_SUB_2
+
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME MPE_PERFORMANCE
+      FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
+      PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+    )
     
-          #ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
-              ## NOT EXPERIMENT_STAGE_2_SUB_2
-    
-        add_rumboot_target(
-          CONFIGURATION ${CONF}
-          NAME MPE_PERFORMANCE
-          FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
-          PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
-          IRUN_FLAGS ${NA_RM_PLUSARGS}
-        )
-        
-        ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
-        ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
+    ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
+    ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
 
     # Test on MPE::ALU
     foreach(in_macro IN ITEMS IN_INT16 IN_INT8)
@@ -1464,93 +1464,93 @@ macro(na_testsuite_add_npe_tests CONF)
     )
   endif()  # NA_TESTGROUP MPE
 
-          ################################
-          ### Control Unit Tests
-      if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "CU")
-        set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
-        add_rumboot_target(
-          CONFIGURATION ${CONF}
-          NAME NA_7 #na_cu_mpe_vpe
-          FILES scr1/targets/simple-rom/nu/na_cu/cu_dpnd_mpe_vpe.c
-          PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics ${CU_TEST_DIR}/etalon.bin ${CU_TEST_DIR}/etalon.bin.metrics -t .
-          IRUN_FLAGS +in_arr=in_arr.bin
-                     +metrics_in_arr=in_arr.bin.metrics
-                     +etalon_arr=etalon.bin
-                     +metrics_etalon_arr=etalon.bin.metrics
-        )
-        add_rumboot_target(
-          CONFIGURATION ${CONF}
-          NAME NA_8 #na_cu_buffers
-          FILES scr1/targets/simple-rom/nu/na_cu/cu_buffers.c
-          PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics -t .
-          IRUN_FLAGS +in_arr=in_arr.bin
-                     +metrics_in_arr=in_arr.bin.metrics
-        )
-    
-          ##########################################
-          ## NPE Reg Test
-		  add_rumboot_target(
-		  CONFIGURATION ${CONF}
-		  NAME NPE_1
-		  FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
-        )	  
-      # ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)    	  
-      endif() # NA_TESTGROUP CU
-    
-          ##########################################
-          ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
-      if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE_CFG")
-        foreach(label RANGE 25 48)  # Int16
-          ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
-        endforeach()
-        foreach(label RANGE 49 72)  # Int8
-          ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
-        endforeach()
-    
-          foreach(label RANGE 1 24)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT BITWISE)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
-          endforeach()
-          foreach(label RANGE 25 72)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT BITWISE)
-          endforeach()
-          foreach(label RANGE 1 48)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT EPS)
-            ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
-          endforeach()
+      ################################
+      ### Control Unit Tests
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "CU")
+    set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME NA_7 #na_cu_mpe_vpe
+      FILES scr1/targets/simple-rom/nu/na_cu/cu_dpnd_mpe_vpe.c
+      PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics ${CU_TEST_DIR}/etalon.bin ${CU_TEST_DIR}/etalon.bin.metrics -t .
+      IRUN_FLAGS +in_arr=in_arr.bin
+                 +metrics_in_arr=in_arr.bin.metrics
+                 +etalon_arr=etalon.bin
+                 +metrics_etalon_arr=etalon.bin.metrics
+    )
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME NA_8 #na_cu_buffers
+      FILES scr1/targets/simple-rom/nu/na_cu/cu_buffers.c
+      PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics -t .
+      IRUN_FLAGS +in_arr=in_arr.bin
+                 +metrics_in_arr=in_arr.bin.metrics
+    )
 
-          ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
-          ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_MPE_CFG_AUTO main_mpe_auto_tests_MPE_CFG_AUTO   MAKE_TIGHT BITWISE)
-          ##################################
-          ## Direct Complex Tests On Important Cube Sizes
-        foreach(label RANGE 49 72)
-          ADD_NPE_COMPLEX_TEST(${CONF} NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
-        endforeach()
-        foreach(label RANGE 25 48)
-          ADD_NPE_COMPLEX_TEST(${CONF} NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
-        endforeach()
+      ##########################################
+      ## NPE Reg Test
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME NPE_1
+      FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+    )	  
+  # ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)    	  
+  endif() # NA_TESTGROUP CU
     
-          ###################################
-          ## Some Other Direct Tests
-          foreach(label RANGE 1 24)
-            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
-          endforeach()
-          foreach(label RANGE 1 48)
-            ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE NO_TIGHT BITWISE) #BITWISE - Because it passes Yet
-          endforeach()
-    
-          ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
+      ##########################################
+      ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE_CFG")
+    foreach(label RANGE 25 48)  # Int16
+      ADD_NPE_MPE_VPE_TEST(${CONF} NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
+    endforeach()
+    foreach(label RANGE 49 72)  # Int8
+      ADD_NPE_MPE_VPE_TEST(${CONF} NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
+    endforeach()
 
-          ADD_NPE_COMPLEX_TEST_TIGHT(${CONF} npe_tight_complex main_npe_tight_complex MAKE_TIGHT BITWISE)
+    foreach(label RANGE 1 24)
+      ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT BITWISE)
+      ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE NO_TIGHT BITWISE)
+    endforeach()
+    foreach(label RANGE 25 72)
+      ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label} MAKE_TIGHT BITWISE)
+    endforeach()
+    foreach(label RANGE 1 48)
+      ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT EPS)
+      ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
+    endforeach()
 
-      endif() # NA_TESTGROUP MPE_CFG
-          ###################################################################
-          # Resnet-test 
-          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT BITWISE) # LAYER0_MPE
-          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT BITWISE) # LAYER0_MPE_BN
-          # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU
-          # ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU_PPE
-          ###################################################################
+    ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
+    ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_MPE_CFG_AUTO main_mpe_auto_tests_MPE_CFG_AUTO   MAKE_TIGHT BITWISE)
+      ##################################
+      ## Direct Complex Tests On Important Cube Sizes
+    foreach(label RANGE 49 72)
+      ADD_NPE_COMPLEX_TEST(${CONF} NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
+    endforeach()
+    foreach(label RANGE 25 48)
+      ADD_NPE_COMPLEX_TEST(${CONF} NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
+    endforeach()
+
+    ###################################
+    ## Some Other Direct Tests
+    foreach(label RANGE 1 24)
+      ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
+    endforeach()
+    foreach(label RANGE 1 48)
+      ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE NO_TIGHT BITWISE) #BITWISE - Because it passes Yet
+    endforeach()
+
+    ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
+
+    ADD_NPE_COMPLEX_TEST_TIGHT(${CONF} npe_tight_complex main_npe_tight_complex MAKE_TIGHT BITWISE)
+
+  endif() # NA_TESTGROUP MPE_CFG
+      ###################################################################
+      # Resnet-test 
+      # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE NO_TIGHT BITWISE) # LAYER0_MPE
+      # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN NO_TIGHT BITWISE) # LAYER0_MPE_BN
+      # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU
+      # ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU_PPE
+      ###################################################################
     
 
   na_testsuite_add_vpe_tests(${CONF})
@@ -1581,15 +1581,6 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
   foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
     ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_overflow_counters_IN_FP32_${out_macro}   main_overflow_counters_IN_FP32_${out_macro}  )
   endforeach()
-  # не получилос(((
-  # add_rumboot_target(
-  #   CONFIGURATION ${CONF}
-  #   FEATURES NOCODE
-  #   TESTGROUP vpe_overflow_counters-group
-  #   LOAD vpe_overflow_counters_IN_INT32_OUT_INT8,vpe_overflow_counters_IN_INT32_OUT_INT16
-  #   # LOAD rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT8,rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT16
-  #   NAME vpe_overflow_counters
-  # )
 
   # Tests on VPE::InputConverters
   ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_18_op2_c1  main_vpe_18_op2_c1 )
@@ -1690,199 +1681,199 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
 endmacro()
 
 macro(na_testsuite_add_vpe_tests CONF)
-if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BASE")
-  add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME VPE_1
-      FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
-  )
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BASE")
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME VPE_1
+        FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
+    )
 
-  # Tests on VPE DMA
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_1   main_vpe_2_dma_int8 1  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_3  main_vpe_2_dma_int16 3 )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
+    # Tests on VPE DMA
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_0  main_vpe_2_dma_int16 0 )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_1   main_vpe_2_dma_int8 1  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int16_axi_len_3  main_vpe_2_dma_int16 3 )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_2_dma_int8_axi_len_7   main_vpe_2_dma_int8 7  )
 
-  # Tests on VPE::Formater
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
+    # Tests on VPE::Formater
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
 
-  # Tests on VPE::LSHIFT
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
+    # Tests on VPE::LSHIFT
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
 
-  # Tests on VPE::InputConverters
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
-  
-  # Tests on VPE DMA
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
-
-  # Tests on VPE::DEMUX::C3 TESTS MEM MODE
-  foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
-    foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
-    endforeach()
-  endforeach()
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
-
-  # Tests on VPE::RELU
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
-
-  # Tests on VPE::NORM
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
-
-  # Tests on VPE channel mode
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
-
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int )
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int )
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_fp  main_vpe_op0_vec_ex_fp  )
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_fp  main_vpe_op1_vec_ex_fp  )
-
-  # Tests on VPE dma
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_2_dma_int8_dma  main_vpe_2_dma_int8  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
-
-    # Tests on VPE::DMA with and without SOFT RESET
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_SRST_LONG(${CONF}  vpe_5_6_op0_alu_fp32_dma  main_vpe_5_6_op0_alu_fp32_dma  )
- 
-    # Tests on VPE::MUL
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
-
-  # Tests on VPE channel mode
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
-
-  #Tests on VPE::OP2::LUT in context NPE
-  foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
-    foreach(mirror_type IN ITEMS 0 1)
-      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
-    endforeach()
-  endforeach()
-
-  # Tests on VPE+PPE channel mode ???
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
-  ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
-
-  # Test on VPE block's together work 
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
-  ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
+    # Tests on VPE::InputConverters
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
     
-  # Test on VPE ???
-  ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
-  ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
-  
-endif() # NA_TESTGROUP VPE_DMA_BASE
+    # Tests on VPE DMA
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
 
-if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BATCH")
-  
-  # Tests on VPE batch-mode for int-type
-  foreach(in IN ITEMS IN_INT8 IN_INT16)
-    foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
-      foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
-        foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
-          foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-            foreach(number_testcase RANGE 1 4)
-              add_rumboot_target(
-                CONFIGURATION ${CONF}
-                NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-                CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
-                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS}
-                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-              )
-              add_rumboot_target(
-                CONFIGURATION ${CONF}
-                NAME vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-                FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-                CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
-                PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-                IRUN_FLAGS ${NA_RM_PLUSARGS}
-                SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
-              )
+    # Tests on VPE::DEMUX::C3 TESTS MEM MODE
+    foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
+      foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
+      endforeach()
+    endforeach()
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
+
+    # Tests on VPE::RELU
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
+
+    # Tests on VPE::NORM
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
+
+    # Tests on VPE channel mode
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
+
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int )
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int )
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_vec_ex_fp  main_vpe_op0_vec_ex_fp  )
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_vec_ex_fp  main_vpe_op1_vec_ex_fp  )
+
+    # Tests on VPE dma
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_2_dma_int8_dma  main_vpe_2_dma_int8  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
+
+      # Tests on VPE::DMA with and without SOFT RESET
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_SRST_LONG(${CONF}  vpe_5_6_op0_alu_fp32_dma  main_vpe_5_6_op0_alu_fp32_dma  )
+   
+      # Tests on VPE::MUL
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
+
+    # Tests on VPE channel mode
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+
+    #Tests on VPE::OP2::LUT in context NPE
+    foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
+      foreach(mirror_type IN ITEMS 0 1)
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
+      endforeach()
+    endforeach()
+
+    # Tests on VPE+PPE channel mode ???
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(${CONF} vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+
+    # Test on VPE block's together work 
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_23_op1_together_dma   main_vpe_23_op1_together_dma   ) # VPE_23
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_24_op2_together_dma   main_vpe_24_op2_together_dma   ) # VPE_24
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_25_op012_together_dma main_vpe_25_op012_together_dma ) # VPE_25
+      
+    # Test on VPE ???
+    ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
+    ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
+    
+  endif() # NA_TESTGROUP VPE_DMA_BASE
+
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BATCH")
+    
+    # Tests on VPE batch-mode for int-type
+    foreach(in IN ITEMS IN_INT8 IN_INT16)
+      foreach(coef0 IN ITEMS COEF0_INT8 COEF0_INT16)
+        foreach(coef1 IN ITEMS COEF1_INT8 COEF1_INT16)
+          foreach(coef2 IN ITEMS COEF2_INT8 COEF2_INT16)
+            foreach(out IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+              foreach(number_testcase RANGE 1 4)
+                add_rumboot_target(
+                  CONFIGURATION ${CONF}
+                  NAME vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+                  CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
+                  PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+                  IRUN_FLAGS ${NA_RM_PLUSARGS}
+                  SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                )
+                add_rumboot_target(
+                  CONFIGURATION ${CONF}
+                  NAME vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+                  CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
+                  PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+                  IRUN_FLAGS ${NA_RM_PLUSARGS}
+                  SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_${in}_${coef0}_${coef1}_${coef2}_${out}_${number_testcase}
+                )
+              endforeach()
             endforeach()
           endforeach()
         endforeach()
       endforeach()
     endforeach()
-  endforeach()
 
-  # Tests on VPE batch-mode for fp-type
-  foreach(out IN ITEMS OUT_INT16 OUT_FP16)
-    foreach(number_testcase RANGE 1 4)
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-      )
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
-        CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
-      )
+    # Tests on VPE batch-mode for fp-type
+    foreach(out IN ITEMS OUT_INT16 OUT_FP16)
+      foreach(number_testcase RANGE 1 4)
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+          CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
+          PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+          SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+        )
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_long_batch_mode.c
+          CFLAGS -DDUT=${DUT_LETTER_QUOTED} -DFORCE_VPE_WDMA_EN=1
+          PREPCMD ${NA_RM_BIN_PATH}/main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+          SUBPROJECT_DEPS npe_rm:main_vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_${out}_${number_testcase}
+        )
+      endforeach()
     endforeach()
-  endforeach()
-endif() # NA_TESTGROUP VPE_DMA_BATCH
+  endif() # NA_TESTGROUP VPE_DMA_BATCH
 
 endmacro()
 
@@ -2500,37 +2491,37 @@ macro(na_testsuite_add_ppe_tests CONF)
     w256_288_k256_288_h2_16
   )
 
-if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME PPE_1
-    FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
-  )
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME PPE_1
+      FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
+    )
 
-  ADD_PPE_TESTS(${CONF} ppe_i8_max_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_max})
-  ADD_PPE_TESTS(${CONF} ppe_i16_max_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_max})
-  ADD_PPE_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
+    ADD_PPE_TESTS(${CONF} ppe_i8_max_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_max})
+    ADD_PPE_TESTS(${CONF} ppe_i16_max_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_max})
+    ADD_PPE_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
 
-  ADD_PPE_TESTS(${CONF} ppe_i8_min_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_min})
-  ADD_PPE_TESTS(${CONF} ppe_i16_min_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_min})
-  ADD_PPE_TESTS(${CONF} ppe_fp16_min_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_min})
+    ADD_PPE_TESTS(${CONF} ppe_i8_min_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_min})
+    ADD_PPE_TESTS(${CONF} ppe_i16_min_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_min})
+    ADD_PPE_TESTS(${CONF} ppe_fp16_min_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_min})
 
-  ADD_PPE_TESTS(${CONF} ppe_i8_avg_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_avg})
-  ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
-  ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
+    ADD_PPE_TESTS(${CONF} ppe_i8_avg_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_avg})
+    ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
+    ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-  ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
-endif() # NA_TESTGROUP PPE_BASE
+    ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
+  endif() # NA_TESTGROUP PPE_BASE
 
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")  
     ADD_PPE_PY_TESTS(${CONF})
   endif()
 
- if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
-  ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
-  #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
- endif() # NA_TESTGROUP VPE_PPE
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
+    ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
+    #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
+  endif() # NA_TESTGROUP VPE_PPE
 
   #ADD_PPE_DGTL_SLTN_TESTS(${CONF})
 endmacro()

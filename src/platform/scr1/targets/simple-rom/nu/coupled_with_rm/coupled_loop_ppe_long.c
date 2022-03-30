@@ -48,7 +48,7 @@ int main() {
   mv          = 0x0;
   max_red     = 0x0;
 
-  rumboot_printf("coupled_loop_ppe\n");
+  rumboot_printf("coupled_loop_ppe_long\n");
 
   #ifdef LIN
     lbs = 0x0;
