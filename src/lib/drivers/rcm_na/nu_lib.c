@@ -2493,8 +2493,7 @@ void nu_vpe_pause_next_cntx(uintptr_t vpe_base){
 	iowrite32((1<<4),vpe_base + NU_VPE + NU_VPE_INT_RESET);	
 	
 	//rumboot_printf("Stop check...\n");
-	iowrite32((0x00000091),vpe_base + NU_VPE + NU_VPE_INT_RESET);
-	while( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) == 0x00000100) !=1) {}
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 8) & 1) !=1) {}
 	temp = ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}
