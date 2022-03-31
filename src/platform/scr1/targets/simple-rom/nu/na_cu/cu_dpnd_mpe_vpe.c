@@ -393,16 +393,16 @@ int main()
   CubeMetrics* metrics_mpe_ma_cube;
   metrics_mpe_ma_cube = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
   metrics_mpe_ma_cube->s = 16*128; // 16 vectors by 1K in bytes
-  uint32_t mpe_ma_w_in_data_addr = metrics_mpe_dma_cube->s - metrics_mpe_ma_cube->s;
-  uint32_t mpe_ma_d_in_data_addr = metrics_mpe_dma_cube->s + (metrics_mpe_dma_cube->s)/2 - metrics_mpe_ma_cube->s;
+  uint32_t mpe_ma_d_in_data_addr = metrics_mpe_dma_cube->s - metrics_mpe_ma_cube->s;
+  uint32_t mpe_ma_w_in_data_addr = metrics_mpe_dma_cube->s + (metrics_mpe_dma_cube->s)/2 - metrics_mpe_ma_cube->s;
   uint32_t vpe_out_data_addr = (uint32_t)in_data + mpe_ma_d_in_data_addr/* it is mpe! */; // to check that data will rewrite by vpe after mpe reads
 
   DataTypeExt in_data_type = DataType_Int16;
   DataType out_data_type = DataType_Int16;
   vpe_config((uint16_t*)vpe_in_data_addr,(uint16_t*)vpe_out_data_addr,in_data_type,out_data_type,metrics_mpe_ma_cube->s);
 
-  mpe_dma_config(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,(uint16_t*)mpe_w_in_data_addr,(metrics_mpe_dma_cube->s)/128 /* in vectors */, 0);
-  mpe_dma_config(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,(uint16_t*)mpe_d_in_data_addr,(metrics_mpe_dma_cube->s)/128/2 /* in vectors */, metrics_mpe_dma_cube->s/128);
+  mpe_dma_config(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,(uint16_t*)mpe_w_in_data_addr,(metrics_mpe_dma_cube->s)/128 /* in vectors */, metrics_mpe_dma_cube->s/128);
+  mpe_dma_config(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,(uint16_t*)mpe_d_in_data_addr,(metrics_mpe_dma_cube->s)/128 /* in vectors */, 0);
 
   mpe_dma_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,0);
   mpe_dma_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,0);
@@ -410,8 +410,8 @@ int main()
   iowrite32((uint32_t)in_data+mpe_ma_w_in_data_addr,NPE_BASE+NA_VPE_BASE+NU_VPE+NU_VPE_DST_WDMA+NU_VPE_DMA_BASE);
   vpe_start(1<<1); // start vpe with dependence on mpe_w finish
 
-  iowrite32(mpe_ma_w_in_data_addr/128,NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_COMMON_WA);
   iowrite32(mpe_ma_d_in_data_addr/128,NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_COMMON_DA);
+  iowrite32(mpe_ma_w_in_data_addr/128,NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_COMMON_WA);
   iowrite32(0,NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_COMMON_VRA);
   iowrite32(2,NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_COMMON_IN_FORMAT); // int16
   iowrite32(16-1,NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_COMMON_NR);
@@ -457,8 +457,8 @@ int main()
   iowrite32(0,NPE_BASE+NA_VPE_BASE+NU_VPE_DST_WDMA+NU_VPE_DMA_STRIDE_X);
   iowrite32(C*2,NPE_BASE+NA_VPE_BASE+NU_VPE_DST_WDMA+NU_VPE_DMA_FRAG_LAST_SIZE_ADDR);
 
-  iowrite32(C/16-1,NPE_BASE+NA_VPE_BASE+NU_VPE+NU_VPE_CUBE_SIZE);
-  iowrite32(C/16,NPE_BASE+NA_VPE_BASE+NU_VPE_DST_WDMA+NU_VPE_DMA_CUBE_SIZE_C);
+  iowrite32(C/16-1,NPE_BASE+NA_VPE_BASE+NU_VPE_SRC_RDMA+NU_VPE_DMA_AXI_PARAM-4); // DMA Cube size
+  iowrite32(C-1,NPE_BASE+NA_VPE_BASE+NU_VPE_SRC_RDMA+NU_VPE_DMA_CUBE_SIZE_C);
 
   uint32_t tmp = ioread32(NPE_BASE+NA_VPE_BASE+NU_VPE_OP_MODE);
   iowrite32(tmp|1,NPE_BASE+NA_VPE_BASE+NU_VPE_OP_MODE);
