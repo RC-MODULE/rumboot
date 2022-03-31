@@ -2043,7 +2043,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   int Wout_box_st, Wout_box, rem_Wout_box_st, rem_Wout_box;
 
   if (fm&0x2) {
-    Wout_box_st = Wi/Win_box > 1 ? (Win_box_st + Lp - Kw)/Sw + 1 :
+    Wout_box_st = Wi>Win_box ? (Win_box_st + Lp - Kw)/Sw + 1 :
     (Win_box_st + Lp + Rp - Kw)/Sw + 1;
 
     rem_Wout_box_st = Kw>Sw ? Kw-Sw + (Win_box_st + Lp - Kw)%Sw : (Win_box_st + Lp)%Sw;
@@ -2052,6 +2052,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
                                           (rem_Wout_box_st + Win_box - Kw)/Sw+1
     ;
   }
+
+  rumboot_printf("Wout_box_st %d Wi %d Win_box %d Win_box_st %d Lp %d Kw %d Sw %d\n", Wout_box_st, Wi, Win_box, Win_box_st, Lp, Kw, Sw);
 
   if (!(fm&0x1)) {  // MEMtoPPE
     //cfg_reg->rAXIp  =
