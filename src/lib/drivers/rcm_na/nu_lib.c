@@ -2053,8 +2053,6 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     ;
   }
 
-  rumboot_printf("Wout_box_st %d Wi %d Win_box %d Win_box_st %d Lp %d Kw %d Sw %d\n", Wout_box_st, Wi, Win_box, Win_box_st, Lp, Kw, Sw);
-
   if (!(fm&0x1)) {  // MEMtoPPE
     //cfg_reg->rAXIp  =
     cfg_reg->rBrdX  = (Wi-1) * Ci_s;
