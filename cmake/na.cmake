@@ -580,7 +580,7 @@ macro(ADD_NPE_COMPLEX_TEST_TIGHT CONF name rm_bin_name make_tight comparer)
 endmacro()
 
 macro (ADD_MPE_CONV_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
-  set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
+  set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/${SUBMODULE_ADD_PATH}/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}_CONV
@@ -593,7 +593,7 @@ endmacro()
 
 
 macro (ADD_MPE_SINGLE_TEST CONF name trunc) # trunc=TRUNC0/TRUNC16
-  set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
+  set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/${SUBMODULE_ADD_PATH}/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
