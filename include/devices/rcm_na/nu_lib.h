@@ -626,7 +626,7 @@ void nu_vpe_wait(uintptr_t vpe_base,ConfigVPE* cfg);
 void nu_vpe_wait_cntx_appl(uintptr_t vpe_base);
 uint32_t nu_vpe_busy(uintptr_t vpe_base);
 
-void nu_vpe_set_int_mask(uintptr_t vpe_base);
+
 void nu_npe_vpe_set_int_mask(uintptr_t npe_base);
 
 void nu_vpe_set_int_mask(uintptr_t vpe_base);
