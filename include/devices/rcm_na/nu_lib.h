@@ -640,7 +640,7 @@ void nu_vpe_wait_int_dev_off(uintptr_t vpe_base);
 void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base);
 void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base);
 void nu_vpe_soft_reset(uintptr_t vpe_base);
-
+void nu_vpe_wait_marked_cube_complete(uintptr_t vpe_base);
 
 void nu_na_vpe_dev_pause_norst_resume(uintptr_t npe_base);
 void nu_na_vpe_pause(uintptr_t npe_base );
