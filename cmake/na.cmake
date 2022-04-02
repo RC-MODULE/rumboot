@@ -606,7 +606,7 @@ endmacro()
 
 
 macro (ADD_MPE_VPE_BATCH_TEST CONF B C W H LP RP BP TP K S R SX SY)
-  set(TEST_BINS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/BATCH/B${B})
+  set(TEST_BINS ${CMAKE_SOURCE_DIR}/../units/${SUBMODULE_ADD_PATH}/rcm_lava_mpe/tests/BATCH/B${B})
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME MPE_VPE_BATCH${B}
@@ -1428,7 +1428,7 @@ macro(na_testsuite_add_npe_tests CONF)
       CONFIGURATION ${CONF}
       NAME MPE_PERFORMANCE
       FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
-      PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
+      PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/${SUBMODULE_ADD_PATH}/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
     
