@@ -162,7 +162,7 @@ void nu_mpe_dma_wr_init (uint32_t base)
 	 
 	//--------------------------MPE_MA--------------------------------------
 	
-	//if((0x00000001)  !=(ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_FORMAT)& 0x00000003))	//NOT WORKS !!!!
+	//if((0x00000001)  !=(ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_FORMAT)& 0x00000003))
 	//	{res8 =1;
 	//	rumboot_printf("MPE_COMMON_IN_FORMAT = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_FORMAT));
 	//	rumboot_printf("res8 error\n");}
@@ -171,7 +171,7 @@ void nu_mpe_dma_wr_init (uint32_t base)
 
 	//if ((0x00000000)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_NORM_PARAM)& 0x0003013F))
 	//	{res9 =1;
-	//	rumboot_printf("MPE_COMMON_NORM_PARAM = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_NORM_PARAM)); //NOT WORKS !!!! 
+	//	rumboot_printf("MPE_COMMON_NORM_PARAM = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_NORM_PARAM));
 	//	rumboot_printf("res9 error\n");}	
 	//	else 
 	//	{res9=0;}	
@@ -240,7 +240,7 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 	//--------------------------MPE_MA--------------------------------------
 		
 
-	//if((0x00000001)  !=(ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_FORMAT)& 0x00000003))	//NOT WORKS !!!!
+	//if((0x00000001)  !=(ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_FORMAT)& 0x00000003))
 	//	{res8 =1;
 	//	rumboot_printf("MPE_COMMON_IN_FORMAT = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_FORMAT));
 	//	rumboot_printf("res8 error\n");}
@@ -248,7 +248,7 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 	//	{res8=0;}	
 	//if ((0x00000000)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_NORM_PARAM)& 0x0003013F))
 	//	{res9 =1;
-	//	rumboot_printf("MPE_COMMON_NORM_PARAM = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_NORM_PARAM)); //NOT WORKS !!!! 
+	//	rumboot_printf("MPE_COMMON_NORM_PARAM = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_NORM_PARAM)); 
 	//	rumboot_printf("res9 error\n");}	
 	//	else 
 	//	{res9=0;}
@@ -260,7 +260,7 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 	//	else 
 	//	{res10=0;}
 			
-	//if ((0x00000000)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_BUF_CFG) & 0x000001FF)) //NOT WORKS !!!!
+	//if ((0x00000000)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_BUF_CFG) & 0x000001FF))
 	//	{res11 =1;
 	//	rumboot_printf("res11 error\n");}	
 	//	else 
@@ -575,7 +575,7 @@ int main() {
 	
 // {rumboot_printf("READs DMA after WRITE ZEROs reset\n");} 
 	//res6 = nu_mpe_dma_wr_rd_regs(MY_MPE_REGS_BASE,0x00000000);
-// {rumboot_printf("qqq\n");} 
+
  res6= ioread32(MY_MPE_REGS_BASE + MPE_RDMA_D_BASE + RD_DECCtrl_MSha);
  rumboot_printf("DEC_MSha = %x\n",ioread32(MY_MPE_REGS_BASE + MPE_RDMA_D_BASE + RD_DECCtrl_MSha));
 	 if ( res6 != 7)
