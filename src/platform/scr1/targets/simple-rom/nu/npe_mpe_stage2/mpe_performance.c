@@ -394,26 +394,26 @@ int main()
   DataTypeExt in_data_type = DataTypeExt_Int32;
   DataType out_data_type = DataType_Int8;
 
-  vpe_config_and_start(res_data,in_data_type,out_data_type,res_metrics->s);
+  vpe_config_and_start(res_data,in_data_type,out_data_type,(res_metrics->s)*16);
+
+  // MPE DMA
+  uint32_t in_buffer_warr_offset = 0x100*128;
+  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,warr,(warr_metrics->s)/128 /* in vectors */, in_buffer_warr_offset/128);//(in_metrics->s)/128);
+  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,in_data,(in_metrics->s)/128 /* in vectors */, 0);
+
+  while ((ioread32(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE+DMA_STS)&0x3)!=0) {};
+  uint32_t start_time = rumboot_platform_get_uptime();
 
   // MPE MA Config
   nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE,cmd,cmd_metrics);
 
-  // MPE DMA
-  uint32_t in_buffer_warr_offset = 0x80*128;
-  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,warr,(warr_metrics->s)/128 /* in vectors */, in_buffer_warr_offset/128);//(in_metrics->s)/128);
-  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,in_data,(in_metrics->s)/128 /* in vectors */, 0);
-
-  while ((ioread32(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE+DMA_STS)&0x3)!=0) {};
-  uint32_t start_time = rumboot_platform_get_uptime();
-
-  while ((ioread32(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_STATUS)>>8)&0x1!=0) {};
+  while (((ioread32(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE+MPE_STATUS)>>8)&0x1)!=0) {};
   uint32_t end_time = rumboot_platform_get_uptime();
   rumboot_printf("End MPE\n");
 
   uint32_t delta = end_time-start_time; // number of cycles, cycle_APB_timer = 1cycle;
 
-  uint32_t instr_number = 32 *128 * 1024; // 32 istructions, 128 - number of repeat, 1024 - min number of cycles 
+  uint32_t instr_number = 256 * 128 * 1024; // 256 istructions, 128 - number of repeat, 1024 - min number of cycles 
 
   uint32_t performance = instr_number/delta; //one cycle - one period of timer
   rumboot_printf("Performance = %d MAC/cycle\n",performance);
@@ -422,27 +422,7 @@ int main()
   while (((ioread32(NPE_BASE+NA_VPE_BASE+NU_VPE_NEXT_CNTX)>>12)&0x1)) {};
   rumboot_printf("End VPE\n");
 
-  rumboot_printf("Comparing...\n");
-
-  //rumboot_platform_dump_region("mydump.bin", (uint32_t) res_data, res_metrics->s);
-
-  // Compare arrays
-  if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
-    rumboot_printf("Test PASSED\n");
-  else {
-    rumboot_printf("Test FAILED\n");
-    return 1;
-  }
-
-//  for(int i=0;i<res_metrics->s/2;i++) {
-//    if ((res_data[i] & 0x7FFF) != (etalon[i] & 0x7FFF)) {
-//      rumboot_printf("res_data[%d] = 0x%x, etalon[%d] = 0x%x\n",i,res_data[i],i,etalon[i]);
-//      rumboot_printf("Test FAILED\n");
-//      return 1;
-//    };
-//  }
 //  rumboot_printf("Test PASSED\n");
-
 
   return 0;
 }
