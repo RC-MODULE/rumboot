@@ -49,6 +49,8 @@ exclude:
   - "src/arch/native/*"
   - "src/arch/nmc3/*"
   - "src/arch/ppc/*"
+  ## Internal script
+  - "externals/py_ppe_test/testplan/testcase_internal_engine.py"
   ##
   - "doc/*"
   - "Jenkinsfile"
