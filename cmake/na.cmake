@@ -1089,114 +1089,6 @@ macro (ADD_VPE_PPE_TESTS CONF name_in RM_CFG_PARAM)
   endforeach()
 endmacro()
 
-macro (ADD_PPE_DGTL_SLTN_TESTS CONF)
-
-  set (i8    0)
-  set (i16   1)
-  set (fp16  2)
-
-  set (dt_lst
-    i8
-    i16
-    fp16
-  )
-
-  set (avg  0)
-  set (max  1)
-  set (min  2)
-
-  set (pm_lst
-    avg
-    max
-    min
-  )
-
-  set (sw_lst_base 1 2)
-
-  foreach (dt ${dt_lst})
-    foreach (pm ${pm_lst})
-      foreach (kw RANGE 2 8)
-
-        set (sw_lst)
-
-        foreach (sw IN LISTS sw_lst_base)
-          if (NOT(${kw} EQUAL ${sw}))
-            set (sw_lst ${sw_lst} ${sw})
-          endif()
-        endforeach()
-
-        set (sw_lst ${sw_lst} ${kw})
-
-        foreach (sw IN LISTS sw_lst)
-          foreach (w RANGE 8 16)
-
-            set (kh ${kw})
-            set (sh ${sw})
-            set (h ${w})
-            set (c 32)
-
-            set (tp 0)
-            set (bp 0)
-            set (lp 0)
-            set (rp 0)
-
-            set (set_Kw_cfg "--set_Kw 1 --Kw ${kw}")
-            set (set_Sw_cfg "--set_Sw 1 --Sw ${sw}")
-            set (set_Kh_cfg "--set_Kh 1 --Kh ${kh}")
-            set (set_Sh_cfg "--set_Sh 1 --Sh ${sh}")
-            set (set_W_cfg "--w_min ${w} --w_max ${w}")
-            set (set_H_cfg "--h_min ${h} --h_max ${h}")
-            set (set_C_cfg "--c_min ${c} --c_max ${c}")
-            set (set_Tp_cfg "--set_Tp 1 --Tp ${tp}")
-            set (set_Bp_cfg "--set_Bp 1 --Bp ${bp}")
-            set (set_Lp_cfg "--set_Lp 1 --Lp ${lp}")
-            set (set_Rp_cfg "--set_Rp 1 --Rp ${rp}")
-
-            set (set_pm_cfg "--set_meth 1 --pool_meth ${${pm}}")
-            set (set_dt_cfg "--data_type ${${dt}}")
-
-            set (rm_cfg_prm "${set_pm_cfg} ${set_dt_cfg} ${set_Kw_cfg} ${set_Sw_cfg} ${set_Kh_cfg} ${set_Sh_cfg} ${set_W_cfg} ${set_H_cfg} ${set_C_cfg} ${set_Tp_cfg} ${set_Bp_cfg} ${set_Lp_cfg} ${set_Rp_cfg}")
-  #          message("rm_cfg_prm ${rm_cfg_prm}")
-
-            set (name "ppe_${dt}_${pm}_${kw}_${sw}_${kh}_${sh}_${w}_${h}_${c}")
-  #          message("${name}")
-
-            set (LBS "LIN")
-            set (DataSrc "MEMtoPPE")
-            set (ShowPerf "DoNotShowPerf")
-            set (main_c scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c)
-
-            if (${dt} EQUAL i8)
-              set(rm_bin_name "main_ppe_IN_INT8")
-            elseif (${dt} EQUAL i16)
-              set(rm_bin_name "main_ppe_IN_INT16")
-            elseif (${dt} EQUAL fp16)
-              set(rm_bin_name "main_ppe_IN_FP16")
-            endif()
-
-            add_rumboot_target(
-              CONFIGURATION ${CONF}
-              NAME ${name}
-              FILES ${main_c}
-            
-              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS_PPE} --it_nmb 1 --seed 1 ${rm_cfg_prm} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS_PPE} || exit 1
-            
-              CFLAGS -D${LBS} -D${DataSrc} -D${ShowPerf} -DDUT=${DUT_LETTER_QUOTED}
-            
-              IRUN_FLAGS ${NA_RM_PLUSARGS}
-            
-              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-            )
-
-          endforeach()
-        endforeach()
-
-      endforeach()
-    endforeach()
-  endforeach()
-
-endmacro()
-
 macro (ADD_PPE_PY_TESTS CONF)
   set(rm_bin_name main_ppe_py)
   set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${CMAKE_SOURCE_DIR}/externals/py_ppe_test/testplan/testcaseKW_engine.py)
@@ -1909,6 +1801,78 @@ macro(na_testsuite_add_ppe_tests CONF)
   set (i8_avg   "--set_meth 1 --pool_meth 0 --data_type 0 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")
   set (i16_avg  "--set_meth 1 --pool_meth 0 --data_type 1 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")
   set (fp16_avg "--set_meth 1 --pool_meth 0 --data_type 2 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")
+
+  set (w_min_max
+    1   128
+    128 128
+    129 129
+    128 256
+    255 255
+    256 256
+    256 288
+  )
+
+  set (k_min_max
+    1   1
+    1   16
+    15  15
+    16  16
+    16  32
+    32  48
+    48  64
+    64  80
+    80  96
+    96  112
+    112 128
+    128 128
+    128 256
+    256 288
+  )
+
+  set (h_min_max
+    1 1 
+    2 2 
+    2 16
+  )
+
+  #list(GET <list> <element index> [<element index> ...] <output variable>)
+  #list(LENGTH <list> <output variable>)
+  #math(EXPR <variable> "<expression>" [OUTPUT_FORMAT <format>])
+  #foreach(<loop_var> RANGE <start> <stop> [<step>])
+
+  list(LENGTH w_min_max w_ln)
+  list(LENGTH k_min_max k_ln)
+  list(LENGTH h_min_max h_ln)
+
+  math (EXPR w_prs "${w_ln}/2-1")
+  math (EXPR k_prs "${k_ln}/2-1")
+  math (EXPR h_prs "${h_ln}/2-1")
+
+  foreach (wp RANGE 0 ${w_prs})
+    math (EXPR w0 "${wp}*2")
+    list(GET w_min_max ${w0} w_min)
+
+    math (EXPR w1 "${w0}+1")
+    list(GET w_min_max ${w1} w_max)
+
+#    foreach(kp RANGE 0 ${k_prs})
+#      math (EXPR w0 "${kp}*2")
+#      list(GET k_min_max ${k0} k_min)
+#
+#      math (EXPR k1 "${k0}+1")
+#      list(GET k_min_max ${k1} k_max)
+#
+#      foreach(hp RANGE 0 ${h_prs})
+#        math (EXPR h0 "${hp}*2")
+#        list(GET h_min_max ${h0} h_min)
+#
+#        math (EXPR h1 "${h0}+1")
+#        list(GET h_min_max ${h1} h_max)
+#
+#        message ("${w_min} ${w_max} ${k_min} ${k_max} ${h_min} ${h_max}")
+#      endforeach()
+#    endforeach()
+  endforeach()
 
   set (w1_128_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
   set (w1_128_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
