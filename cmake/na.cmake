@@ -1177,37 +1177,46 @@ macro (ADD_PPE_PY_TESTS CONF)
 endmacro()
 
 
-macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
-  set (ShowPerf "NotShowPerf")
+macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list)
   set (i 0)
 
-  foreach(name_in ${${test_list_name}})
+  foreach(wkh_var ${${test_name_list}})
+
+    string(REGEX REPLACE "w([0-9]+)_.*" \\1 w_min ${wkh_var})
+    string(REGEX REPLACE "w[0-9]+_([0-9]+)_.*" \\1 w_max ${wkh_var})   
+
+    string(REGEX REPLACE "w.*k([0-9]+)_.*" \\1 k_min ${wkh_var})
+    string(REGEX REPLACE "w.*k[0-9]+_([0-9]+)_.*" \\1 k_max ${wkh_var})
+
+    string(REGEX REPLACE "w.*h([0-9]+)_.*" \\1 h_min ${wkh_var})
+    string(REGEX REPLACE "w.*h[0-9]+_([0-9]+)" \\1 h_max ${wkh_var})
+
+    set (wkh_opt "--w_min ${w_min} --w_max ${w_max} --c_min ${k_min} --c_max ${k_max} --h_min ${h_min} --h_max ${h_max}")
 
     math (EXPR j "${i} % 4")
     math (EXPR i "${i} + 1")
 
-    set (RM_CFG_PARAM ${${name_in}})
-
     if (j EQUAL 0)
-      set (name "vpe_ppe_${name_in}_LIN_8b")
+      set (name "vpe_ppe_${wkh_var}_LIN_8b")
       set (rm_bin_name "main_vpe_ppe_IN_INT8")
       set (LBS "LIN")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+
+      set (wkh_opt "${wkh_opt} --data_type 0")
     elseif (j EQUAL 1)
-      set (name "vpe_ppe_${name_in}_LIN_16b")
+      set (name "vpe_ppe_${wkh_var}_LIN_16b")
       set (rm_bin_name "main_vpe_ppe_IN_INT16")
       set (LBS "LIN")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+      set (wkh_opt "${wkh_opt} --data_type 1")
     elseif (j EQUAL 2)
-      set (name "vpe_ppe_${name_in}_BOX_8b")
+      set (name "vpe_ppe_${wkh_var}_BOX_8b")
       set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
       set (LBS "BOX")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+      set (wkh_opt "${wkh_opt} --data_type 0")
     elseif (j EQUAL 3)
-      set (name "vpe_ppe_${name_in}_BOX_16b")
+      set (name "vpe_ppe_${wkh_var}_BOX_16b")
       set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
       set (LBS "BOX")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+      set (wkh_opt "${wkh_opt} --data_type 1")
     endif()
 
     add_rumboot_target(
@@ -1215,9 +1224,9 @@ macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
       NAME ${name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
-      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+      CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
       IRUN_FLAGS ${NA_RM_PLUSARGS}
 
@@ -1229,7 +1238,7 @@ macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
       NAME ${name}_tight
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_ppe_long.c
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
       CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
@@ -1241,8 +1250,8 @@ macro (ADD_VPE_PPE_WKH_COMB CONF test_list_name)
     if (j EQUAL 3)
       math (EXPR NU_SEED "${NU_SEED} + 1")
     endif()
-
   endforeach()
+
 endmacro()
 
 macro(na_testsuite_add_npe_tests CONF)
@@ -1855,11 +1864,6 @@ macro(na_testsuite_add_ppe_tests CONF)
     2 16
   )
 
-  #list(GET <list> <element index> [<element index> ...] <output variable>)
-  #list(LENGTH <list> <output variable>)
-  #math(EXPR <variable> "<expression>" [OUTPUT_FORMAT <format>])
-  #foreach(<loop_var> RANGE <start> <stop> [<step>])
-
   list(LENGTH w_min_max w_ln)
   list(LENGTH k_min_max k_ln)
   list(LENGTH h_min_max h_ln)
@@ -1868,6 +1872,8 @@ macro(na_testsuite_add_ppe_tests CONF)
   math (EXPR k_prs "${k_ln}/2-1")
   math (EXPR h_prs "${h_ln}/2-1")
 
+  set (vpe_ppe_wkh_var)
+
   foreach (wp RANGE 0 ${w_prs})
     math (EXPR w0 "${wp}*2")
     list(GET w_min_max ${w0} w_min)
@@ -1875,616 +1881,27 @@ macro(na_testsuite_add_ppe_tests CONF)
     math (EXPR w1 "${w0}+1")
     list(GET w_min_max ${w1} w_max)
 
-#    foreach(kp RANGE 0 ${k_prs})
-#      math (EXPR w0 "${kp}*2")
-#      list(GET k_min_max ${k0} k_min)
-#
-#      math (EXPR k1 "${k0}+1")
-#      list(GET k_min_max ${k1} k_max)
-#
-#      foreach(hp RANGE 0 ${h_prs})
-#        math (EXPR h0 "${hp}*2")
-#        list(GET h_min_max ${h0} h_min)
-#
-#        math (EXPR h1 "${h0}+1")
-#        list(GET h_min_max ${h1} h_max)
-#
-#        message ("${w_min} ${w_max} ${k_min} ${k_max} ${h_min} ${h_max}")
-#      endforeach()
-#    endforeach()
+    foreach(kp RANGE 0 ${k_prs})
+      math (EXPR k0 "${kp}*2")
+      list(GET k_min_max ${k0} k_min)
+
+      math (EXPR k1 "${k0}+1")
+      list(GET k_min_max ${k1} k_max)
+
+      foreach(hp RANGE 0 ${h_prs})
+        math (EXPR h0 "${hp}*2")
+        list(GET h_min_max ${h0} h_min)
+
+        math (EXPR h1 "${h0}+1")
+        list(GET h_min_max ${h1} h_max)
+
+        set (wkh_var "w${w_min}_${w_max}_k${k_min}_${k_max}_h${h_min}_${h_max}")
+
+        list(APPEND vpe_ppe_wkh_var ${wkh_var})
+
+      endforeach()
+    endforeach()
   endforeach()
-
-  set (w1_128_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w1_128_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w1_128_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w1_128_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w1_128_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w1_128_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w1_128_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w1_128_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w1_128_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w1_128_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w1_128_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w1_128_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w1_128_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w1_128_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w1_128_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w1_128_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w1_128_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w1_128_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w1_128_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w1_128_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w1_128_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w1_128_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w1_128_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w1_128_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w1_128_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w1_128_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w1_128_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w1_128_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w1_128_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w1_128_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w1_128_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w1_128_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w1_128_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w1_128_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w1_128_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w1_128_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w1_128_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w1_128_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w1_128_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w1_128_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w1_128_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w1_128_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 1 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-  set (w128_128_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w128_128_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w128_128_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w128_128_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w128_128_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w128_128_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w128_128_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w128_128_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w128_128_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w128_128_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w128_128_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w128_128_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w128_128_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w128_128_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w128_128_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w128_128_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w128_128_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w128_128_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w128_128_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w128_128_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w128_128_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w128_128_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w128_128_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w128_128_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w128_128_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w128_128_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w128_128_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w128_128_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w128_128_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w128_128_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w128_128_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w128_128_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w128_128_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w128_128_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w128_128_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w128_128_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w128_128_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w128_128_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w128_128_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w128_128_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w128_128_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w128_128_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 128 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-  set (w129_129_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w129_129_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w129_129_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w129_129_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w129_129_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w129_129_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w129_129_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w129_129_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w129_129_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w129_129_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w129_129_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w129_129_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w129_129_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w129_129_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w129_129_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w129_129_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w129_129_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w129_129_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w129_129_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w129_129_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w129_129_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w129_129_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w129_129_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w129_129_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w129_129_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w129_129_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w129_129_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w129_129_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w129_129_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w129_129_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w129_129_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w129_129_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w129_129_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w129_129_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w129_129_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w129_129_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w129_129_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w129_129_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w129_129_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w129_129_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w129_129_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w129_129_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 129 --w_max 129 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-  set (w128_256_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w128_256_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w128_256_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w128_256_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w128_256_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w128_256_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w128_256_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w128_256_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w128_256_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w128_256_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w128_256_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w128_256_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w128_256_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w128_256_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w128_256_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w128_256_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w128_256_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w128_256_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w128_256_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w128_256_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w128_256_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w128_256_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w128_256_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w128_256_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w128_256_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w128_256_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w128_256_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w128_256_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w128_256_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w128_256_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w128_256_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w128_256_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w128_256_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w128_256_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w128_256_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w128_256_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w128_256_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w128_256_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w128_256_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w128_256_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w128_256_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w128_256_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 128 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-  set (w255_255_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w255_255_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w255_255_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w255_255_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w255_255_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w255_255_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w255_255_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w255_255_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w255_255_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w255_255_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w255_255_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w255_255_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w255_255_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w255_255_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w255_255_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w255_255_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w255_255_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w255_255_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w255_255_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w255_255_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w255_255_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w255_255_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w255_255_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w255_255_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w255_255_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w255_255_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w255_255_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w255_255_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w255_255_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w255_255_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w255_255_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w255_255_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w255_255_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w255_255_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w255_255_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w255_255_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w255_255_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w255_255_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w255_255_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w255_255_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w255_255_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w255_255_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 255 --w_max 255 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-  set (w256_256_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w256_256_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w256_256_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w256_256_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w256_256_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w256_256_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w256_256_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w256_256_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w256_256_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w256_256_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w256_256_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w256_256_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w256_256_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w256_256_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w256_256_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w256_256_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w256_256_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w256_256_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w256_256_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w256_256_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w256_256_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w256_256_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w256_256_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w256_256_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w256_256_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w256_256_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w256_256_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w256_256_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w256_256_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w256_256_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w256_256_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w256_256_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w256_256_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w256_256_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w256_256_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w256_256_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w256_256_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w256_256_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w256_256_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w256_256_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w256_256_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w256_256_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 256 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-  set (w256_288_k1_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 1 --h_max 1")
-  set (w256_288_k1_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 2 --h_max 2")
-  set (w256_288_k1_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 16 --h_min 2 --h_max 16")
-  set (w256_288_k1_1_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 1 --h_max 1")
-  set (w256_288_k1_1_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 2 --h_max 2")
-  set (w256_288_k1_1_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 1 --c_max 1 --h_min 2 --h_max 16")
-  set (w256_288_k15_15_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 1 --h_max 1")
-  set (w256_288_k15_15_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 2 --h_max 2")
-  set (w256_288_k15_15_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 15 --c_max 15 --h_min 2 --h_max 16")
-  set (w256_288_k16_16_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 1 --h_max 1")
-  set (w256_288_k16_16_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 2 --h_max 2")
-  set (w256_288_k16_16_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 16 --h_min 2 --h_max 16")
-  set (w256_288_k16_32_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 1 --h_max 1")
-  set (w256_288_k16_32_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 2 --h_max 2")
-  set (w256_288_k16_32_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 16 --c_max 32 --h_min 2 --h_max 16")
-  set (w256_288_k32_48_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 1 --h_max 1")
-  set (w256_288_k32_48_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 2 --h_max 2")
-  set (w256_288_k32_48_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 32 --c_max 48 --h_min 2 --h_max 16")
-  set (w256_288_k48_64_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 1 --h_max 1")
-  set (w256_288_k48_64_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 2 --h_max 2")
-  set (w256_288_k48_64_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 48 --c_max 64 --h_min 2 --h_max 16")
-  set (w256_288_k64_80_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 1 --h_max 1")
-  set (w256_288_k64_80_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 2 --h_max 2")
-  set (w256_288_k64_80_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 64 --c_max 80 --h_min 2 --h_max 16")
-  set (w256_288_k80_96_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 1 --h_max 1")
-  set (w256_288_k80_96_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 2 --h_max 2")
-  set (w256_288_k80_96_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 80 --c_max 96 --h_min 2 --h_max 16")
-  set (w256_288_k96_112_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 1 --h_max 1")
-  set (w256_288_k96_112_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 2 --h_max 2")
-  set (w256_288_k96_112_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 96 --c_max 112 --h_min 2 --h_max 16")
-  set (w256_288_k112_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 1 --h_max 1")
-  set (w256_288_k112_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 2 --h_max 2")
-  set (w256_288_k112_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 112 --c_max 128 --h_min 2 --h_max 16")
-  set (w256_288_k128_128_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 1 --h_max 1")
-  set (w256_288_k128_128_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 2 --h_max 2")
-  set (w256_288_k128_128_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 128 --h_min 2 --h_max 16")
-  set (w256_288_k128_256_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 1 --h_max 1")
-  set (w256_288_k128_256_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 2 --h_max 2")
-  set (w256_288_k128_256_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 128 --c_max 256 --h_min 2 --h_max 16")
-  set (w256_288_k256_288_h1_1 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 1 --h_max 1")
-  set (w256_288_k256_288_h2_2 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
-  set (w256_288_k256_288_h2_16 "--set_meth 1 --pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
-
-  set (vpe_ppe_wkh_comb
-    w1_128_k1_16_h1_1
-    w1_128_k1_16_h2_2
-    w1_128_k1_16_h2_16
-    w1_128_k1_1_h1_1
-    w1_128_k1_1_h2_2
-    w1_128_k1_1_h2_16
-    w1_128_k15_15_h1_1
-    w1_128_k15_15_h2_2
-    w1_128_k15_15_h2_16
-    w1_128_k16_16_h1_1
-    w1_128_k16_16_h2_2
-    w1_128_k16_16_h2_16
-    w1_128_k16_32_h1_1
-    w1_128_k16_32_h2_2
-    w1_128_k16_32_h2_16
-    w1_128_k32_48_h1_1
-    w1_128_k32_48_h2_2
-    w1_128_k32_48_h2_16
-    w1_128_k48_64_h1_1
-    w1_128_k48_64_h2_2
-    w1_128_k48_64_h2_16
-    w1_128_k64_80_h1_1
-    w1_128_k64_80_h2_2
-    w1_128_k64_80_h2_16
-    w1_128_k80_96_h1_1
-    w1_128_k80_96_h2_2
-    w1_128_k80_96_h2_16
-    w1_128_k96_112_h1_1
-    w1_128_k96_112_h2_2
-    w1_128_k96_112_h2_16
-    w1_128_k112_128_h1_1
-    w1_128_k112_128_h2_2
-    w1_128_k112_128_h2_16
-    w1_128_k128_128_h1_1
-    w1_128_k128_128_h2_2
-    w1_128_k128_128_h2_16
-    w1_128_k128_256_h1_1
-    w1_128_k128_256_h2_2
-    w1_128_k128_256_h2_16
-    w1_128_k256_288_h1_1
-    w1_128_k256_288_h2_2
-    w1_128_k256_288_h2_16
-    w128_128_k1_16_h1_1
-    w128_128_k1_16_h2_2
-    w128_128_k1_16_h2_16
-    w128_128_k1_1_h1_1
-    w128_128_k1_1_h2_2
-    w128_128_k1_1_h2_16
-    w128_128_k15_15_h1_1
-    w128_128_k15_15_h2_2
-    w128_128_k15_15_h2_16
-    w128_128_k16_16_h1_1
-    w128_128_k16_16_h2_2
-    w128_128_k16_16_h2_16
-    w128_128_k16_32_h1_1
-    w128_128_k16_32_h2_2
-    w128_128_k16_32_h2_16
-    w128_128_k32_48_h1_1
-    w128_128_k32_48_h2_2
-    w128_128_k32_48_h2_16
-    w128_128_k48_64_h1_1
-    w128_128_k48_64_h2_2
-    w128_128_k48_64_h2_16
-    w128_128_k64_80_h1_1
-    w128_128_k64_80_h2_2
-    w128_128_k64_80_h2_16
-    w128_128_k80_96_h1_1
-    w128_128_k80_96_h2_2
-    w128_128_k80_96_h2_16
-    w128_128_k96_112_h1_1
-    w128_128_k96_112_h2_2
-    w128_128_k96_112_h2_16
-    w128_128_k112_128_h1_1
-    w128_128_k112_128_h2_2
-    w128_128_k112_128_h2_16
-    w128_128_k128_128_h1_1
-    w128_128_k128_128_h2_2
-    w128_128_k128_128_h2_16
-    w128_128_k128_256_h1_1
-    w128_128_k128_256_h2_2
-    w128_128_k128_256_h2_16
-    w128_128_k256_288_h1_1
-    w128_128_k256_288_h2_2
-    w128_128_k256_288_h2_16
-    w129_129_k1_16_h1_1
-    w129_129_k1_16_h2_2
-    w129_129_k1_16_h2_16
-    w129_129_k1_1_h1_1
-    w129_129_k1_1_h2_2
-    w129_129_k1_1_h2_16
-    w129_129_k15_15_h1_1
-    w129_129_k15_15_h2_2
-    w129_129_k15_15_h2_16
-    w129_129_k16_16_h1_1
-    w129_129_k16_16_h2_2
-    w129_129_k16_16_h2_16
-    w129_129_k16_32_h1_1
-    w129_129_k16_32_h2_2
-    w129_129_k16_32_h2_16
-    w129_129_k32_48_h1_1
-    w129_129_k32_48_h2_2
-    w129_129_k32_48_h2_16
-    w129_129_k48_64_h1_1
-    w129_129_k48_64_h2_2
-    w129_129_k48_64_h2_16
-    w129_129_k64_80_h1_1
-    w129_129_k64_80_h2_2
-    w129_129_k64_80_h2_16
-    w129_129_k80_96_h1_1
-    w129_129_k80_96_h2_2
-    w129_129_k80_96_h2_16
-    w129_129_k96_112_h1_1
-    w129_129_k96_112_h2_2
-    w129_129_k96_112_h2_16
-    w129_129_k112_128_h1_1
-    w129_129_k112_128_h2_2
-    w129_129_k112_128_h2_16
-    w129_129_k128_128_h1_1
-    w129_129_k128_128_h2_2
-    w129_129_k128_128_h2_16
-    w129_129_k128_256_h1_1
-    w129_129_k128_256_h2_2
-    w129_129_k128_256_h2_16
-    w129_129_k256_288_h1_1
-    w129_129_k256_288_h2_2
-    w129_129_k256_288_h2_16
-    w128_256_k1_16_h1_1
-    w128_256_k1_16_h2_2
-    w128_256_k1_16_h2_16
-    w128_256_k1_1_h1_1
-    w128_256_k1_1_h2_2
-    w128_256_k1_1_h2_16
-    w128_256_k15_15_h1_1
-    w128_256_k15_15_h2_2
-    w128_256_k15_15_h2_16
-    w128_256_k16_16_h1_1
-    w128_256_k16_16_h2_2
-    w128_256_k16_16_h2_16
-    w128_256_k16_32_h1_1
-    w128_256_k16_32_h2_2
-    w128_256_k16_32_h2_16
-    w128_256_k32_48_h1_1
-    w128_256_k32_48_h2_2
-    w128_256_k32_48_h2_16
-    w128_256_k48_64_h1_1
-    w128_256_k48_64_h2_2
-    w128_256_k48_64_h2_16
-    w128_256_k64_80_h1_1
-    w128_256_k64_80_h2_2
-    w128_256_k64_80_h2_16
-    w128_256_k80_96_h1_1
-    w128_256_k80_96_h2_2
-    w128_256_k80_96_h2_16
-    w128_256_k96_112_h1_1
-    w128_256_k96_112_h2_2
-    w128_256_k96_112_h2_16
-    w128_256_k112_128_h1_1
-    w128_256_k112_128_h2_2
-    w128_256_k112_128_h2_16
-    w128_256_k128_128_h1_1
-    w128_256_k128_128_h2_2
-    w128_256_k128_128_h2_16
-    w128_256_k128_256_h1_1
-    w128_256_k128_256_h2_2
-    w128_256_k128_256_h2_16
-    w128_256_k256_288_h1_1
-    w128_256_k256_288_h2_2
-    w128_256_k256_288_h2_16
-    w255_255_k1_16_h1_1
-    w255_255_k1_16_h2_2
-    w255_255_k1_16_h2_16
-    w255_255_k1_1_h1_1
-    w255_255_k1_1_h2_2
-    w255_255_k1_1_h2_16
-    w255_255_k15_15_h1_1
-    w255_255_k15_15_h2_2
-    w255_255_k15_15_h2_16
-    w255_255_k16_16_h1_1
-    w255_255_k16_16_h2_2
-    w255_255_k16_16_h2_16
-    w255_255_k16_32_h1_1
-    w255_255_k16_32_h2_2
-    w255_255_k16_32_h2_16
-    w255_255_k32_48_h1_1
-    w255_255_k32_48_h2_2
-    w255_255_k32_48_h2_16
-    w255_255_k48_64_h1_1
-    w255_255_k48_64_h2_2
-    w255_255_k48_64_h2_16
-    w255_255_k64_80_h1_1
-    w255_255_k64_80_h2_2
-    w255_255_k64_80_h2_16
-    w255_255_k80_96_h1_1
-    w255_255_k80_96_h2_2
-    w255_255_k80_96_h2_16
-    w255_255_k96_112_h1_1
-    w255_255_k96_112_h2_2
-    w255_255_k96_112_h2_16
-    w255_255_k112_128_h1_1
-    w255_255_k112_128_h2_2
-    w255_255_k112_128_h2_16
-    w255_255_k128_128_h1_1
-    w255_255_k128_128_h2_2
-    w255_255_k128_128_h2_16
-    w255_255_k128_256_h1_1
-    w255_255_k128_256_h2_2
-    w255_255_k128_256_h2_16
-    w255_255_k256_288_h1_1
-    w255_255_k256_288_h2_2
-    w255_255_k256_288_h2_16
-    w256_256_k1_16_h1_1
-    w256_256_k1_16_h2_2
-    w256_256_k1_16_h2_16
-    w256_256_k1_1_h1_1
-    w256_256_k1_1_h2_2
-    w256_256_k1_1_h2_16
-    w256_256_k15_15_h1_1
-    w256_256_k15_15_h2_2
-    w256_256_k15_15_h2_16
-    w256_256_k16_16_h1_1
-    w256_256_k16_16_h2_2
-    w256_256_k16_16_h2_16
-    w256_256_k16_32_h1_1
-    w256_256_k16_32_h2_2
-    w256_256_k16_32_h2_16
-    w256_256_k32_48_h1_1
-    w256_256_k32_48_h2_2
-    w256_256_k32_48_h2_16
-    w256_256_k48_64_h1_1
-    w256_256_k48_64_h2_2
-    w256_256_k48_64_h2_16
-    w256_256_k64_80_h1_1
-    w256_256_k64_80_h2_2
-    w256_256_k64_80_h2_16
-    w256_256_k80_96_h1_1
-    w256_256_k80_96_h2_2
-    w256_256_k80_96_h2_16
-    w256_256_k96_112_h1_1
-    w256_256_k96_112_h2_2
-    w256_256_k96_112_h2_16
-    w256_256_k112_128_h1_1
-    w256_256_k112_128_h2_2
-    w256_256_k112_128_h2_16
-    w256_256_k128_128_h1_1
-    w256_256_k128_128_h2_2
-    w256_256_k128_128_h2_16
-    w256_256_k128_256_h1_1
-    w256_256_k128_256_h2_2
-    w256_256_k128_256_h2_16
-    w256_256_k256_288_h1_1
-    w256_256_k256_288_h2_2
-    w256_256_k256_288_h2_16
-    w256_288_k1_16_h1_1
-    w256_288_k1_16_h2_2
-    w256_288_k1_16_h2_16
-    w256_288_k1_1_h1_1
-    w256_288_k1_1_h2_2
-    w256_288_k1_1_h2_16
-    w256_288_k15_15_h1_1
-    w256_288_k15_15_h2_2
-    w256_288_k15_15_h2_16
-    w256_288_k16_16_h1_1
-    w256_288_k16_16_h2_2
-    w256_288_k16_16_h2_16
-    w256_288_k16_32_h1_1
-    w256_288_k16_32_h2_2
-    w256_288_k16_32_h2_16
-    w256_288_k32_48_h1_1
-    w256_288_k32_48_h2_2
-    w256_288_k32_48_h2_16
-    w256_288_k48_64_h1_1
-    w256_288_k48_64_h2_2
-    w256_288_k48_64_h2_16
-    w256_288_k64_80_h1_1
-    w256_288_k64_80_h2_2
-    w256_288_k64_80_h2_16
-    w256_288_k80_96_h1_1
-    w256_288_k80_96_h2_2
-    w256_288_k80_96_h2_16
-    w256_288_k96_112_h1_1
-    w256_288_k96_112_h2_2
-    w256_288_k96_112_h2_16
-    w256_288_k112_128_h1_1
-    w256_288_k112_128_h2_2
-    w256_288_k112_128_h2_16
-    w256_288_k128_128_h1_1
-    w256_288_k128_128_h2_2
-    w256_288_k128_128_h2_16
-    w256_288_k128_256_h1_1
-    w256_288_k128_256_h2_2
-    w256_288_k128_256_h2_16
-    w256_288_k256_288_h1_1
-    w256_288_k256_288_h2_2
-    w256_288_k256_288_h2_16
-  )
 
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
 
@@ -2514,7 +1931,7 @@ macro(na_testsuite_add_ppe_tests CONF)
   endif()
 
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
-    ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_comb)
+    ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_var)
     #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
   endif() # NA_TESTGROUP VPE_PPE
 
