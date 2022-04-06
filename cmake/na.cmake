@@ -1366,6 +1366,25 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
+  if(NA_TESTGROUP STREQUAL "POWER")
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME NPE_POWER
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_power.c
+      PREPCMD 
+        ${NA_RM_BIN_PATH}/main_npe_power 
+        ${NA_RM_KEYS} 
+        > ${RM_LOGFILE} &&
+
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+
+        || exit 1
+
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      SUBPROJECT_DEPS npe_rm:main_npe_power
+    )
+  endif()
+
   #add_rumboot_target(
   # CONFIGURATION ${CONF}
   #   NAME NPE_1
@@ -1410,6 +1429,7 @@ macro(na_testsuite_add_npe_tests CONF)
     
     ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_RDCH 19 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_RDCH)
     ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH 20 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
+    #ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_THRE 0 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_THRE)
     ADD_NPE_MPE_TEST(${CONF} MPE_CFG_POWER 0 main_mpe_direct_ex_MPE_CFG_POWER)
 
         ###
