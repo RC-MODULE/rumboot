@@ -649,60 +649,6 @@ macro (ADD_MPE_DEMO_TEST CONF mpe_demo_test_name show_perf)
   )
 endmacro()
 
-macro (ADD_VPE_PPE_WKH_COMB_ALL CONF test_list_name)
-
-  set (ShowPerf "NotShowPerf")
-  set (TST_NMB 3)
-  set (i 0)
-
-  foreach(name_in ${${test_list_name}})
-    foreach(i RANGE ${TST_NMB})
-
-      if (i EQUAL 0)
-        set (name "vpe_ppe_${name_in}_LIN_8b")
-        set (rm_bin_name "main_vpe_ppe_IN_INT8")
-        set (LBS "LIN")
-        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-      elseif (i EQUAL 1)
-        set (name "vpe_ppe_${name_in}_LIN_16b")
-        set (rm_bin_name "main_vpe_ppe_IN_INT16")
-        set (LBS "LIN")
-        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-      elseif (i EQUAL 2)
-        set (name "vpe_ppe_${name_in}_BOX_8b")
-        set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
-        set (LBS "BOX")
-        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-      elseif (i EQUAL 3)
-        set (name "vpe_ppe_${name_in}_BOX_16b")
-        set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
-        set (LBS "BOX")
-        set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-      endif()
-
-      add_rumboot_target(
-        CONFIGURATION ${CONF}
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
-
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO}} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-
-        CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
-
-      if (i EQUAL TST_NMB)
-        math (EXPR NU_SEED "${NU_SEED} + 1")
-        set (i 0)
-      endif()
-
-    endforeach()
-  endforeach()
-endmacro()
-
 macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
   add_rumboot_target(
@@ -1040,55 +986,6 @@ macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS CONF name bin_dir)
   )
 endmacro()
 
-macro (ADD_VPE_PPE_TESTS CONF name_in RM_CFG_PARAM)
-  set (ShowPerf "NotShowPerf")
-  set (TST_NMB 3)
-
-  foreach(i RANGE ${TST_NMB})
-
-    if (i EQUAL 0)
-      set (name "${name_in}_LIN_8b")
-      set (rm_bin_name "main_vpe_ppe_IN_INT8")
-      set (LBS "LIN")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-    elseif (i EQUAL 1)
-      set (name "${name_in}_LIN_16b")
-      set (rm_bin_name "main_vpe_ppe_IN_INT16")
-      set (LBS "LIN")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-    elseif (i EQUAL 2)
-      set (name "${name_in}_BOX_8b")
-      set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
-      set (LBS "BOX")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
-    elseif (i EQUAL 3)
-      set (name "${name_in}_BOX_16b")
-      set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
-      set (LBS "BOX")
-      set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
-    endif()
-
-    add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
-
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
-
-      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-    )
-
-    if (i EQUAL TST_NMB)
-      math (EXPR NU_SEED "${NU_SEED} + 1")
-    endif()
-
-  endforeach()
-endmacro()
-
 macro (ADD_PPE_PY_TESTS CONF)
   set(rm_bin_name main_ppe_py)
   set(PPE_PY_GENERATE_TESTCASE_SCRIPT ${CMAKE_SOURCE_DIR}/externals/py_ppe_test/testplan/testcaseKW_engine.py)
@@ -1177,8 +1074,9 @@ macro (ADD_PPE_PY_TESTS CONF)
 endmacro()
 
 
-macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list)
+macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list ALL_COMB)
   set (i 0)
+  set (j 0)
 
   foreach(wkh_var ${${test_name_list}})
 
@@ -1193,63 +1091,89 @@ macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list)
 
     set (wkh_opt "--w_min ${w_min} --w_max ${w_max} --c_min ${k_min} --c_max ${k_max} --h_min ${h_min} --h_max ${h_max}")
 
-    math (EXPR j "${i} % 4")
-    math (EXPR i "${i} + 1")
+    set (nxt_trgt 1)
 
-    if (j EQUAL 0)
-      set (name "vpe_ppe_${wkh_var}_LIN_8b")
-      set (rm_bin_name "main_vpe_ppe_IN_INT8")
-      set (LBS "LIN")
+    while (${nxt_trgt})
 
-      set (wkh_opt "${wkh_opt} --data_type 0")
-    elseif (j EQUAL 1)
-      set (name "vpe_ppe_${wkh_var}_LIN_16b")
-      set (rm_bin_name "main_vpe_ppe_IN_INT16")
-      set (LBS "LIN")
-      set (wkh_opt "${wkh_opt} --data_type 1")
-    elseif (j EQUAL 2)
-      set (name "vpe_ppe_${wkh_var}_BOX_8b")
-      set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
-      set (LBS "BOX")
-      set (wkh_opt "${wkh_opt} --data_type 0")
-    elseif (j EQUAL 3)
-      set (name "vpe_ppe_${wkh_var}_BOX_16b")
-      set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
-      set (LBS "BOX")
-      set (wkh_opt "${wkh_opt} --data_type 1")
-    endif()
+      if (NOT ${ALL_COMB})
+        math (EXPR j "${i} % 4")
+        math (EXPR i "${i} + 1")
+      endif()
 
-    add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
+      if (j EQUAL 0)
+        set (name "vpe_ppe_${wkh_var}_LIN_8b")
+        set (rm_bin_name "main_vpe_ppe_IN_INT8")
+        set (LBS "LIN")
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+        set (wkh_opt "${wkh_opt} --data_type 0")
+      elseif (j EQUAL 1)
+        set (name "vpe_ppe_${wkh_var}_LIN_16b")
+        set (rm_bin_name "main_vpe_ppe_IN_INT16")
+        set (LBS "LIN")
 
-      CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+        set (wkh_opt "${wkh_opt} --data_type 1")
+      elseif (j EQUAL 2)
+        set (name "vpe_ppe_${wkh_var}_BOX_8b")
+        set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
+        set (LBS "BOX")
 
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
+        set (wkh_opt "${wkh_opt} --data_type 0")
+      elseif (j EQUAL 3)
+        set (name "vpe_ppe_${wkh_var}_BOX_16b")
+        set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
+        set (LBS "BOX")
 
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-    )
+        set (wkh_opt "${wkh_opt} --data_type 1")
+      endif()
 
-    add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME ${name}_tight
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_ppe_long.c
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c
+  
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+  
+        CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+  
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+  
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+  
+      if (NOT ${All_COMB})
+        add_rumboot_target(
+          CONFIGURATION ${CONF}
+          NAME ${name}_tight
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe_ppe_long.c
+  
+          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+  
+          CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+  
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+  
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+        )
+      endif()
 
-      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+      if (${ALL_COMB})
+        if (j EQUAL 3)
+          set (j 0)
+          set (nxt_trgt 0)
+          math (EXPR NU_SEED "${NU_SEED} + 1")
+        else()
+          math (EXPR j "${j} + 1")
+        endif()
+      else()
+        set (nxt_trgt 0)
 
-      CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+        if (j EQUAL 3)
+          math (EXPR NU_SEED "${NU_SEED} + 1")
+        endif()
+      endif()
 
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
+    endwhile()
 
-      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-    )
-
-    if (j EQUAL 3)
-      math (EXPR NU_SEED "${NU_SEED} + 1")
-    endif()
   endforeach()
 
 endmacro()
@@ -1487,8 +1411,6 @@ macro(na_testsuite_add_npe_tests CONF)
 
   na_testsuite_add_vpe_tests(${CONF})
   na_testsuite_add_ppe_tests(${CONF})
-
-  #ADD_PPE_DGTL_SLTN_TESTS(${CONF})
 endmacro()
 
   # Тесты в окру*ении, где только VPE (они не идут на сборке)
@@ -1931,9 +1853,7 @@ macro(na_testsuite_add_ppe_tests CONF)
   endif()
 
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
-    ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_var)
-    #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
+    ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_var 0)
   endif() # NA_TESTGROUP VPE_PPE
 
-  #ADD_PPE_DGTL_SLTN_TESTS(${CONF})
 endmacro()
