@@ -1051,7 +1051,7 @@ float fp16_to_fp32(const short in){
 
 
 
-int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
+int nu_half_compare_eps(void* res_data, void* etalon, int size) {
   
   int16_t* r_ptr;
   int16_t* e_ptr;
