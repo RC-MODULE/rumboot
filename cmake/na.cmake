@@ -1073,7 +1073,6 @@ macro (ADD_PPE_PY_TESTS CONF)
   endforeach()
 endmacro()
 
-
 macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list ALL_COMB)
   set (i 0)
   set (j 0)
@@ -1114,13 +1113,13 @@ macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list ALL_COMB)
         set (wkh_opt "${wkh_opt} --data_type 1")
       elseif (j EQUAL 2)
         set (name "vpe_ppe_${wkh_var}_BOX_8b")
-        set (rm_bin_name "main_vpe_ppe_box_IN_INT8")
+        set (rm_bin_name "main_vpe_ppe_IN_INT8_BOX")
         set (LBS "BOX")
 
         set (wkh_opt "${wkh_opt} --data_type 0")
       elseif (j EQUAL 3)
         set (name "vpe_ppe_${wkh_var}_BOX_16b")
-        set (rm_bin_name "main_vpe_ppe_box_IN_INT16")
+        set (rm_bin_name "main_vpe_ppe_IN_INT16_BOX")
         set (LBS "BOX")
 
         set (wkh_opt "${wkh_opt} --data_type 1")
