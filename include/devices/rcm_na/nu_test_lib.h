@@ -94,7 +94,7 @@ int nu_bitwise_compare(void* res_data, void* etalon, int size);
 float fp16_to_fp32(const short in);
 void nu_vpe_interpret_mismatch(ConfigVPE *cfg,void* res_data,void* etalon,void* in_data,void* op0,void* op1,void* op2,int s,int C);
 
-int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps);
+int nu_half_compare_eps(void* res_data, void* etalon, int size);
 
 //in case of <string.h> and <stdio.h> are absent;
 char* int_to_strdec (char* str, int arg);

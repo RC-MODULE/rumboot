@@ -28,11 +28,7 @@
 #endif
 
 #ifdef USE_NU_HALF_COMPARE_EPS
-  #ifndef NU_HALF_COMPARE_EPSILON
-    #define NU_HALF_COMPARE_EPSILON 256
-  #endif
-
-  #define NU_COMPARE_FUNCTION(RES,ETALON,SIZE) nu_half_compare_eps ( RES , ETALON , SIZE , NU_HALF_COMPARE_EPSILON )
+  #define NU_COMPARE_FUNCTION(RES,ETALON,SIZE) nu_half_compare_eps ( RES , ETALON , SIZE )
 #else
   #define NU_COMPARE_FUNCTION(RES,ETALON,SIZE) nu_bitwise_compare ( RES , ETALON , SIZE )
 #endif

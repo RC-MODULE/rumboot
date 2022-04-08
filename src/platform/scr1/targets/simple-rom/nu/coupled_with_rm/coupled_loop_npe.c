@@ -336,17 +336,6 @@ int main() {
     
     rumboot_printf("Comparing..\n");
 
-    //if (cfg_mpe.dt==DataType_Fp16 && nu_bitwise_compare(res_data,etalon,res_metrics->s)) {
-    //    rumboot_printf("Comparing half..\n");
-    //  if (!nu_half_compare_eps(res_data,etalon,res_metrics->s,99)) {
-    //    rumboot_printf("Iteration %d PASSED\n",i);
-    //  }
-    //}
-    //if (cfg_mpe.dt==DataType_Fp16 && !nu_half_compare_eps(res_data,etalon,res_metrics->s,99)) {
-    //  rumboot_printf("Comparing half..\n");
-    //  rumboot_printf("Iteration %d PASSED\n",i);
-    //}
-    //else if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
     if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
