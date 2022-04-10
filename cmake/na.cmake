@@ -1667,6 +1667,10 @@ macro(na_testsuite_add_vpe_tests CONF)
     ADD_VPE_COUPLED_TEST_CONTROL_CONS_FORCE_WDMA(${CONF} vpe_26_0_control_cons_dma    main_vpe_26_0_control_cons_dma ) # VPE_27
     ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA(${CONF} vpe_26_1_control_par_dma main_vpe_26_1_control_par_dma  ) # VPE_27
     
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_29_power_IN_FP16_dma main_vpe_29_power_IN_FP16_dma 15) #VPE29
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(${CONF} vpe_29_power_IN_INT8_dma main_vpe_29_power_IN_INT8_dma 15) #VPE29
+    
+    
   endif() # NA_TESTGROUP VPE_DMA_BASE
 
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_DMA_BATCH")
