@@ -252,6 +252,7 @@
     ConfigRDDMAMPE rdma;
     ConfigWRDMAMPE wdma;
     uint16_t MAINCNT;
+    uint32_t depend_mask;
   }ConfigDMAMPE;
 
   typedef struct ConfigMPE {
@@ -404,6 +405,7 @@
     ConfigDMA   wdma_config     ;
     int32_t     cube_size       ;
     Enable      mark            ;
+    uint32_t    depend_mask     ;
   }ConfigVPE;
 
   /**
