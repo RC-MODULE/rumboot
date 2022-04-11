@@ -141,6 +141,7 @@ int main() {
       cfg_vpe.op2_rdma_config.dma_bstride=0;
       cfg_vpe.wdma_config.dma_bsize=0;
       cfg_vpe.wdma_config.dma_bstride=0;
+      cfg_vpe.depend_mask=0; // Does Not Depend On Any Other Channel Run
       
 
       cfg_vpe.src_flying = Enable_NotEn;

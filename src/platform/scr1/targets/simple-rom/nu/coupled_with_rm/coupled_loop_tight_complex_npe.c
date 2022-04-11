@@ -20,6 +20,8 @@ int nu_mpe_decide_dma_config(
 ) {
     cfg->dma_d_config.rdma.BFCA  = rumboot_virt_to_dma(cube); // Data Base Address
     cfg->dma_w_config.rdma.BFCA  = rumboot_virt_to_dma(warr); // Weights Base Address
+    cfg->dma_d_config.depend_mask = 0; // Does Not Depend On Any Other Channel Run
+    cfg->dma_w_config.depend_mask = 0;
     if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1; // Search For The MPE DMA Configuration (That Is Predefined In cfg_lut Table)
     if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1; // Fill Other Fields
     return 0;
@@ -50,6 +52,7 @@ void nu_vpe_decide_dma_config (
     cfg->op2_rdma_config.dma_bstride=0;
     cfg->wdma_config.dma_bsize=0;
     cfg->wdma_config.dma_bstride=0;
+    cfg->depend_mask=0; // Does Not Depend On Any Other Channel Run
 
     cfg->src_flying = Enable_En;  // Make VPE To Get Data From MPE
     if(PPE_ENABLED==Enable_En)    //  And Send Them To PPE If PPE_ENABLED

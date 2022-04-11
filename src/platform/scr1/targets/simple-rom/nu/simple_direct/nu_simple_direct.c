@@ -500,6 +500,8 @@ void decide_dma_config(
   CubeMetrics* mpe_out_metrics,
   Enable PPE_ENABLED
 ) {
+cfg_mpe->dma_d_config.depend_mask = 0; // Does Not Depend On Any Other Channel Run
+cfg_mpe->dma_w_config.depend_mask = 0;
   // Base Addresses For MPE
 cfg_mpe->dma_d_config.rdma.   BFCA = nu_virt_to_dma(in_data); // nu_virt_to_dma Converts Addresses From Virtual In The OS On A Board
 cfg_mpe->dma_w_config.rdma.   BFCA = nu_virt_to_dma(warr);    //   To A Physical That Programmed Into NU Regs
@@ -514,6 +516,7 @@ cfg_vpe->op2_rdma_config.dma_bsize=0;
 cfg_vpe->op2_rdma_config.dma_bstride=0;
 cfg_vpe->wdma_config.dma_bsize=0;
 cfg_vpe->wdma_config.dma_bstride=0;
+cfg_vpe->depend_mask=0; // Does Not Depend On Any Other Channel Run
 
 cfg_vpe->src_rdma_config.dma_baddr = (uint32_t)0xDEADBEEF;
 cfg_vpe->op0_rdma_config.dma_baddr = nu_virt_to_dma(op0);

@@ -412,6 +412,7 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
   nu_vpe_print_Enable(cfg->mark,"mark");
   rumboot_printf("  cube_size = %d\n" , cfg->cube_size);
+  rumboot_printf("  depend_mask = 0x%x\n" , cfg->depend_mask);
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
   nu_vpe_print_Enable(cfg->op2_en,"op2_en");
@@ -647,6 +648,7 @@ void nu_mpe_print_ConfigWRDMAMPE(ConfigWRDMAMPE* cfg, char* name) {
 void nu_mpe_print_ConfigDMAMPE(ConfigDMAMPE* cfg,char* name) {
   rumboot_printf("ConfigDMAMPE(%s):\n",name);
   rumboot_printf("  MAINCNT = %d\n",cfg->MAINCNT);
+  rumboot_printf("  depend_mask = 0x%x\n",cfg->depend_mask);
   nu_mpe_print_ConfigRDDMAMPE(& cfg->rdma, name);
   nu_mpe_print_ConfigWRDMAMPE(& cfg->wdma, name);
 }
@@ -1897,8 +1899,8 @@ void nu_mpe_wait_ready(uintptr_t base) {
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   rumboot_printf("Start MPE...\n");
-  iowrite32(0,mpe_base + MPE_RDMA_D_BASE + DMA_START);
-  iowrite32(0,mpe_base + MPE_RDMA_W_BASE + DMA_START);
+  iowrite32(cfg->dma_d_config.depend_mask,mpe_base + MPE_RDMA_D_BASE + DMA_START);
+  iowrite32(cfg->dma_w_config.depend_mask,mpe_base + MPE_RDMA_W_BASE + DMA_START);
   iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICMW);
 }
 
@@ -2345,6 +2347,8 @@ void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* c
   }while((temp & 1) !=0);
   
   rumboot_printf("Start VPE...\n");
+  
+  temp = (temp & 0xF0FFFFFF) | cfg->depend_mask; // Manipulate With DPND Fields
   
   if(cfg->mark)
    {temp = temp | 0x00000003; }//MARKED_CNTX=1 & NEXT_CNTX=1 

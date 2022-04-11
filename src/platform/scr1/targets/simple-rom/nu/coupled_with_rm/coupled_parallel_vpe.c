@@ -60,6 +60,7 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
   cfg->wdma_config.dma_bstride=0;
+  cfg->depend_mask=0; // Does Not Depend On Any Other Channel Run
   
   cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 ||cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
 #ifdef FORCE_VPE_WDMA_EN

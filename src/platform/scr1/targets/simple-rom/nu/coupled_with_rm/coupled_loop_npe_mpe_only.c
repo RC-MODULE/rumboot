@@ -42,6 +42,8 @@ int nu_mpe_decide_dma_config(
 ) {
   cfg->dma_d_config.rdma.BFCA  = nu_virt_to_dma(cube);
   cfg->dma_w_config.rdma.BFCA  = nu_virt_to_dma(warr);
+  cfg->dma_d_config.depend_mask = 0; // Does Not Depend On Any Other Channel Run
+  cfg->dma_w_config.depend_mask = 0;
   if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1;
   if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1;
   return 0;
@@ -77,6 +79,7 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
   cfg->wdma_config.dma_bstride=0;
+  cfg->depend_mask=0; // Does Not Depend On Any Other Channel Run
   
   cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
   cfg->dst_flying = Enable_NotEn;

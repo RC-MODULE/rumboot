@@ -50,6 +50,7 @@ void nu_vpe_ppe_decide_dma_config(
   cfg_vpe->op2_rdma_config.dma_bstride=0;
   cfg_vpe->wdma_config.dma_bsize=0;
   cfg_vpe->wdma_config.dma_bstride=0;
+  cfg_vpe->depend_mask=0; // Does Not Depend On Any Other Channel Run
   
   cfg_vpe->src_rdma_config.dma_axi_len = axi_len;
   cfg_vpe->op0_rdma_config.dma_axi_len = axi_len;
