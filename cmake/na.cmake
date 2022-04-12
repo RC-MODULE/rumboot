@@ -1375,7 +1375,6 @@ macro(na_testsuite_add_npe_tests CONF)
     endforeach()
 
     ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
-    ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP1_0_99 main_mpe_auto_tests_GROUP1_0_99 MAKE_TIGHT BITWISE)
       ##################################
       ## Direct Complex Tests On Important Cube Sizes
     foreach(label RANGE 49 72)
@@ -1406,7 +1405,55 @@ macro(na_testsuite_add_npe_tests CONF)
       # ADD_NPE_MPE_VPE_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU
       # ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU_PPE
       ###################################################################
-    
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY1")
+    foreach(iter_start RANGE 0 13500 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP1_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP1_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY2")
+    foreach(iter_start RANGE 0 10800 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP2_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP2_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY3")
+    foreach(iter_start RANGE 0 8100 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP3_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP3_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY4")
+    foreach(iter_start RANGE 0 35712 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP4_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP4_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY5")
+    foreach(iter_start RANGE 0 74880 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP5_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP5_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY6")
+    foreach(iter_start RANGE 0 138240 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP6_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP6_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
+
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY7")
+    foreach(iter_start RANGE 0 32400 100)
+      math(EXPR iter_end "${iter_start}+99")
+      ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP7_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP7_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
+    endforeach()
+  endif()
 
   na_testsuite_add_vpe_tests(${CONF})
   na_testsuite_add_ppe_tests(${CONF})
