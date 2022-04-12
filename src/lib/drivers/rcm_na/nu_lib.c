@@ -2363,7 +2363,7 @@ void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* c
   
   rumboot_printf("Start VPE...\n");
   
-  temp = (temp & 0xF0FFFFFF) | cfg->depend_mask; // Manipulate With DPND Fields
+  temp = (temp & 0xE0FFFFFF) | cfg->depend_mask; // Manipulate With DPND Fields
   
   if(cfg->mark)
    {temp = temp | 0x00000003; }//MARKED_CNTX=1 & NEXT_CNTX=1 
