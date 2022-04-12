@@ -28,6 +28,13 @@ int nu_get_add_heap_id() {
 #endif
 }
 
+uint32_t mask_N_M (int N, int M) {
+  uint32_t mask_n_0   = (uint32_t)(0xFFFFFFFF) >> (32-1)-N;
+  uint32_t mask_31_m  = (uint32_t)(0xFFFFFFFF) << M;
+
+  return mask_n_0 & mask_31_m;
+}
+
 uintptr_t nu_virt_to_dma(volatile const void *addr) {
   if(addr==NULL)
     return 0;
