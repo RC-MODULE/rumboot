@@ -1344,13 +1344,13 @@ macro(na_testsuite_add_npe_tests CONF)
   
    ##########################################
       ## MPE Reg Test
-    if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE_CFG")
-		add_rumboot_target(
-        CONFIGURATION ROM
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE")
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
         NAME MPE_1
         FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
-		)
-      endif()
+    )
+  endif()
   
       ##########################################
       ## Direct Tests That Use Predefined Set Of MPE Configurations And Then Use Some VPE And PPE Functions
