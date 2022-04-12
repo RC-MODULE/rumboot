@@ -1375,7 +1375,7 @@ macro(na_testsuite_add_npe_tests CONF)
     endforeach()
 
     ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
-    ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_MPE_CFG_AUTO main_mpe_auto_tests_MPE_CFG_AUTO   MAKE_TIGHT BITWISE)
+    ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP1_0_99 main_mpe_auto_tests_GROUP1_0_99 MAKE_TIGHT BITWISE)
       ##################################
       ## Direct Complex Tests On Important Cube Sizes
     foreach(label RANGE 49 72)
