@@ -2287,6 +2287,20 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wPV7 , wbase + NU_PPE_PADDING_VALUE_7    );
 }
 
+void nu_ppe_page_cmpl_set(uintptr_t wbase) {
+  iowrite32(0x1, wbase + NU_PPE_WDMA_INT_SET  );
+}
+uint32_t nu_ppe_page_cmpl_status(uintptr_t wbase) {
+  return ioread32(wbase + NU_PPE_WDMA_INT_STATUS)&0x1;
+}
+void nu_ppe_page_cmpl_reset(uintptr_t wbase) {
+  iowrite32(0x1, wbase + NU_PPE_WDMA_INT_RESET);
+}
+
+void nu_ppe_page_cmpl_mask(uintptr_t wbase, uint32_t int_mask) {
+  iowrite32(int_mask, wbase + NU_PPE_WDMA_INT_MASK );
+}
+
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
@@ -2297,6 +2311,7 @@ void nu_ppe_rdma_wait_complete(uintptr_t rbase){
   while(ioread32(rbase + NU_PPE_STATUS)) {}
   rumboot_printf("Done PPE RDMA...\n");
 }
+
 uint32_t nu_ppe_status_done (uintptr_t wbase) {
   return ioread32(wbase + NU_PPE_STATUS_DONE);
 }

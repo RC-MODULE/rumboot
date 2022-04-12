@@ -88,7 +88,7 @@ int main() {
   int i;
   int iterations;
   
-  rumboot_printf("Hellooooooo\n");
+  rumboot_printf("coupled_loop_vpe_ppe_long\n");
 
   heap_id = nu_get_heap_id();
   
@@ -141,15 +141,19 @@ int main() {
       // Program The VPE And PPE (Single Run)
     nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
-  
+
     iteration_desc.cfg_reg_ppe->wOpEn  = 0x1;  // Two Lines Needed Because nu_ppe_wdma_run Just Writes The Content Of wOpEn
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-    
+
+    while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
     nu_ppe_wait_complete(MY_PPE_REGS_BASE);
-    
-    rumboot_printf("Comparing..\n");
+
+    while (!nu_ppe_page_cmpl_status(MY_PPE_REGS_BASE)) {};
+    nu_ppe_page_cmpl_reset(MY_PPE_REGS_BASE);
+
+    rumboot_printf("Comparing...\n");
     
       // Result vs Etalon Comparision
     if(nu_bitwise_compare(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)

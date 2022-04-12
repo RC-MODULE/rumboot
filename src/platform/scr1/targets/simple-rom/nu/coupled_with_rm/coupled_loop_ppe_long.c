@@ -150,7 +150,7 @@ int main() {
 
     clk_cnt = rumboot_platform_get_uptime();
 
-    while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
+    while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
     clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 
     #ifdef MEMtoPPE
@@ -162,6 +162,9 @@ int main() {
     #ifdef PPE_PAUSE
     nu_na_wait_int(NPE_BASE);
     #endif
+
+    while (!nu_ppe_page_cmpl_status(MY_PPE_REGS_BASE)) {};
+    nu_ppe_page_cmpl_reset(MY_PPE_REGS_BASE);
 
     dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
     clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
