@@ -18,8 +18,8 @@ int nu_mpe_decide_dma_config(
     void* warr,
     void* cfg_lut
 ) {
-    cfg->dma_d_config.rdma.BFCA  = rumboot_virt_to_dma(cube); // Data Base Address
-    cfg->dma_w_config.rdma.BFCA  = rumboot_virt_to_dma(warr); // Weights Base Address
+    cfg->dma_d_config.rdma.BFCA  = nu_virt_to_dma(cube); // Data Base Address
+    cfg->dma_w_config.rdma.BFCA  = nu_virt_to_dma(warr); // Weights Base Address
     cfg->dma_d_config.depend_mask = 0; // Does Not Depend On Any Other Channel Run
     cfg->dma_w_config.depend_mask = 0;
     if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1; // Search For The MPE DMA Configuration (That Is Predefined In cfg_lut Table)
@@ -67,10 +67,10 @@ void nu_vpe_decide_dma_config (
 
       // Data Base Addresses
     cfg->src_rdma_config.dma_baddr = (uint32_t) 0xDEADBEEF; // Should Be Not Used
-    cfg->op0_rdma_config.dma_baddr = rumboot_virt_to_dma(op0);
-    cfg->op1_rdma_config.dma_baddr = rumboot_virt_to_dma(op1);
-    cfg->op2_rdma_config.dma_baddr = rumboot_virt_to_dma(op2);
-    cfg->wdma_config.dma_baddr     = rumboot_virt_to_dma(res_data);
+    cfg->op0_rdma_config.dma_baddr = nu_virt_to_dma(op0);
+    cfg->op1_rdma_config.dma_baddr = nu_virt_to_dma(op1);
+    cfg->op2_rdma_config.dma_baddr = nu_virt_to_dma(op2);
+    cfg->wdma_config.dma_baddr     = nu_virt_to_dma(res_data);
 
     cfg->src_rdma_config.dma_axi_len = axi_len;
     cfg->op0_rdma_config.dma_axi_len = axi_len;
@@ -88,7 +88,7 @@ void nu_ppe_decide_dma_config(
     void*res_data
 ){
     cfg_reg->rBALi = (uintptr_t)0xDEADBEEF; // Data Base Addresses
-    cfg_reg->wBALo = rumboot_virt_to_dma(res_data);
+    cfg_reg->wBALo = nu_virt_to_dma(res_data);
 
     cfg_reg->wOpM = 3 << 8; // FLYING_BOXED 
                          // Other Fields Of wOpM Will Be Appended By nu_ppe_decide_dma_config_trivial
