@@ -55,6 +55,7 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
   cfg->wdma_config.dma_bstride=0;
+  cfg->depend_mask=0; // Does Not Depend On Any Other Channel Run
   
 #ifdef AXI_LEN
     axi_len = AxiLen;
