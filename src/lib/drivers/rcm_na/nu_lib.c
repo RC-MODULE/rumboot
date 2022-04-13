@@ -2717,18 +2717,39 @@ void nu_na_ppe_pause(uintptr_t npe_base ){
 }
 
 void nu_na_ppe_pause_set(uintptr_t base) {
+  // 2 PPE_PAUSE
 
-  iowrite32(ioread32(base+NA_PAUSE) | (0x1<<2), base+NA_PAUSE);
+  iowrite32(ioread32(base+NA_PAUSE) | 0x1<<2, base+NA_PAUSE);
 }
 
 uint32_t nu_na_ppe_pause_status(uintptr_t base) {
+  // 18 PPE_PAUSE_STAT
 
   return (ioread32(base + NA_PAUSE) >> 18)&0x1;
 }
 
 void nu_na_ppe_pause_clr(uintptr_t base) {
+  // 2 PPE_PAUSE
 
-  iowrite32((ioread32(base+NA_PAUSE) & ~mask_N_M(2,2)), base+NA_PAUSE);
+  iowrite32(ioread32(base+NA_PAUSE) & ~mask_N_M(2,2), base+NA_PAUSE);
+}
+
+void nu_na_int_units_ppe_mask (uintptr_t base) {
+  // 25 IRQ_PPE_RESET_CMPL
+
+  iowrite32(ioread32(base+NA_INT_UNITS_MASK) | 0x1<<25, base+NA_INT_UNITS_MASK);
+}
+
+void nu_na_ppe_soft_reset_set (uintptr_t base) {
+  // 0 PPE_SOFT_RESET
+
+  iowrite32(ioread32(base+NA_PPE_SOFT_RESET) | 0x1<<0, base+NA_PPE_SOFT_RESET);  
+}
+
+uint32_t nu_na_ppe_soft_reset_status (uintptr_t base) {
+  // 0 PPE_SOFT_RESET
+
+  return ioread32(base+NA_PPE_SOFT_RESET) & 0x1;  
 }
 
 void nu_na_vpe_soft_reset(uintptr_t npe_base){

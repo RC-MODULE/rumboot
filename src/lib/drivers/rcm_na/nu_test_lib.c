@@ -2204,6 +2204,51 @@ int nu_ppe_regs_check(uintptr_t base, int num, int iteration) {
   }
 return 0;  
 }
+
+int nu_ppe_rdma_regs_swrst_check (uintptr_t base) {
+  int i, res;
+
+  int last_reg_addr = NU_PPE_RDMA_BOX_OFFSET_Z;
+
+  uint32_t dflt_rdma_axi_param= 0x2 << 16;
+  uint32_t dflt_rdma_xyz_drct = 0x2;
+
+  for (i=0, res=0; i<last_reg_addr+4 && !res; i+=4) {
+
+    res = ioread32(base+i);
+
+    if      (i == NU_PPE_RDMA_AXI_PARAM ) res = !(res == dflt_rdma_axi_param);
+    else if (i == NU_PPE_RDMA_XYZ_DRCT  ) res = !(res == dflt_rdma_xyz_drct );
+    else                                  res = !(res == 0x0);
+
+    if (res) rumboot_printf("ERROR: reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+  }
+
+  return res;
+}
+
+int nu_ppe_regs_swrst_check (uintptr_t base) {
+  int i, res;
+
+  int last_reg_addr = NU_PPE_STATUS_DONE;
+
+  uint32_t dflt_wdma_axi_param= 0x2 << 16;
+  uint32_t dflt_wdma_xyz_drct = 0x2;
+
+  for (i=0; i<last_reg_addr+4 && !res; i+=4) {
+
+    res = ioread32(base+i);
+
+    if      (i == NU_PPE_WDMA_AXI_PARAM ) res = !(res == dflt_wdma_axi_param);
+    else if (i == NU_PPE_WDMA_XYZ_DRCT  ) res = !(res == dflt_wdma_xyz_drct );
+    else                                  res = !(res == 0x0);
+
+    if (res) rumboot_printf("ERROR: reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+  }
+
+  return res;
+}
+
   int nu_mpe_regs_check(uintptr_t base, int num, int iteration) {
 	 int res_mpe;
 	res_mpe = ioread32(base + 4*num); 
