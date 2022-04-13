@@ -1668,12 +1668,12 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.TPYEn = (cfg->Tp) ? Enable_En : Enable_NotEn;
   cfg->dma_d_config.rdma.BPYEn = (cfg->Bp) ? Enable_En : Enable_NotEn;
   
-  cfg->dma_d_config.rdma.AOffset = -(cfg->W * sizeof_C * cfg->Tp + sizeof_C * cfg->Lp);
-  cfg->dma_d_config.rdma.LPXOffset=-(cfg->W * sizeof_C * cfg->Tp);
-  cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
-  cfg->dma_d_config.rdma.TPYOffset= 0 ;
-  cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
-  cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
+  //cfg->dma_d_config.rdma.AOffset = -(cfg->W * sizeof_C * cfg->Tp + sizeof_C * cfg->Lp);
+  //cfg->dma_d_config.rdma.LPXOffset=-(cfg->W * sizeof_C * cfg->Tp);
+  //cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
+  //cfg->dma_d_config.rdma.TPYOffset= 0 ;
+  //cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
+  //cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
   
   for(int i=0;i<7;i++)
  
@@ -1702,12 +1702,12 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_w_config.rdma.TPYEn = Enable_NotEn;
   cfg->dma_w_config.rdma.BPYEn = Enable_NotEn;
   
-  cfg->dma_w_config.rdma.AOffset =0;
-  cfg->dma_w_config.rdma.LPXOffset=0;
-  cfg->dma_w_config.rdma.RPXOffset=0;
-  cfg->dma_w_config.rdma.TPYOffset= 0;
-  cfg->dma_w_config.rdma.BPYOffset= 0;
-  cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;
+  //cfg->dma_w_config.rdma.AOffset =0;
+  //cfg->dma_w_config.rdma.LPXOffset=0;
+  //cfg->dma_w_config.rdma.RPXOffset=0;
+  //cfg->dma_w_config.rdma.TPYOffset= 0;
+  //cfg->dma_w_config.rdma.BPYOffset= 0;
+  //cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;
    
   cfg->dma_w_config.rdma.LPXData=0;
   cfg->dma_w_config.rdma.RPXData=0;
