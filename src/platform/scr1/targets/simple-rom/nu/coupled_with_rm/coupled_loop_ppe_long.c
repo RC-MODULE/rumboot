@@ -41,14 +41,13 @@ int main() {
   int res;
   int skip;
 
-  uint32_t flying_mode, lbs, mv, max_red, ppe_swrst_en, repeat_it;
+  uint32_t flying_mode, lbs, mv, max_red, ppe_swrst_en;
 
   flying_mode = 0x0;
   lbs         = 0x0;
   mv          = 0x0;
   max_red     = 0x0;
   ppe_swrst_en= 0x0;
-  repeat_it   = 0x0;
 
   rumboot_printf("coupled_loop_ppe_long\n");
 
@@ -108,16 +107,10 @@ int main() {
     nu_ppe_iterate_desc(&iteration_desc);
   }
 
-  //#ifdef PPE_SWRST
-  //nu_na_int_units_ppe_mask(NPE_BASE+NA_CU_REGS_BASE)
-  //#endif
-
   #ifdef PPE_SWRST
   ppe_swrst_en = 1;
-  repeat_it = 1;
   #else
   ppe_swrst_en = 0;
-  repeat_it = 0;
   #endif
 
   for (perf_avg=0, i=skip; i<it_nmb && !res; i++) {
@@ -138,102 +131,97 @@ int main() {
     iteration_desc.cfg_reg->rOpEn  = 0x0;
     iteration_desc.cfg_reg->wOpEn  = 0x0;
 
-    do {
+    #if SKIP_ITERATIONS != 0
+    // Print Them When We Debug
+    nu_ppe_print_config(iteration_desc.cfg);
+    nu_ppe_print_config_reg(iteration_desc.cfg_reg);
+    #endif
 
-      #if SKIP_ITERATIONS != 0
-      // Print Them When We Debug
-      nu_ppe_print_config(iteration_desc.cfg);
-      nu_ppe_print_config_reg(iteration_desc.cfg_reg);
-      #endif
+    nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
 
-      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
+    iteration_desc.cfg_reg->wOpEn  = 0x1;
+    nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
 
-      iteration_desc.cfg_reg->wOpEn  = 0x1;
-      nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
+    #ifdef MEMtoPPE
+    iteration_desc.cfg_reg->rOpEn  = 0x1;
+    nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg); // rdma start
+    #endif
 
-      #ifdef MEMtoPPE
-      iteration_desc.cfg_reg->rOpEn  = 0x1;
-      nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg); // rdma start
-      #endif
+    clk_cnt = rumboot_platform_get_uptime();
 
-      clk_cnt = rumboot_platform_get_uptime();
- 
-      #ifdef PPE_PAUSE
+    #ifdef PPE_PAUSE
+    nu_na_ppe_pause_set(NPE_BASE+NA_CU_REGS_BASE);
+    while (!nu_na_ppe_pause_status(NPE_BASE+NA_CU_REGS_BASE)) {}
+
+    nu_na_ppe_pause_clr(NPE_BASE+NA_CU_REGS_BASE);
+    #endif
+
+    if (ppe_swrst_en) {
+
       nu_na_ppe_pause_set(NPE_BASE+NA_CU_REGS_BASE);
       while (!nu_na_ppe_pause_status(NPE_BASE+NA_CU_REGS_BASE)) {}
 
+      nu_na_ppe_soft_reset_set(NPE_BASE+NA_CU_REGS_BASE);
+
+      while (nu_na_ppe_soft_reset_status(NPE_BASE+NA_CU_REGS_BASE)){}
+
+      nu_ppe_rdma_regs_swrst_check(MY_PPE_RDMA_BASE);
+      nu_ppe_regs_swrst_check(MY_PPE_REGS_BASE);
+
       nu_na_ppe_pause_clr(NPE_BASE+NA_CU_REGS_BASE);
+
+      ppe_swrst_en = 0;
+
+      nu_ppe_iterate_desc(&iteration_desc);
+    }
+    else {
+      while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
+      clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
+
+      #ifdef MEMtoPPE
+      nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // wait rdma complete
       #endif
 
-      if (ppe_swrst_en) {
+      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
 
-        nu_na_ppe_pause_set(NPE_BASE+NA_CU_REGS_BASE);
-        while (!nu_na_ppe_pause_status(NPE_BASE+NA_CU_REGS_BASE)) {}
+      while (!nu_ppe_page_cmpl_status(MY_PPE_REGS_BASE)) {};
+      nu_ppe_page_cmpl_reset(MY_PPE_REGS_BASE);
 
-        nu_na_ppe_soft_reset_set(NPE_BASE+NA_CU_REGS_BASE);
+      dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
+      clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
 
-        while (nu_na_ppe_soft_reset_status(NPE_BASE+NA_CU_REGS_BASE)){}
+      rumboot_printf("Comparing...\n");
+      res = nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
 
-        nu_ppe_rdma_regs_swrst_check(MY_PPE_RDMA_BASE);
-        nu_ppe_regs_swrst_check(MY_PPE_REGS_BASE);
+      if (res) {
+        nu_ppe_print_config(iteration_desc.cfg);
+        nu_ppe_print_config_reg(iteration_desc.cfg_reg);
 
-        nu_na_ppe_pause_clr(NPE_BASE+NA_CU_REGS_BASE);
-
-        ppe_swrst_en = 0;
-      }
-      else {
-        while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
-        clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
-
-        #ifdef MEMtoPPE
-        nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // wait rdma complete
-        #endif
-
-        nu_ppe_wait_complete(MY_PPE_REGS_BASE);
-
-        while (!nu_ppe_page_cmpl_status(MY_PPE_REGS_BASE)) {};
-        nu_ppe_page_cmpl_reset(MY_PPE_REGS_BASE);
-
-        dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
-        clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
-
-        rumboot_printf("Comparing...\n");
-        res = nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
-
-        if (res) {
-          nu_ppe_print_config(iteration_desc.cfg);
-          nu_ppe_print_config_reg(iteration_desc.cfg_reg);
-
-          // rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-          // rumboot_platform_dump_region("cfg_reg.bin", cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
-        }
-
-        if (!res) {
-          rumboot_printf("Iteration %d PASSED\n", i);
-
-          #ifdef ShowPerf
-          clk_cnt = (clk_cnt*100)/ppe_clk_f;
-          perf_avg += clk_cnt;
-
-          rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
-          #endif
-
-          nu_ppe_iterate_desc(&iteration_desc);
-        }
-        else rumboot_printf("Test FAILED at iteration %d\n", i);
-
-        #ifdef PPE_SWRST
-        repeat_it = 0x0;
-        #endif
+        // rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
+        // rumboot_platform_dump_region("cfg_reg.bin", cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
       }
 
-      //rumboot_malloc_update_heaps(0);
-    } while (repeat_it);
+      if (!res) {
+        rumboot_printf("Iteration %d PASSED\n", i);
 
-    #ifdef PPE_SWRST
-    ppe_swrst_en = 1;
-    repeat_it = 1;
-    #endif
+        #ifdef ShowPerf
+        clk_cnt = (clk_cnt*100)/ppe_clk_f;
+        perf_avg += clk_cnt;
+
+        rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
+        #endif
+
+        nu_ppe_iterate_desc(&iteration_desc);
+
+      }
+      else rumboot_printf("Test FAILED at iteration %d\n", i);
+
+      #ifdef PPE_SWRST
+      ppe_swrst_en = 1;
+      #endif
+    }
+
+    //rumboot_malloc_update_heaps(0);
   }
 
   #ifdef ShowPerf
