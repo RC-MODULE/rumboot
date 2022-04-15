@@ -82,7 +82,7 @@ int main() {
 
   heap_id = nu_get_heap_id();
   
-  rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &num_cubes);
+  rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &num_cubes, sizeof(num_cubes));
   rumboot_printf("Number of cubes %d\n",num_cubes);
   
   nu_vpe_init_test_desc(&test_desc);
