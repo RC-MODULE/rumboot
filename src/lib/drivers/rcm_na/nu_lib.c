@@ -2287,18 +2287,40 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wPV7 , wbase + NU_PPE_PADDING_VALUE_7    );
 }
 
-void nu_ppe_page_cmpl_set(uintptr_t wbase) {
-  iowrite32(0x1, wbase + NU_PPE_WDMA_INT_SET  );
-}
-uint32_t nu_ppe_page_cmpl_status(uintptr_t wbase) {
-  return ioread32(wbase + NU_PPE_WDMA_INT_STATUS)&0x1;
-}
-void nu_ppe_page_cmpl_reset(uintptr_t wbase) {
-  iowrite32(0x1, wbase + NU_PPE_WDMA_INT_RESET);
+void nu_ppe_page_cmpl_mask (uintptr_t base) {
+  //WDMA_PAGE_CMPL 0
+
+  iowrite32(ioread32(base + NU_PPE_WDMA_INT_MASK) | 0x1, base + NU_PPE_WDMA_INT_MASK);
 }
 
-void nu_ppe_page_cmpl_mask(uintptr_t wbase, uint32_t int_mask) {
-  iowrite32(int_mask, wbase + NU_PPE_WDMA_INT_MASK );
+uint32_t nu_ppe_page_cmpl_status(uintptr_t base) {
+  //WDMA_PAGE_CMPL 0
+
+  return ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1;
+}
+
+void nu_ppe_page_cmpl_reset(uintptr_t base) {
+  //WDMA_PAGE_CMPL 0
+
+  iowrite32(ioread32(base + NU_PPE_WDMA_INT_RESET) | 0x1, base + NU_PPE_WDMA_INT_RESET);
+}
+
+void nu_ppe_marked_page_cmpl_mask (uintptr_t base) {
+  //WDMA_MARKED_PAGE_CMPL 1
+
+  iowrite32(ioread32(base + NU_PPE_WDMA_INT_MASK) | 0x1<<1, base + NU_PPE_WDMA_INT_MASK);
+}
+
+uint32_t nu_ppe_marked_page_cmpl_status(uintptr_t base) {
+  //WDMA_MARKED_PAGE_CMPL 1
+
+  return (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<1) >> 1;
+}
+
+void nu_ppe_marked_page_cmpl_reset (uintptr_t base) {
+  //WDMA_MARKED_PAGE_CMPL 1
+
+  iowrite32(ioread32(base + NU_PPE_WDMA_INT_RESET) | 0x1<<1, base + NU_PPE_WDMA_INT_RESET);
 }
 
 // rdma
