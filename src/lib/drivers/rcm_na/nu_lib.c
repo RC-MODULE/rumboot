@@ -1899,8 +1899,8 @@ void nu_mpe_wait_ready(uintptr_t base) {
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   rumboot_printf("Start MPE...\n");
-  iowrite32(cfg->dma_d_config.depend_mask,mpe_base + MPE_RDMA_D_BASE + DMA_START);
-  iowrite32(cfg->dma_w_config.depend_mask,mpe_base + MPE_RDMA_W_BASE + DMA_START);
+  iowrite32(cfg->dma_d_config.depend_mask | (1<<0), mpe_base + MPE_RDMA_D_BASE + DMA_START);
+  iowrite32(cfg->dma_w_config.depend_mask | (1<<0), mpe_base + MPE_RDMA_W_BASE + DMA_START);
   iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICMW);
 }
 
