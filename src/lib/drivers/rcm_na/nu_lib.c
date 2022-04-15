@@ -143,6 +143,7 @@ void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
   cfg-> rnd_mode =*ptr;ptr++;
   cfg-> sat_en   =*ptr;ptr++;
   cfg-> rnd_size =*ptr;ptr++;
+  cfg-> batch_size =*ptr;ptr++;
 }
 
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
@@ -675,6 +676,7 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     nu_vpe_print_RoundMode(cfg->rnd_mode,"rnd_mode");
     nu_vpe_print_Enable(cfg->sat_en, "sat_en  ");
     rumboot_printf("  rnd_size = %d \n" , cfg->rnd_size);
+    rumboot_printf("  batch_size = %d \n" , cfg->batch_size);
 
   rumboot_printf("ConfigMAMPE:\n");
   

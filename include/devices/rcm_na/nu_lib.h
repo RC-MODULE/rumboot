@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #define NU_VPE_CFG_PARAMS_NUM 83
-#define NU_MPE_CFG_PARAMS_NUM 18
+#define NU_MPE_CFG_PARAMS_NUM 19
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 62
 
@@ -274,6 +274,7 @@
     RoundMode rnd_mode;
     Enable   sat_en   ;
     uint32_t rnd_size ;
+    uint32_t batch_size ;
     ConfigDMAMPE dma_d_config;
     ConfigDMAMPE dma_w_config;
     ConfigMAMPE ma_config;
