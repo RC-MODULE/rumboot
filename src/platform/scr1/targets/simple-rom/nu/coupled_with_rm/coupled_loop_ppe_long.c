@@ -41,7 +41,7 @@ int main() {
   int res;
   int skip;
 
-  uint32_t flying_mode, lbs, mv, max_red;
+  uint32_t flying_mode, lbs, mv, max_red, ppe_clk_f;
   uint32_t ppe_swrst_en, setup_reg, mark_cube;
 
   flying_mode = 0x0;
@@ -124,6 +124,12 @@ int main() {
     mark_cube = 0;
   #endif
 
+  #ifdef ShowPerf
+    ppe_clk_f = 100;
+  #else
+    ppe_clk_f = 1;
+  #endif
+
   for (perf_avg=0, i=skip; i<it_nmb && !res; i++) {
     //rumboot_malloc_update_heaps(1);
 
@@ -158,14 +164,15 @@ int main() {
     #endif
 
     iteration_desc.cfg_reg->wOpEn  = iteration_desc.cfg_reg->wOpEn | 0x1;
+
+    clk_cnt = rumboot_platform_get_uptime();
+
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
 
     #ifdef MEMtoPPE
       iteration_desc.cfg_reg->rOpEn  = iteration_desc.cfg_reg->rOpEn | 0x1;
       nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg); // rdma start
     #endif
-
-    clk_cnt = rumboot_platform_get_uptime();
 
     #ifdef PPE_PAUSE
       nu_na_ppe_pause_set(NPE_BASE+NA_CU_REGS_BASE);
