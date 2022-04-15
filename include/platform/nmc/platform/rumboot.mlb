@@ -1,3 +1,13 @@
+/*
+data ".data.macro"
+    FIFOBASE: word = 00039400h;
+    DATA: word = 0;
+    CONTROL: word = 2;
+    EXITFLAG: word = 80000000h;
+    ENABLEFLAG: word = 00000001h;
+    STOPWRITEFLAG: word = 00000100h;
+end ".data.macro";
+*/
 
 macro rumboot_nmc_init_core()
 extern _rumboot_platform_stack_start: label;
@@ -32,12 +42,20 @@ macro rumboot_runtime_init(raddr)
 
     gr1 = 2c0deh; 
     [ar5 + 01h]=gr1;
+
+    ar0 = 00039402h;
+    gr0 = 1;
+    [ar0] = gr0;
 end rumboot_runtime_init;
 
-macro rumboot_exit(raddr, excode)
-    ar5 = raddr;
-    gr0 = 1; 
-    gr1 = excode;
-    [ar5 + 03h]=gr1;    
-    [ar5 + 02h]=gr0;
+macro rumboot_exit(nevermind, excode)
+    /* send EXIT signal */
+    ar1 = 00039400h;
+    gr0 = 80000000h or excode;
+    [ar1] = gr0;
+
+    /* tell job is done and one can grab data */
+    gr0 = 00000101b;
+    gr1 = 2;
+    [ar1+=gr1] = gr0;
 end rumboot_exit;
