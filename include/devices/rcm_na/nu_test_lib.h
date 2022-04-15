@@ -3,6 +3,7 @@
 #define NU_TEST_LIB_H
 
 #include <stdint.h>
+#include <regs/regs_na.h>
 #include "devices/rcm_na/nu_lib.h"
 
 #define NU_MPE_REG_MAP_SIZE (MPE_MA_BASE + MPE_CMD_ICMW)  // 0x21C
