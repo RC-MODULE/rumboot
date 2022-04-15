@@ -41,13 +41,14 @@ int main() {
   int res;
   int skip;
 
-  uint32_t flying_mode, lbs, mv, max_red, ppe_swrst_en;
+  uint32_t flying_mode, lbs, mv, max_red, ppe_swrst_en, setup_reg;
 
   flying_mode = 0x0;
   lbs         = 0x0;
   mv          = 0x0;
   max_red     = 0x0;
   ppe_swrst_en= 0x0;
+  setup_reg   = 0x1;
 
   rumboot_printf("coupled_loop_ppe_long\n");
 
@@ -137,7 +138,7 @@ int main() {
     nu_ppe_print_config_reg(iteration_desc.cfg_reg);
     #endif
 
-    nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
+    if (setup_reg) nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
 
     iteration_desc.cfg_reg->wOpEn  = 0x1;
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
@@ -211,8 +212,20 @@ int main() {
         rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
         #endif
 
-        nu_ppe_iterate_desc(&iteration_desc);
+        #ifdef PPE_CFG_CONST
+        if (setup_reg) {
+          memset(iteration_desc.res_data, 0xA5, iteration_desc.res_metrics);
+          setup_reg = 0;
 
+          i = i-1;
+        }
+        else {
+          setup_reg = 1;
+          nu_ppe_iterate_desc(&iteration_desc);
+        }
+        #else
+        nu_ppe_iterate_desc(&iteration_desc);
+        #endif
       }
       else rumboot_printf("Test FAILED at iteration %d\n", i);
 

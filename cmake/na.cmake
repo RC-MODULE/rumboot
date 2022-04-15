@@ -1053,12 +1053,18 @@ macro (ADD_PPE_PY_TESTS CONF)
       set (PPE_SWRST "NO_PPE_SWRST")
     endif()
 
+    if ("${test_name}" MATCHES "dc_ppe_a_few_cube") 
+      set (PPE_CFG_CONST "PPE_CFG_CONST")
+    else()
+      set (PPE_CFG_CONST "NO_PPE_CFG_CONST")
+    endif()
+
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
  
-      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_PAUSE} -D${PPE_SWRST}
+      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_PAUSE} -D${PPE_SWRST} -D${PPE_CFG_CONST}
 
       PREPCMD 
         cp ${file} . 
