@@ -1491,8 +1491,9 @@ macro(na_testsuite_add_vpe_unit_tests CONF)
   ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_16_op2_c2  main_vpe_16_op2_c2 )
 
   # Tests on VPE::NORM
-  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_8_0_op0_norm       main_vpe_8_0_op0_norm      )
-  ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_14_0_op1_norm      main_vpe_14_0_op1_norm     )
+  # Hm, Replaced By The Version With Round Mode Setting But Not Deleted From Here
+  #ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_8_0_op0_norm       main_vpe_8_0_op0_norm      )
+  #ADD_VPE_COUPLED_TEST_LOOP_LONG(${CONF} vpe_14_0_op1_norm      main_vpe_14_0_op1_norm     )
 
   foreach(round_macro IN ITEMS 
       DOWN     TOWARDSZERO     UP     AWAYFROMZERO     HALFDOWN     HALFTOWARDSZERO     NEAREST     HALFAWAYFROMZERO
