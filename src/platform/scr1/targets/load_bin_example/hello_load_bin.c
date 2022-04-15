@@ -19,7 +19,7 @@ int main()
   if(dump_ptr[0] != 0xAAAA5555)
 	 return 1;
 
-  rumboot_platform_request_file("myfile", dump_ptr);
+  rumboot_platform_request_file_ex("myfile", dump_ptr,dump_size*4);
   data = dump_ptr[0];
   rumboot_printf("My data is %x\n",data);
   rumboot_platform_dump_region("mydump", (uint32_t) dump_ptr, dump_size*4);

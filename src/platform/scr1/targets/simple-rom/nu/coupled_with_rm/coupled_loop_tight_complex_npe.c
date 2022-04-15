@@ -5,9 +5,9 @@
 
 #include <platform/devices.h> 
 
+#include <devices/rcm_na/nu_test_macro.h>
 #include <devices/rcm_na/nu_lib.h> 
 #include <devices/rcm_na/nu_test_lib.h> 
-#include <devices/rcm_na/nu_test_macro.h> 
 
 
 int nu_mpe_decide_dma_config(
@@ -93,7 +93,77 @@ void nu_ppe_decide_dma_config(
     cfg_reg->wOpM = 3 << 8; // FLYING_BOXED 
                          // Other Fields Of wOpM Will Be Appended By nu_ppe_decide_dma_config_trivial
     nu_ppe_decide_dma_config_trivial(cfg, res_metrics, cfg_reg);
-    cfg_reg->wOpEn  = 0x0; // This Is Needed Because Some Other Setup Functions Write Into DMA Start Reg
+    cfg_reg->wOpEn  = 0x1; // This Is Needed Because Some Other Setup Functions Write Into DMA Start Reg
+}
+
+NPEReg* nu_npe_add_diff_reg_map(NPEReg* associative_regs_dump_curr_ptr, NPEIterationDescriptor iteration_desc, uint32_t i) {
+    NARegDump* curr_regs_dump;
+    NARegDump* next_regs_dump;
+    if (i == 0) {
+        associative_regs_dump_curr_ptr = nu_mpe_add_diff_reg_map(associative_regs_dump_curr_ptr, NULL, iteration_desc.next_regs_dump->mpe);
+        associative_regs_dump_curr_ptr = nu_mpe_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_mpe);
+        associative_regs_dump_curr_ptr = nu_vpe_add_diff_reg_map(associative_regs_dump_curr_ptr, NULL, iteration_desc.next_regs_dump->vpe, iteration_desc.cfg_vpe->op2_config.lut_en);
+        associative_regs_dump_curr_ptr = nu_vpe_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_vpe);
+        if(iteration_desc.PPE_ENABLED==Enable_En) {
+            associative_regs_dump_curr_ptr = nu_ppe_rdma_add_diff_reg_map(associative_regs_dump_curr_ptr, NULL, iteration_desc.next_regs_dump->ppe_rdma);
+            associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_reg_map(associative_regs_dump_curr_ptr, NULL, iteration_desc.next_regs_dump->ppe_wdma);
+            associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_reg_ppe);
+        }
+    }
+    else {
+        associative_regs_dump_curr_ptr = nu_mpe_add_diff_reg_map(associative_regs_dump_curr_ptr, iteration_desc.curr_regs_dump->mpe, iteration_desc.next_regs_dump->mpe);
+        associative_regs_dump_curr_ptr = nu_mpe_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_mpe);
+        associative_regs_dump_curr_ptr = nu_vpe_add_diff_reg_map(associative_regs_dump_curr_ptr, iteration_desc.curr_regs_dump->vpe, iteration_desc.next_regs_dump->vpe, iteration_desc.cfg_vpe->op2_config.lut_en);
+        associative_regs_dump_curr_ptr = nu_vpe_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_vpe);
+        if(iteration_desc.PPE_ENABLED==Enable_En) {
+            associative_regs_dump_curr_ptr = nu_ppe_rdma_add_diff_reg_map(associative_regs_dump_curr_ptr, iteration_desc.curr_regs_dump->ppe_rdma, iteration_desc.next_regs_dump->ppe_rdma);
+            associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_reg_map(associative_regs_dump_curr_ptr, iteration_desc.curr_regs_dump->ppe_wdma, iteration_desc.next_regs_dump->ppe_wdma);
+            associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_reg_ppe);
+        }
+    }
+    return associative_regs_dump_curr_ptr;
+}
+
+
+void nu_setup_next_regs_dump(NPEIterationDescriptor iteration_desc) {
+    nu_mpe_setup((uintptr_t)iteration_desc.next_regs_dump->mpe, iteration_desc.cfg_mpe);
+    nu_vpe_setup((uintptr_t)iteration_desc.next_regs_dump->vpe, iteration_desc.cfg_vpe);
+    if(iteration_desc.PPE_ENABLED==Enable_En) {
+        nu_ppe_setup_reg((uintptr_t)iteration_desc.next_regs_dump->ppe_rdma, (uintptr_t)iteration_desc.next_regs_dump->ppe_wdma, iteration_desc.cfg_reg_ppe);
+    }
+}
+
+void nu_get_temp_depend_table(NPETestDescriptor* test_desc, int iterations) {
+    int depend_rd_after_wr_table[2][2][7] = {
+        {
+            { -1, -1, -1, -1, -1, -1, -1}, // WDMA VPE 0
+            { -1, -1, -1, -1, -1, -1, -1}, // WDMA PPE 0
+        },
+        {
+            { -1, -1, -1, -1, -1, -1, -1}, // WDMA VPE 1
+            {  0, -1, -1, -1, -1, -1, -1}, // WDMA PPE 1
+        },
+    };
+
+    int depend_wr_after_rd_table[2][2][7] = {
+        {
+            { -1, -1, -1, -1, -1, -1, -1}, // WDMA VPE 0
+            { -1, -1, -1, -1, -1, -1, -1}, // WDMA PPE 0
+        },
+        {
+            { -1, -1, -1, -1, -1, -1, -1},  // WDMA VPE 1
+            { -1, -1, -1, -1, -1, -1, -1},  // WDMA PPE 1
+        },
+    };
+
+    for (int i = 0; i < iterations; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 7; k++) {
+                test_desc->array_of_depend_table[i].read_after_write[j][k] = depend_rd_after_wr_table[i][j][k];
+                test_desc->array_of_depend_table[i].write_after_read[j][k] = depend_wr_after_rd_table[i][j][k];
+            }
+        }
+    }
 }
 
 
@@ -109,18 +179,10 @@ int main() {
     LUTLoadDecision* lut_decision;
     void* lut1_prev;
     void* lut2_prev;
-    uint32_t curr_regs_dump;
-    uint32_t next_regs_dump;
-    uint32_t swap_regs_dump;
 
     rumboot_printf("Hello\n");
 
     heap_id = nu_get_heap_id();
-
-
-    curr_regs_dump = (uint32_t)rumboot_malloc_from_heap(heap_id, sizeof(uint32_t)*0x732);
-    next_regs_dump = (uint32_t)rumboot_malloc_from_heap(heap_id, sizeof(uint32_t)*0x732);
-
 
       // Read The Number Of Test Iterations
     rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
@@ -137,9 +199,11 @@ int main() {
 
       // Load All The Test Data Into Memory
     if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
+    if (nu_npe_place_associative_regs_dump(heap_id,&test_desc,iterations) !=0) return -1;
+    if (nu_npe_place_regs_dump(heap_id,&iteration_desc) !=0) return -1;
+    if (nu_npe_place_array_of_depend_table(heap_id,&test_desc, iterations) !=0) return -1;
+    nu_get_temp_depend_table(&test_desc, iterations);
 
-      // Program The CU To Enable Direct Mode For All Units // Again - If You Want Otherwise - Write Another Program
-    //na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
 
       // Make The Iteration Descriptor To Point At The First Test Data
     nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
@@ -148,6 +212,7 @@ int main() {
     lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
     lut1_prev=NULL;lut2_prev=NULL;
 
+    NPEReg* associative_regs_dump_curr_ptr = test_desc.associative_regs_dump_start_ptr;
     for(i=0;i<iterations;i++) {
         rumboot_printf("Deciding DMA Configuration for iteration %d\n",i);
 
@@ -181,27 +246,6 @@ int main() {
             iteration_desc.PPE_ENABLED,
             i==iterations-1);
     
-          // Prepare The Decision What To Do With LUT On Each Iteration
-        if(iteration_desc.cfg_vpe->op2_config.lut_en==Enable_En) {
-            if(lut1_prev==NULL) {
-                lut_decision[i]=LUTLoadDecision_LoadNow;
-                lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
-            }
-            else {
-                if(nu_vpe_compare_luts(iteration_desc.lut1, iteration_desc.lut2, lut1_prev, lut2_prev) == 0) {
-                    lut_decision[i]=LUTLoadDecision_DontLoad;
-                }
-                else {
-                    lut_decision[i]=LUTLoadDecision_BlockThenLoad;
-                    lut1_prev = iteration_desc.lut1; lut2_prev = iteration_desc.lut2;
-                }
-            }
-        }
-        else {
-            lut_decision[i]=LUTLoadDecision_DontLoad;
-            lut1_prev = NULL; lut2_prev = NULL;
-        }
-    
           // Fill The cfg_reg_ppe That Is Not Loaded From File
         if(iteration_desc.PPE_ENABLED==Enable_En)
             nu_ppe_decide_dma_config (
@@ -211,104 +255,37 @@ int main() {
                 NULL,
                 iteration_desc.res_data
             );
-    
-        nu_mpe_setup((uint32_t)next_regs_dump, iteration_desc.cfg_mpe);
-        nu_vpe_setup((uint32_t)next_regs_dump + NA_VPE_BASE, iteration_desc.cfg_vpe);
-        if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_ppe_setup_reg((uint32_t)next_regs_dump + NA_PPE_RDMA_BASE, (uint32_t)next_regs_dump + NA_PPE_WDMA_BASE, iteration_desc.cfg_reg_ppe);
-        }
-        nu_mpe_print_reg_map(next_regs_dump + NA_MPE_BASE);
-        nu_vpe_print_reg_map(next_regs_dump + NA_VPE_BASE, iteration_desc.cfg_vpe->op2_config.lut_en);
-        if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_ppe_print_reg_map(next_regs_dump + NA_PPE_RDMA_BASE, next_regs_dump + NA_PPE_WDMA_BASE);
-        }
 
-        if (i == 0) {
-            *iteration_desc.cfg_diff_mpe_size = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, 0, next_regs_dump);
-            *iteration_desc.cfg_diff_vpe_size = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, 0, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
-            if(iteration_desc.PPE_ENABLED==Enable_En)
-                *iteration_desc.cfg_diff_ppe_size = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, 0, next_regs_dump);
-        }
-        else {
-            *iteration_desc.cfg_diff_mpe_size = nu_mpe_diff_reg_map(NA_MPE_BASE, iteration_desc.cfg_diff_mpe, curr_regs_dump, next_regs_dump);
-            *iteration_desc.cfg_diff_vpe_size = nu_vpe_diff_reg_map(NA_VPE_BASE, iteration_desc.cfg_diff_vpe, curr_regs_dump, next_regs_dump, iteration_desc.cfg_vpe->op2_config.lut_en);
-            if(iteration_desc.PPE_ENABLED==Enable_En) {
-                *iteration_desc.cfg_diff_ppe_size = nu_ppe_diff_reg_map(NA_PPE_RDMA_BASE, NA_PPE_WDMA_BASE, iteration_desc.cfg_diff_ppe, curr_regs_dump, next_regs_dump);
-            }
-        }
-        swap_regs_dump = curr_regs_dump;
-        curr_regs_dump = next_regs_dump;
-        next_regs_dump = swap_regs_dump;
-        nu_print_cfg_diff(iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_size);
-        nu_print_cfg_diff(iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_size);
-        if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_print_cfg_diff(iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
-        }
+        nu_npe_add_depend_rd_after_wr(&test_desc, i);
+        nu_npe_add_depend_wr_after_rd(&test_desc, i);
+    
+        nu_setup_next_regs_dump(iteration_desc);
+        //nu_mpe_print_reg_map((uintptr_t)iteration_desc.next_regs_dump->mpe);
+        //nu_vpe_print_reg_map((uintptr_t)iteration_desc.next_regs_dump->vpe, iteration_desc.cfg_vpe->op2_config.lut_en);
+        //if(iteration_desc.PPE_ENABLED==Enable_En) {
+        //    nu_ppe_rdma_print_reg_map((uintptr_t)iteration_desc.next_regs_dump->ppe_rdma);
+        //    nu_ppe_wdma_print_reg_map((uintptr_t)iteration_desc.next_regs_dump->ppe_wdma);
+        //}
+        associative_regs_dump_curr_ptr = nu_npe_add_diff_reg_map(associative_regs_dump_curr_ptr, iteration_desc, i);
 
           // Point At The Next Iteration Data
         nu_npe_iterate_desc(&iteration_desc);
     }
   
-      // Init It Again - We Start Iterate From The Beginning
-    nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
-      // Main Loop 
-    for(i=0;i<iterations;i++) {
-        rumboot_printf("Starting iteration %d\n",i);
+    test_desc.associative_regs_dump_end_ptr = associative_regs_dump_curr_ptr;
 
-          // Prepare Iteration Descriptor (Some Modifications Should Be Made Before Each Iteration)
-        nu_npe_iteration_start(&iteration_desc);
-    
-          // Write MPE (Shadow) Regs
-        //nu_mpe_setup(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
-          // Write PPE (Shadow) Regs
-        //if(iteration_desc.PPE_ENABLED==Enable_En) {
-        //  nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
-        //}
-    
-        if(i!=0)  // Before Writing VPE Regs - We Should Ensure That VPE Is Ready
-              //  Dont Make It On Iteration #0 - Because nu_vpe_wait_cntx_appl Waits For A Status Of Prev Iteration
-            nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE);
-    
-            // Write VPE (Shadow) Regs
-            // Load LUTs If Needed
-        if(lut_decision[i]==LUTLoadDecision_BlockThenLoad) { // if We Need To Reload LUT
-            rumboot_printf("Blocked To Load LUT\n");  // Here We Should Block And Wait Until VPE Finish
-            while (nu_vpe_busy(MY_VPE_REGS_BASE)) {}; // 
-            rumboot_printf("OK\n");
-        }
-        if(lut_decision[i]!=LUTLoadDecision_DontLoad) {
-            nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
-        }
-    
-          // Try The Effective (But Not Safe) Run Order (MPE->VPE->PPE)
-          //  Because We Are Verificators!
-        nu_mpe_wait_ready(MY_MPE_REGS_BASE);
-        nu_setup(NPE_BASE, iteration_desc.cfg_diff_mpe, iteration_desc.cfg_diff_mpe_size);
-        nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
-        
-        nu_setup(NPE_BASE, iteration_desc.cfg_diff_vpe, iteration_desc.cfg_diff_vpe_size);
-        nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-        
-          // PPE Should Be Run After It Finish Prev Operation
-        if(iteration_desc.PPE_ENABLED==Enable_En) {
-            nu_setup(NPE_BASE, iteration_desc.cfg_diff_ppe, iteration_desc.cfg_diff_ppe_size);
-            nu_ppe_dma_wait_ready_and_run(MY_PPE_REGS_BASE); // WDMA
-        }
-    
-        if(i!=iterations-1) // Iterate - But Not The Last Iteration Because We Need Accurate cfg_vpe Lower
-            nu_npe_iterate_desc(&iteration_desc);
-    }
+    nu_npe_run(NPE_BASE, test_desc.associative_regs_dump_start_ptr, test_desc.associative_regs_dump_end_ptr);
     
     // Wait For The Corresponding DMA Channels To Complete
-    if(iteration_desc.PPE_ENABLED==Enable_En)
+    if(test_desc.PPE_ENABLED==Enable_En)
         nu_ppe_wait_complete(MY_PPE_REGS_BASE);
     else
-        nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
+        nu_vpe_wait(MY_VPE_REGS_BASE, &test_desc.array_of_cfg_vpe[iterations-1]);
 
 
       // Init It Again - We Start Iterate From The Beginning
     nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
-    for(i=0;i<iterations;i++) {
+    for(i = 0; i < iterations; i++) {
         rumboot_printf("Comparing iteration %d..\n",i);
         nu_npe_iteration_start(&iteration_desc);
 
@@ -320,12 +297,9 @@ int main() {
             nu_vpe_print_config(iteration_desc.cfg_vpe);
             if(iteration_desc.PPE_ENABLED==Enable_En)
                 nu_ppe_print_config(iteration_desc.cfg_ppe);
-
             rumboot_printf("Test FAILED at iteration %d\n",i);
-
             return 1;
         }
-    
       // Point At The Next Iteration Data
         nu_npe_iterate_desc(&iteration_desc);
     }

@@ -3,11 +3,22 @@
 #define NU_TEST_LIB_H
 
 #include <stdint.h>
+#include <regs/regs_na.h>
 #include "devices/rcm_na/nu_lib.h"
 
-#define NU_MPE_REG_MAP_SIZE 0x21C
-#define NU_VPE_REG_MAP_SIZE 0x1DF
-#define NU_PPE_REG_MAP_SIZE 0x132
+#define NU_MPE_REG_MAP_SIZE (MPE_MA_BASE + MPE_CMD_ICMW)  // 0x21C
+#define NU_VPE_REG_MAP_SIZE (NU_VPE_OP2_RDMA + NU_VPE_DMA_BATCH_STRIDE) // 0x1DF
+#define NU_PPE_RDMA_REG_MAP_SIZE NU_PPE_RDMA_BOX_OFFSET_Z // 0x132
+#define NU_PPE_WDMA_REG_MAP_SIZE NU_PPE_PADDING_VALUE_7 // 0x132
+
+#define NU_RDMA_NUMBER 7
+#define NU_WDMA_NUMBER 2
+
+#define NU_DEPEND_MASK_MPE_RDMA_D (0x1<<24)
+#define NU_DEPEND_MASK_MPE_RDMA_W (0x1<<25)
+#define NU_DEPEND_MASK_VPE_WDMA (0x1<<26)
+#define NU_DEPEND_MASK_PPE_RDMA (0x1<<27)
+#define NU_DEPEND_MASK_PPE_WDMA (0x1<<28)
 
 int nu_get_heap_id();
 int nu_get_add_heap_id();
@@ -224,6 +235,33 @@ void nu_ppe_iterate_desc(PPEIterationDescriptor* desc);
 int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations);
 
 
+typedef struct NARegDump {
+  uint32_t mpe[NU_MPE_REG_MAP_SIZE/sizeof(uint32_t)];
+  uint32_t vpe[NU_VPE_REG_MAP_SIZE/sizeof(uint32_t)];
+  uint32_t ppe_rdma[NU_PPE_RDMA_REG_MAP_SIZE/sizeof(uint32_t)];
+  uint32_t ppe_wdma[NU_PPE_WDMA_REG_MAP_SIZE/sizeof(uint32_t)];
+} NARegDump;
+
+typedef enum NA_RDMA {
+  MPE_RDMA_D=0,
+  MPE_RDMA_W=1,
+  VPE_RDMA=2,
+  VPE_RDMA_OP0=3,
+  VPE_RDMA_OP1=4,
+  VPE_RDMA_OP2=5,
+  PPE_RDMA=6
+} NA_RDMA;
+
+typedef enum NA_WDMA {
+  VPE_WDMA=0,
+  PPE_WDMA=1
+} NA_WDMA;
+
+typedef struct NADependTable {
+  int read_after_write[NU_WDMA_NUMBER][NU_RDMA_NUMBER];
+  int write_after_read[NU_WDMA_NUMBER][NU_RDMA_NUMBER];
+} NADependTable;
+
 ///
 typedef struct NPETestDescriptor {
   Enable MPE_ENABLED;
@@ -235,14 +273,10 @@ typedef struct NPETestDescriptor {
   
   ConfigREGPPE* array_of_cfg_reg_ppe;
 
-  NPEReg* array_of_cfg_diff_mpe;
-  uint32_t* array_of_cfg_diff_mpe_size;
+  NPEReg* associative_regs_dump_start_ptr;
+  NPEReg* associative_regs_dump_end_ptr;
 
-  NPEReg* array_of_cfg_diff_vpe;
-  uint32_t* array_of_cfg_diff_vpe_size;
-
-  NPEReg* array_of_cfg_diff_ppe;
-  uint32_t* array_of_cfg_diff_ppe_size;
+  NADependTable* array_of_depend_table;
   
   WarrMetrics* array_of_warr_metrics;
   CubeMetrics* array_of_in_metrics;
@@ -275,14 +309,8 @@ typedef struct NPEIterationDescriptor {
 
   ConfigREGPPE*  cfg_reg_ppe;
 
-  NPEReg* cfg_diff_mpe;
-  uint32_t* cfg_diff_mpe_size;
-
-  NPEReg* cfg_diff_vpe;
-  uint32_t* cfg_diff_vpe_size;
-
-  NPEReg* cfg_diff_ppe;
-  uint32_t* cfg_diff_ppe_size;
+  NARegDump* curr_regs_dump;
+  NARegDump* next_regs_dump;
 
   void *warr;
   void *in_data;
@@ -332,4 +360,35 @@ void nu_na_vpe_pause_fail_stop(uintptr_t npe_base);
 void nu_na_vpe_fail_mpe_srst_stop(uintptr_t npe_base);
 void nu_na_ppe_pause_fail_stop(uintptr_t npe_base); 
 int nu_mpe_regs_check(uintptr_t base, int num, int iteration);
+
+void nu_npe_add_depend_rd_after_wr(
+  NPETestDescriptor* desc,
+  int curr_i
+);
+void nu_npe_add_depend_wr_after_rd(
+  NPETestDescriptor* desc,
+  int curr_i
+);
+
+void nu_npe_add_depend_rd_channel_cfg(
+  NPETestDescriptor* curr_desc,
+  int curr_i,
+  int read_channel,
+  uint32_t address,
+  uint32_t start_bit
+);
+
+void nu_npe_write_channel_depend_cfg(
+  NPETestDescriptor* curr_desc,
+  int curr_i,
+  int write_channel,
+  uint32_t address,
+  uint32_t start_bit
+);
+
+void nu_npe_reg_map_swap(NPEIterationDescriptor* desc);
+int nu_npe_place_associative_regs_dump(int heap_id, NPETestDescriptor* test_desc,int iterations);
+int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc);
+int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc,int iterations);
+
 #endif
