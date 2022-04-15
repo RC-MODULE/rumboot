@@ -1816,15 +1816,10 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
 
   //~ test_desc-> array_of_status_regs_etalon=NULL;
   
-  test_desc-> array_of_cfg_diff_mpe=NULL;
-  test_desc-> array_of_cfg_diff_mpe_size=NULL;
+  test_desc->associative_regs_dump_start_ptr=NULL;
+  test_desc->associative_regs_dump_end_ptr=NULL;
 
-  test_desc-> array_of_cfg_diff_vpe=NULL;
-  test_desc-> array_of_cfg_diff_vpe_size=NULL;
-
-  test_desc-> array_of_cfg_diff_ppe=NULL;
-  test_desc-> array_of_cfg_diff_ppe_size=NULL;
-
+  test_desc->array_of_depend_table=NULL;
 }
 
 
@@ -1862,19 +1857,9 @@ void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescri
   
   //~ iteration_desc->status_regs_etalon = test_desc->array_of_status_regs_etalon;
   
-  iteration_desc->warr_metrics       = test_desc->array_of_warr_metrics;
-  iteration_desc->in_metrics         = test_desc->array_of_in_metrics;
-  iteration_desc->res_metrics        = test_desc->array_of_res_metrics;
-
-  iteration_desc->cfg_diff_mpe = test_desc->array_of_cfg_diff_mpe;
-  iteration_desc->cfg_diff_mpe_size = test_desc->array_of_cfg_diff_mpe_size;
-
-  iteration_desc->cfg_diff_vpe = test_desc->array_of_cfg_diff_vpe;
-  iteration_desc->cfg_diff_vpe_size = test_desc->array_of_cfg_diff_vpe_size;
-
-  iteration_desc->cfg_diff_ppe = test_desc->array_of_cfg_diff_ppe;
-  iteration_desc->cfg_diff_ppe_size = test_desc->array_of_cfg_diff_ppe_size;
-
+  iteration_desc->warr_metrics = test_desc->array_of_warr_metrics;
+  iteration_desc->in_metrics   = test_desc->array_of_in_metrics;
+  iteration_desc->res_metrics  = test_desc->array_of_res_metrics;
 }
 
 void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty Copypaste
@@ -1983,18 +1968,26 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     desc->cfg_reg_ppe += 1;
   }
 
-  desc->cfg_diff_mpe += NU_MPE_REG_MAP_SIZE;
-  desc->cfg_diff_mpe_size += 1;
-
-  desc->cfg_diff_vpe += NU_VPE_REG_MAP_SIZE;
-  desc->cfg_diff_vpe_size += 1;
-
-  desc->cfg_diff_ppe += NU_PPE_REG_MAP_SIZE;
-  desc->cfg_diff_ppe_size += 1;
-
+  nu_npe_reg_map_swap(desc);
 }
 
+void nu_npe_reg_map_swap(NPEIterationDescriptor* desc) {
+    NARegDump* swap_ptr;
 
+    swap_ptr = desc->curr_regs_dump;
+    desc->curr_regs_dump = desc->next_regs_dump;
+    desc->next_regs_dump = swap_ptr;
+}
+
+int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc) {
+  desc->curr_regs_dump = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump), sizeof(uint32_t));
+  desc->next_regs_dump = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump), sizeof(uint32_t));
+  if(
+    desc->curr_regs_dump == NULL ||
+    desc->next_regs_dump == NULL
+  ) return -1;
+  return 0;
+}
 
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
   if(test_desc->MPE_ENABLED==Enable_En) {
@@ -2065,14 +2058,6 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   
   //~ test_desc->array_of_status_regs_etalon = nu_vpe_load_array_of_status_regs(heap_id,iterations);
   //~ if(test_desc->array_of_status_regs_etalon==NULL)return -1;
-  test_desc->array_of_cfg_diff_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(NPEReg)*NU_MPE_REG_MAP_SIZE*iterations,sizeof(uint32_t));
-  test_desc->array_of_cfg_diff_mpe_size = rumboot_malloc_from_heap_aligned(heap_id,sizeof(uint32_t)*iterations,sizeof(uint32_t));
-
-  test_desc->array_of_cfg_diff_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(NPEReg)*NU_VPE_REG_MAP_SIZE*iterations,sizeof(uint32_t));
-  test_desc->array_of_cfg_diff_vpe_size = rumboot_malloc_from_heap_aligned(heap_id,sizeof(uint32_t)*iterations,sizeof(uint32_t));
-
-  test_desc->array_of_cfg_diff_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(NPEReg)*NU_PPE_REG_MAP_SIZE*iterations,sizeof(uint32_t));
-  test_desc->array_of_cfg_diff_ppe_size = rumboot_malloc_from_heap_aligned(heap_id,sizeof(uint32_t)*iterations,sizeof(uint32_t));
 
   return 0;
 
@@ -2273,5 +2258,203 @@ int nu_ppe_regs_swrst_check (uintptr_t base) {
 		return  -1;
 		}
   }
-return 0;  
-}     
+return 0;
+}
+
+
+int nu_npe_place_associative_regs_dump(int heap_id, NPETestDescriptor* test_desc,int iterations) {
+  test_desc->associative_regs_dump_start_ptr = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump)*iterations*2, sizeof(uint32_t));
+  if (test_desc->associative_regs_dump_start_ptr == NULL) return -1;
+  return 0;
+}
+
+int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc,int iterations) {
+  test_desc->array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NADependTable)*iterations, sizeof(uint32_t));
+  if (test_desc->associative_regs_dump_start_ptr == NULL) return -1;
+  return 0;
+}
+
+void nu_npe_add_depend_rd_after_wr(
+  NPETestDescriptor* desc,
+  int curr_i
+) {
+
+  int write_channel;
+  int read_channel;
+  int depend_i;
+  uint32_t address;
+
+  for (write_channel = VPE_WDMA; write_channel <= PPE_WDMA; write_channel++) {  // VPE_WDMA, PPE_WDMA
+    for (read_channel = MPE_RDMA_D; read_channel <= PPE_RDMA; read_channel++) { // MPE_RDMA_D, MPE_RDMA_W, VPE_RDMA, VPE_OP0_RDMA, VPE_OP1_RDMA, VPE_OP2_RDMA, PPE_RDMA
+      depend_i = desc->array_of_depend_table[curr_i].read_after_write[write_channel][read_channel];
+      if (depend_i >= 0) {
+        switch(write_channel) {
+          case VPE_WDMA: {
+            address = desc->array_of_cfg_vpe[depend_i].wdma_config.dma_baddr;
+            rumboot_printf("VPE_WDMA memory address = %x\n", address);
+            nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+            break;
+          }
+          case PPE_WDMA: {
+            if(desc->PPE_ENABLED==Enable_En) {
+              address = desc->array_of_cfg_reg_ppe[depend_i].wBALo;
+              rumboot_printf("PPE_WDMA memory address = %x\n", address);
+              nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_PPE_WDMA);
+            }
+            break;
+          }
+          default: break;
+        }
+      }
+    }
+  }
+}
+
+
+void nu_npe_add_depend_wr_after_rd(
+  NPETestDescriptor* desc,
+  int curr_i
+) {
+
+  int write_channel;
+  int read_channel;
+  int depend_i;
+  uint32_t address;
+
+  for (read_channel = MPE_RDMA_D; read_channel <= PPE_RDMA; read_channel++) { // MPE_RDMA_D, MPE_RDMA_W, VPE_RDMA, VPE_OP0_RDMA, VPE_OP1_RDMA, VPE_OP2_RDMA, PPE_RDMA
+    for (write_channel = VPE_WDMA; write_channel <= PPE_WDMA; write_channel++) {  // VPE_WDMA, PPE_WDMA
+      depend_i = desc->array_of_depend_table[curr_i].write_after_read[write_channel][read_channel];
+      if (depend_i >= 0) {
+        switch (read_channel) {
+          case MPE_RDMA_D: {
+            address = desc->array_of_cfg_mpe[depend_i].dma_d_config.rdma.BFCA;
+            rumboot_printf("MPE_RDMA_D memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_MPE_RDMA_D);
+            break;
+          }
+          case MPE_RDMA_W: {
+            address = desc->array_of_cfg_mpe[depend_i].dma_w_config.rdma.BFCA;
+            rumboot_printf("MPE_RDMA_W memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_MPE_RDMA_W);
+            break;
+          }
+          case VPE_RDMA: {
+            address = desc->array_of_cfg_vpe[depend_i].src_rdma_config.dma_baddr;
+            rumboot_printf("VPE_RDMA memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+            break;
+          }
+          case VPE_RDMA_OP0: {
+            address = desc->array_of_cfg_vpe[depend_i].op0_rdma_config.dma_baddr;
+            rumboot_printf("VPE_RDMA_OP0 memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+            break;
+          }
+          case VPE_RDMA_OP1: {
+            address = desc->array_of_cfg_vpe[depend_i].op1_rdma_config.dma_baddr;
+            rumboot_printf("VPE_RDMA_OP1 memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+            break;
+          }
+          case VPE_RDMA_OP2: {
+            address = desc->array_of_cfg_vpe[depend_i].op2_rdma_config.dma_baddr;
+            rumboot_printf("VPE_RDMA_OP2 memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+            break;
+          }
+          case PPE_RDMA: {
+            address = desc->array_of_cfg_reg_ppe[depend_i].rBALi;
+            rumboot_printf("PPE_RDMA memory address = %x\n", address);
+            nu_npe_write_channel_depend_cfg(desc, curr_i, write_channel, address, NU_DEPEND_MASK_PPE_RDMA);
+            break;
+          }
+          default: break;
+        }
+      }
+    }
+  }
+}
+
+
+void nu_npe_add_depend_rd_channel_cfg(
+  NPETestDescriptor* desc,
+  int curr_i,
+  int read_channel,
+  uint32_t address,
+  uint32_t depend_mask
+) {
+
+  switch (read_channel) {
+    case MPE_RDMA_D: {
+      rumboot_printf("MPE_RDMA_D\n");
+      desc->array_of_cfg_mpe[curr_i].dma_d_config.rdma.BFCA = address;
+      desc->array_of_cfg_mpe[curr_i].dma_d_config.depend_mask |= depend_mask;
+      break;
+    }
+    case MPE_RDMA_W: {
+      rumboot_printf("MPE_RDMA_W\n");
+      desc->array_of_cfg_mpe[curr_i].dma_w_config.rdma.BFCA = address;
+      desc->array_of_cfg_mpe[curr_i].dma_w_config.depend_mask |= depend_mask;
+      break;
+    }
+    case VPE_RDMA: {
+      rumboot_printf("VPE_RDMA\n");
+      desc->array_of_cfg_vpe[curr_i].src_rdma_config.dma_baddr = address;
+      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      break;
+    }
+    case VPE_RDMA_OP0: {
+      rumboot_printf("VPE_OP0_RDMA\n");
+      desc->array_of_cfg_vpe[curr_i].op0_rdma_config.dma_baddr = address;
+      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      break;
+    }
+    case VPE_RDMA_OP1: {
+      rumboot_printf("VPE_OP1_RDMA\n");
+      desc->array_of_cfg_vpe[curr_i].op1_rdma_config.dma_baddr = address;
+      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      break;
+    }
+    case VPE_RDMA_OP2: {
+      rumboot_printf("VPE_OP2_RDMA\n");
+      desc->array_of_cfg_vpe[curr_i].op2_rdma_config.dma_baddr = address;
+      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      break;
+    }
+    case PPE_RDMA: {
+      rumboot_printf("PPE_RDMA\n");
+      desc->array_of_cfg_reg_ppe[curr_i].rBALi = address;
+      desc->array_of_cfg_reg_ppe[curr_i].rOpEn |= depend_mask;
+      break;
+    }
+    default: break;
+  }
+}
+
+
+void nu_npe_write_channel_depend_cfg(
+  NPETestDescriptor* desc,
+  int curr_i,
+  int write_channel,
+  uint32_t address,
+  uint32_t depend_mask
+) {
+
+  switch(write_channel) {
+    case VPE_WDMA: {
+      rumboot_printf("VPE_WDMA\n");
+      desc->array_of_cfg_vpe[curr_i].wdma_config.dma_baddr = address;
+      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      break;
+    }
+    case PPE_WDMA: {
+      if(desc->PPE_ENABLED==Enable_En) {
+        rumboot_printf("PPE_WDMA\n");
+        desc->array_of_cfg_reg_ppe[curr_i].wBALo = address;
+        desc->array_of_cfg_reg_ppe[curr_i].wOpEn |= depend_mask;
+      }
+      break;
+    }
+    default: break;
+  }
+}
