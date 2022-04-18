@@ -226,6 +226,27 @@ int main() {
       }
 
       if (!res) {
+        #if PPE_NAN_INF
+          res = nu_ppe_status_regs_check(MY_PPE_REGS_BASE, iteration_desc.status_regs_etalon);
+        #endif
+      }
+
+      if (!res) {
+        #if PPE_MARK_CUBE
+          if (mark_cube) {
+            mark_cube = 0;
+
+            res = !(nu_ppe_marked_page_cmpl_status(MY_PPE_REGS_BASE) == 0x1);
+
+            if (res) rumboot_printf("No WDMA_MARKED_PAGE_CMPL status iteration %d\n", i);
+            else nu_ppe_marked_page_cmpl_reset(MY_PPE_REGS_BASE);
+          }
+          else mark_cube = 1;
+        #endif
+      }
+
+      if (!res) {
+        rumboot_printf("Iteration %d PASSED\n", i);
 
         #ifdef ShowPerf
           clk_cnt = (clk_cnt*100)/ppe_clk_f;
@@ -248,28 +269,11 @@ int main() {
         #else
           nu_ppe_iterate_desc(&iteration_desc);
         #endif
-
-        #if PPE_MARK_CUBE
-          if (mark_cube)  {
-            mark_cube = 0;
-
-            res = !(nu_ppe_marked_page_cmpl_status(MY_PPE_REGS_BASE) == 0x1);
-
-            if (res) {
-              rumboot_printf("No WDMA_MARKED_PAGE_CMPL status iteration %d\n", i);
-              rumboot_printf("Test FAILED at iteration %d\n", i);
-            }
-            else nu_ppe_marked_page_cmpl_reset(MY_PPE_REGS_BASE);
-          }
-          else mark_cube = 1;
-        #endif
-
-        rumboot_printf("Iteration %d PASSED\n", i);
       }
       else rumboot_printf("Test FAILED at iteration %d\n", i);
 
       #ifdef PPE_SWRST
-      ppe_swrst_en = 1;
+        ppe_swrst_en = 1;
       #endif
     }
 

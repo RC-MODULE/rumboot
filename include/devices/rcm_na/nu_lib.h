@@ -554,6 +554,12 @@
     uint32_t lut_cnt_hit_hybr;
   } VPEStatusRegs;
 
+  typedef struct PPEStatusRegs {
+    uint32_t inf_num_in;
+    uint32_t nan_num_in;
+    uint32_t nan_num_out;
+  } PPEStatusRegs;
+
   typedef struct NPEReg {
     uint32_t address;
     uint32_t value;

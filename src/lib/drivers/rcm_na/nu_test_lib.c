@@ -1010,6 +1010,19 @@ VPEStatusRegs* nu_vpe_load_array_of_status_regs(int heap_id,int num) {
   return r;
 }
 
+PPEStatusRegs* nu_ppe_load_array_of_status_regs(int heap_id,int num) {
+  PPEStatusRegs* r;
+  uint32_t size;
+  
+  size = sizeof(PPEStatusRegs)*num;
+  
+  r = rumboot_malloc_from_heap_aligned(heap_id,size,sizeof(uint32_t));
+  if(r==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file_ex("status_regs_file_tag",(uintptr_t)r,size);
+  return r;
+}
 
 int nu_vpe_load_status_regs_by_tag(int heap_id, VPEStatusRegs* status_regs, char* status_regs_tag){
   uint32_t* r_bin;
@@ -1732,7 +1745,9 @@ void nu_ppe_init_test_desc(PPETestDescriptor* test_desc) {
   test_desc-> array_of_in_data=NULL;
   test_desc-> array_of_etalon=NULL;
   test_desc-> array_of_res_data=NULL;
-  
+
+  test_desc-> array_of_status_regs_etalon=NULL;
+
   test_desc-> in_file_tag="in_file_tag"; 
 }
 
@@ -1747,7 +1762,8 @@ void nu_ppe_init_iteration_desc(PPETestDescriptor* test_desc, PPEIterationDescri
   iteration_desc-> in_data = test_desc->array_of_in_data;
   iteration_desc-> etalon  = test_desc->array_of_etalon;
   iteration_desc-> res_data= test_desc->array_of_res_data;
-  
+
+  iteration_desc->status_regs_etalon = test_desc->array_of_status_regs_etalon;  
 }
 
 void nu_ppe_iterate_desc(PPEIterationDescriptor* desc) {
@@ -1760,6 +1776,8 @@ void nu_ppe_iterate_desc(PPEIterationDescriptor* desc) {
   
   desc->cfg += 1;
   desc->cfg_reg += 1;
+
+  desc->status_regs_etalon += 1;
 }
 
 int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations){
@@ -1780,10 +1798,14 @@ int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations
   test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,"etalon_file_tag",test_desc->array_of_res_metrics,iterations);
 
   test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,test_desc->array_of_res_metrics,iterations);
-  
+
+  test_desc->array_of_status_regs_etalon = nu_ppe_load_array_of_status_regs(heap_id,iterations);
+
   if(test_desc->array_of_in_data ==NULL || 
      test_desc->array_of_etalon  ==NULL || 
-     test_desc->array_of_res_data==NULL ) return -1;
+     test_desc->array_of_res_data==NULL ||
+     test_desc->array_of_status_regs_etalon==NULL
+  ) return -1;
   
   return 0;
 }
@@ -2232,6 +2254,22 @@ int nu_ppe_regs_swrst_check (uintptr_t base) {
   }
 
   return res;
+}
+
+int nu_ppe_status_regs_check (uintptr_t base, PPEStatusRegs* regs) {
+  int inf_in  ;
+  int nan_in  ;
+  int nan_out ;
+
+  inf_in  = !(ioread32(base+NU_PPE_INF_NUM_IN ) == regs->inf_num_in );
+  nan_in  = !(ioread32(base+NU_PPE_NAN_NUM_IN ) == regs->nan_num_in );
+  nan_out = !(ioread32(base+NU_PPE_NAN_NUM_OUT) == regs->nan_num_out);
+
+  if (inf_in  ) rumboot_printf ("ERROR: NU_PPE_INF_NUM_IN: 0x%x inf_num_in: 0x%x\n", ioread32(base+NU_PPE_INF_NUM_IN ), regs->inf_num_in );
+  if (nan_in  ) rumboot_printf ("ERROR: NU_PPE_NAN_NUM_IN: 0x%x nan_num_in: 0x%x\n", ioread32(base+NU_PPE_NAN_NUM_IN ), regs->nan_num_in );
+  if (nan_out ) rumboot_printf ("ERROR: NU_PPE_NAN_NUM_OUT: 0x%x nan_num_out: 0x%x\n", ioread32(base+NU_PPE_NAN_NUM_OUT), regs->nan_num_out);
+
+  return inf_in | nan_in | nan_out;
 }
 
   int nu_mpe_regs_check(uintptr_t base, int num, int iteration) {

@@ -211,7 +211,8 @@ typedef struct PPETestDescriptor {
   void *array_of_res_data;
   
   char* in_file_tag; // Crutch For Tests That Need To Overwrite This Parameter
-  
+
+  PPEStatusRegs* array_of_status_regs_etalon;
 } PPETestDescriptor;
   
 void nu_ppe_init_test_desc(PPETestDescriptor* test_desc);
@@ -227,6 +228,9 @@ typedef struct PPEIterationDescriptor {
   void* in_data ;
   void* etalon  ;
   void* res_data;
+
+  PPEStatusRegs* status_regs_etalon;
+
 } PPEIterationDescriptor;
 
 void nu_ppe_init_iteration_desc(PPETestDescriptor* test_desc, PPEIterationDescriptor* iteration_desc);

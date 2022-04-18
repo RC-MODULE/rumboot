@@ -1071,12 +1071,19 @@ macro (ADD_PPE_PY_TESTS CONF)
       set (ShowPerf "NotShowPerf")
     endif()
 
+    if ("${test_name}" MATCHES "dc_ppe_data_fp_nan" OR
+        "${test_name}" MATCHES "dc_ppe_data_fp_inf") 
+      set (PPE_NAN_INF "PPE_NAN_INF")
+    else()
+      set (PPE_NAN_INF "NoPPE_NAN_INF")
+    endif()
+
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
  
-      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_PAUSE} -D${PPE_SWRST} -D${PPE_CFG_CONST} -D${PPE_MARK_CUBE} -D${ShowPerf}
+      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_PAUSE} -D${PPE_SWRST} -D${PPE_CFG_CONST} -D${PPE_MARK_CUBE} -D${ShowPerf} -D${PPE_NAN_INF}
 
       PREPCMD 
         cp ${file} . 
