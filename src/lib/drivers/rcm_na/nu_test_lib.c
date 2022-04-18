@@ -1860,6 +1860,9 @@ void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescri
   iteration_desc->warr_metrics = test_desc->array_of_warr_metrics;
   iteration_desc->in_metrics   = test_desc->array_of_in_metrics;
   iteration_desc->res_metrics  = test_desc->array_of_res_metrics;
+  
+  iteration_desc->curr_regs_dump = NULL;
+  iteration_desc->next_regs_dump = NULL;
 }
 
 void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty Copypaste
