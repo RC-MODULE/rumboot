@@ -10,54 +10,16 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <netdb.h>	
 
 #include <platform/vl_api.h>    
-
-
-
-/*
-std::ostream& operator << (std::ostream& out, const struct vl_message& msg){
-    out << std::setfill('0') << std::hex 
-    << " sync=0x" << std::setw(2*sizeof(msg.sync)) 		<< (int)(msg.sync) 
-    << " op=0x"   << std::setw(2*sizeof(msg.op)) 		<< (int)(msg.op)
-	<< " addr=0x" << std::setw(2*sizeof(msg.addr)) 		<< msg.addr
-	<< " val=0x"  << std::setw(2*sizeof(msg.value))		<< msg.value
-    << " len=0x"  << std::setw(2*sizeof(msg.data_len))	<< (int)(msg.data_len);
-    if (msg.data_len==4)
-		out << " intdata=" << std::dec << msg.intdata[0];
-		//out << " intdata=0x" << std::setw(8) << msg.intdata[0];
-    else if (msg.data_len){
-        bool data_is_text=false;
-        if (msg.data[msg.data_len-1]==0){
-			data_is_text=true;
-			for (int i=0;i<msg.data_len-1;i++){
-				if (msg.data[i]<' ' || msg.data[i]>'~'){
-					data_is_text=false;
-					break;
-				}
-			}
-        }
-		if (data_is_text)
-			out <<  " data= "<< "'"<< msg.data << "'";
-        else {
-        	out <<  " data= ";
-        	for (int i=0;i<msg.data_len;i++){
-   		        uint8_t ch=msg.data[i];
-           		out << std::setfill('0') << std::hex << std::setw(2) << (unsigned)(ch);
-           	}
-        }
-    }
-    return out;    
-}
-*/
-
 
 int vl_recv(struct vl_instance *vl, struct vl_message* in_message){
  	memset(in_message,0,sizeof(struct vl_message));
 	int header_len = (char*)(in_message->data)-(char*)(in_message);
 	int bytes_read = recv(vl->sockfd, in_message, header_len, 0);
 	if (bytes_read!= header_len) {
-		printf("sock recv error. read %d of %d\n", bytes_read, header_len);
+		rumboot_printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, header_len);
 		//std::cout << *in_message <<std::endl;
 		return -1;
 		//exit(4);
@@ -65,7 +27,7 @@ int vl_recv(struct vl_instance *vl, struct vl_message* in_message){
     if (in_message->data_len){
     	int data_read = recv(vl->sockfd, in_message->data,  in_message->data_len, 0);
     	if (data_read!= in_message->data_len) {
-			printf("sock recv error. read %d of %d\n", bytes_read, in_message->data_len);
+			rumboot_printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, in_message->data_len);
 			//std::cout << *in_message <<std::endl;
 			//exit(4);
 			return -1;
@@ -206,7 +168,7 @@ int vl_shmem_unmap(void* ptr, uint64_t size){
     int err = munmap(ptr, size);
 
     //if(err != 0){
-    //    printf("UnMapping Failed\n");
+    //    rumboot_printf("VLAPI: UnMapping Failed\n");
     //}
     return err;
 }
@@ -223,9 +185,35 @@ void *vl_shmem_map(struct vl_shmem* shmem){
     return result;
 }
 
+
+int hostname_to_ip(char * hostname , char* ip)
+{
+	struct hostent *he;
+	struct in_addr **addr_list;
+	int i;
+		
+	if ( (he = gethostbyname( hostname ) ) == NULL) 
+	{
+		// get the host info
+		herror("gethostbyname");
+		return 1;
+	}
+
+	addr_list = (struct in_addr **) he->h_addr_list;
+	
+	for(i = 0; addr_list[i] != NULL; i++) 
+	{
+		//Return the first one;
+		strcpy(ip , inet_ntoa(*addr_list[i]) );
+		return 0;
+	}
+	
+	return 1;
+}
 struct vl_instance *vl_create(const char *host, uint16_t port){
 	struct sockaddr_in addr;
-	//vl_instance* vl = new vl_instance;
+	struct in_addr **addr_list;
+	struct hostent *he;
 	struct vl_instance* vl = (struct vl_instance*) malloc(sizeof(struct vl_instance));
 
 	vl->sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -237,13 +225,36 @@ struct vl_instance *vl_create(const char *host, uint16_t port){
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port); 
-	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	if(connect(vl->sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+
+	if ( (he = gethostbyname( host ) ) == NULL) 
 	{
-	    perror("connect");
-	    exit(2);
+		perror("gethostbyname");
+		goto err_free_inst;
 	}
-	return vl;
+
+	addr_list = (struct in_addr **) he->h_addr_list;
+
+	for(int i = 0; addr_list[i] != NULL; i++) {
+		char str[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, addr_list[i], str, INET_ADDRSTRLEN);
+		rumboot_printf("VL_API: Trying to connect to %s\n", str);
+		addr.sin_addr = *addr_list[i];
+		if(connect(vl->sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+		{
+		    perror("connect");
+			goto err_free_inst;
+		} else {
+			return vl;
+		}
+	}
+	
+	rumboot_printf("VL_API: FATAL: No more possible addresses to try\n");
+
+err_free_inst:
+	free(vl);
+	return NULL;
 }
 
 int vl_destroy(struct vl_instance *vl){
@@ -258,7 +269,7 @@ void vl_disconnect(struct vl_instance *vl){
 	struct vl_message answer;
 	disconnect.op=VL_OP_DISCONNECT;
 	vl_transaction(vl,&disconnect,&answer);
-	printf("ack: %s\n",answer.data);
+	rumboot_printf("VLAPI: ack: %s\n",answer.data);
 }
 
 ; /* 0.0.0.0, localhost, /tmp/my.sock */
