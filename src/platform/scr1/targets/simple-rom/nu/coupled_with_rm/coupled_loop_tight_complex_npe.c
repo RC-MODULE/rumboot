@@ -174,9 +174,6 @@ int main() {
     int i;
     int iterations;
     uint8_t  axi_len;
-    LUTLoadDecision* lut_decision;
-    void* lut1_prev;
-    void* lut2_prev;
 
     rumboot_printf("Hello\n");
 
@@ -204,10 +201,6 @@ int main() {
       // Make The Iteration Descriptor To Point At The First Test Data
     nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
     if (nu_npe_place_regs_dump(heap_id,&iteration_desc) !=0) return -1;
-
-    // Array Of Decisions What To Do With VPE LUT
-    lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
-    lut1_prev=NULL;lut2_prev=NULL;
 
     NPEReg* associative_regs_dump_curr_ptr = test_desc.associative_regs_dump_start_ptr;
     for(i=0;i<iterations;i++) {
@@ -271,8 +264,16 @@ int main() {
   
     test_desc.associative_regs_dump_end_ptr = associative_regs_dump_curr_ptr;
 
-    nu_npe_run(NPE_BASE, test_desc.associative_regs_dump_start_ptr, test_desc.associative_regs_dump_end_ptr);
-    
+    uint32_t associative_regs_dump_byte_size = (
+        test_desc.associative_regs_dump_end_ptr -
+        test_desc.associative_regs_dump_start_ptr
+    )*sizeof(NPEReg);
+
+    //nu_npe_run(NPE_BASE, test_desc.associative_regs_dump_start_ptr, test_desc.associative_regs_dump_end_ptr);
+    nu_npe_cmd_dma_setup(NPE_BASE, (uint32_t)test_desc.associative_regs_dump_start_ptr, associative_regs_dump_byte_size);
+    nu_npe_cmd_dma_run(NPE_BASE);
+    nu_npe_cmd_dma_wait_page_complete(NPE_BASE);
+
     // Wait For The Corresponding DMA Channels To Complete
     if(test_desc.PPE_ENABLED==Enable_En)
         nu_ppe_wait_complete(MY_PPE_REGS_BASE);

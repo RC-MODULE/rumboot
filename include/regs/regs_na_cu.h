@@ -34,4 +34,13 @@
 #define NA_INT_AXI_SET         	0x068
 #define NA_INT_AXI_MASK        	0x06C
 
+#define CMD_DMA_CFG             0x080
+#define CMD_DMA_AXI_PARAM       0x08C
+#define CMD_DMA_INT_STATUS      0x090
+#define CMD_DMA_INT_RESET       0x094
+#define CMD_DMA_INT_SET         0x098
+#define CMD_DMA_INT_MASK        0x09C
+#define CMD_DMA_BASE_ADDR       0x0A0
+#define CMD_DMA_PAGE_SIZE       0x0CC
+
 #endif

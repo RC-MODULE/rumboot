@@ -2304,7 +2304,7 @@ return 0;
 
 
 int nu_npe_place_associative_regs_dump(int heap_id, NPETestDescriptor* test_desc,int iterations) {
-  test_desc->associative_regs_dump_start_ptr = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump)*iterations*2, sizeof(uint32_t));
+  test_desc->associative_regs_dump_start_ptr = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump)*iterations*2, sizeof(NPEReg));
   if (test_desc->associative_regs_dump_start_ptr == NULL) return -1;
   return 0;
 }
