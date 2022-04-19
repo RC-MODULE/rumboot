@@ -97,8 +97,6 @@ void nu_ppe_decide_dma_config(
 }
 
 NPEReg* nu_npe_add_diff_reg_map(NPEReg* associative_regs_dump_curr_ptr, NPEIterationDescriptor iteration_desc, uint32_t i) {
-    NARegDump* curr_regs_dump;
-    NARegDump* next_regs_dump;
     if (i == 0) {
         associative_regs_dump_curr_ptr = nu_mpe_add_diff_reg_map(associative_regs_dump_curr_ptr, NULL, iteration_desc.next_regs_dump->mpe);
         associative_regs_dump_curr_ptr = nu_mpe_add_diff_start(associative_regs_dump_curr_ptr, iteration_desc.cfg_mpe);
@@ -200,13 +198,12 @@ int main() {
       // Load All The Test Data Into Memory
     if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
     if (nu_npe_place_associative_regs_dump(heap_id,&test_desc,iterations) !=0) return -1;
-    if (nu_npe_place_regs_dump(heap_id,&iteration_desc) !=0) return -1;
     if (nu_npe_place_array_of_depend_table(heap_id,&test_desc, iterations) !=0) return -1;
     nu_get_temp_depend_table(&test_desc, iterations);
 
-
       // Make The Iteration Descriptor To Point At The First Test Data
     nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+    if (nu_npe_place_regs_dump(heap_id,&iteration_desc) !=0) return -1;
 
     // Array Of Decisions What To Do With VPE LUT
     lut_decision = rumboot_malloc_from_heap(heap_id,sizeof(LUTLoadDecision)*iterations);
