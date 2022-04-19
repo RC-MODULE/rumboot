@@ -25,10 +25,11 @@
 #include <platform/devices.h>
 #include <time.h>
 #include <rumboot/rumboot.h>
+#include <platform/vl_api.h>
 
 int g_argc = 0;
-static int   vl_port;
-static char *vl_host;
+static int   vl_port = 3425;
+static char *vl_host = "localhost";
 
 char *g_argv[64];
 
@@ -81,9 +82,10 @@ static struct option long_options[] =
 uintptr_t DUT_BASE;
 #endif
 
+struct vl_instance *g_vl_instance; 
+
 void rumboot_platform_setup()
-{
-        _boottime = rumboot_platform_get_uptime();
+{        _boottime = rumboot_platform_get_uptime();
         rumboot_platform_runtime_info = malloc(sizeof(*rumboot_platform_runtime_info));
         signal(SIGUSR1, my_handler);
         signal(SIGUSR2, my_handler);
@@ -128,7 +130,17 @@ void rumboot_platform_setup()
         #define IM0_HEAP_SIZE (512 * 1024)
         uint8_t *heap = malloc(IM0_HEAP_SIZE);
 	rumboot_malloc_register_heap("IM0", heap, &heap[IM0_HEAP_SIZE]);
-
+        g_vl_instance = vl_create(vl_host, vl_port);
+        if (!g_vl_instance) {
+                rumboot_platform_panic("VL_API: Failed to connect to %s:%d\n", vl_host, vl_port);
+        }
+        #if 0
+        struct vl_shmem* shm = vl_shmem_list(g_vl_instance);
+        while (shm->id) {
+                rumboot_printf("VL_API: shmem #%d name: %s size: %u \n", shm->id, shm->name, shm->size);
+                sleep(1);
+        }
+        #endif
 }
 
 
