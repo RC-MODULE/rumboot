@@ -1865,6 +1865,7 @@ int main() {
 	
 	nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE); //STOP VPE
 	nu_vpe_soft_reset(MY_VPE_REGS_BASE); // SOFT RESET VPE
+	nu_vpe_dev_pause_resume(MY_VPE_REGS_BASE); //START after PAUSE
 	
 	res0 = nu_vpe_rd_regs(MY_VPE_REGS_BASE);
 	if (res0 !=0)
