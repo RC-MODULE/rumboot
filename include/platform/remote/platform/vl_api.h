@@ -35,15 +35,16 @@ struct vl_message {
 		int  intdata[VL_MAX_DATA_LENGTH/32];
 	};
 	
-};
+} __attribute__((packed));
 
 struct vl_shmem{
 	uint32_t 	id;
 	char 	 	name[32];
 	char 		ipc_key[128];
+	//-----
 	uint64_t	sys_addr;
 	uint64_t	size;
-};
+} __attribute__((packed));
 
 struct vl_irq{
 	int dummy;
@@ -54,8 +55,6 @@ struct vl_instance {
 	struct vl_shmem* shared_mem_list;
 	struct vl_irq* irq_mem_list;
 };
-
-//std::ostream& operator << (std::ostream& out, const struct vl_message& msg);
 
 //-------------- low-level communication verilator api --------------------
 int vl_send(struct vl_instance *vl, const struct vl_message* message);
