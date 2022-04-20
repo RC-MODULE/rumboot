@@ -1244,6 +1244,8 @@ macro(na_testsuite_add_npe_tests CONF)
   #   FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
   # )
 
+  ADD_NPE_SIMPLE_TEST(${CONF} ID_check scr1/targets/simple-rom/nu/npe_regs/id_check.c)
+    
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME simple_direct_WITH_PPE
