@@ -257,7 +257,7 @@ int main() {
 
         #ifdef PPE_CFG_CONST
           if (setup_reg) {
-            memset(iteration_desc.res_data, 0xA5, iteration_desc.res_metrics);
+            memset(iteration_desc.res_data, 0xA5, iteration_desc.res_metrics->s);
             setup_reg = 0;
 
             i = i-1;
