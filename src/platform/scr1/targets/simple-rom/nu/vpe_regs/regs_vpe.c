@@ -1831,7 +1831,32 @@ int nu_apb_running_one(uintptr_t base, uint32_t vpe_offset, uint32_t mask, int e
     }
     return 0;
 }
-
+void nu_vpe_pause_next_contx(uintptr_t vpe_base){
+  uint32_t temp;
+    rumboot_printf("Stop VPE begin...\n");
+	while(( (ioread32(vpe_base +  NU_VPE  + NU_VPE_INT_STATUS) >> 0) & 1) !=1) {}
+	iowrite32((0x00000001),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	//rumboot_printf("Stop check1...\n");
+	while(( (ioread32(vpe_base +  NU_VPE  + NU_VPE_INT_STATUS) >> 6) & 1) !=1) {}
+	iowrite32((1<<6),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	//rumboot_printf("Stop check2...\n");
+	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}
+	//rumboot_printf("Stop check5...\n");	
+	iowrite32((1<<5),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	rumboot_printf("Done VPE stop\n");
+	iowrite32((0x00000100),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+}
+void nu_vpe_pause_next_contex(uintptr_t vpe_base){
+  uint32_t temp;
+    rumboot_printf("Stop VPE begin...\n");
+	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}
+	//rumboot_printf("Stop check5...\n");	
+	iowrite32((1<<5),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	rumboot_printf("Done VPE stop\n");
+	iowrite32((0x00000100),vpe_base + NU_VPE + NU_VPE_INT_RESET);
+}
 
 int main() {
   int res0;
@@ -1857,13 +1882,19 @@ int main() {
   uint32_t   vpe_rdma_offset;
   rumboot_printf("Test VPE regs run\n");
   rumboot_printf("Read REGS after reset begin\n");
-  
+  uint32_t temp;
+  ;
   //  READ VPE  and DMA REG's initial state 
 	#if DUT_IS_NPE
 		na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 	#endif
+   temp = ioread32(MY_VPE_REGS_BASE + NU_VPE + NU_VPE_NEXT_CNTX);
 	
-	nu_vpe_pause_next_cntx(MY_VPE_REGS_BASE); //STOP VPE
+    if ((temp & 1) == 0)	
+	{iowrite32 ((temp | 1), MY_VPE_REGS_BASE + NU_VPE + NU_VPE_NEXT_CNTX);    
+	nu_vpe_pause_next_contx(MY_VPE_REGS_BASE);} //STOP VPE
+	else
+	{nu_vpe_pause_next_contex(MY_VPE_REGS_BASE);} 	
 	nu_vpe_soft_reset(MY_VPE_REGS_BASE); // SOFT RESET VPE
 	nu_vpe_dev_pause_resume(MY_VPE_REGS_BASE); //START after PAUSE
 	
