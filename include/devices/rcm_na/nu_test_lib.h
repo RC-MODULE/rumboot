@@ -98,9 +98,9 @@ int nu_vpe_load_arrays_of_op_metrics(int heap_id,OpArrayDescriptor* op0_array_de
 int nu_vpe_load_array_of_op_cubes(int heap_id, OpArrayDescriptor* op_array_desc,char* file_tag);
 int nu_vpe_load_array_of_op_vecs(int heap_id, OpArrayDescriptor* op_array_desc,char* file_tag);
 int nu_vpe_load_arrays_of_ops(int heap_id,OpArrayDescriptor* op0_array_desc,OpArrayDescriptor* op1_array_desc,OpArrayDescriptor* op2_array_desc);
-VPEStatusRegs* nu_vpe_load_array_of_status_regs(int heap_id,int num);
+StatusRegs* nu_load_array_of_status_regs(int heap_id,int num);
 
-int nu_vpe_load_status_regs_by_tag(int heap_id, VPEStatusRegs* status_regs, char* status_regs_tag);
+int nu_vpe_load_status_regs_by_tag(int heap_id, StatusRegs* status_regs, char* status_regs_tag);
 int nu_bitwise_compare(void* res_data, void* etalon, int size);
 float fp16_to_fp32(const short in);
 void nu_vpe_interpret_mismatch(ConfigVPE *cfg,void* res_data,void* etalon,void* in_data,void* op0,void* op1,void* op2,int s,int C);
@@ -132,7 +132,7 @@ typedef struct VPETestDescriptor {
   OpArrayDescriptor op1_array_desc;
   OpArrayDescriptor op2_array_desc;
 
-  VPEStatusRegs* array_of_status_regs_etalon;
+  StatusRegs* array_of_status_regs_etalon;
   int invocations;
 }VPETestDescriptor;
 
@@ -169,7 +169,7 @@ typedef struct VPEIterationDescriptor {
   VectorMetrics* lut1_metrics;
   VectorMetrics* lut2_metrics;
 
-  VPEStatusRegs* status_regs_etalon;
+  StatusRegs* status_regs_etalon;
 
 }VPEIterationDescriptor ;
 
@@ -212,7 +212,7 @@ typedef struct PPETestDescriptor {
   
   char* in_file_tag; // Crutch For Tests That Need To Overwrite This Parameter
 
-  PPEStatusRegs* array_of_status_regs_etalon;
+  StatusRegs* array_of_status_regs_etalon;
 } PPETestDescriptor;
   
 void nu_ppe_init_test_desc(PPETestDescriptor* test_desc);
@@ -229,7 +229,7 @@ typedef struct PPEIterationDescriptor {
   void* etalon  ;
   void* res_data;
 
-  PPEStatusRegs* status_regs_etalon;
+  StatusRegs* status_regs_etalon;
 
 } PPEIterationDescriptor;
 
@@ -297,7 +297,7 @@ typedef struct NPETestDescriptor {
   
   void* mpe_cfg_lut;
 
-  //~ VPEStatusRegs* array_of_status_regs_etalon;
+  //~ StatusRegs* array_of_status_regs_etalon;
 }NPETestDescriptor;
 
 void nu_npe_init_test_desc(NPETestDescriptor* test_desc);
@@ -348,7 +348,7 @@ typedef struct NPEIterationDescriptor {
   VectorMetrics* lut1_metrics;
   VectorMetrics* lut2_metrics;
 
-  //~ VPEStatusRegs* status_regs_etalon;
+  //~ StatusRegs* status_regs_etalon;
 } NPEIterationDescriptor;
 
 void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc);

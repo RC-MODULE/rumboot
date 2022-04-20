@@ -29,7 +29,7 @@ WarrMetrics* warr_metrics;
 CubeMetrics* res_metrics;
 CubeMetrics  mpe2vpe_cube_metrics;
 
-// VPEStatusRegs status_regs_etalon;
+// StatusRegs status_regs_etalon;
 
 
 int nu_mpe_decide_dma_config(

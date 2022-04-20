@@ -40,7 +40,7 @@ CubeMetrics* res_metrics;
 VectorMetrics* lut1_metrics;
 VectorMetrics* lut2_metrics;
 
-VPEStatusRegs status_regs_etalon;
+StatusRegs status_regs_etalon;
 
 int nu_mpe_decide_dma_config(
   ConfigMPE* cfg, 

@@ -531,7 +531,7 @@
     int32_t s; // Size Of Command Blob In Bytes
   }MPECmdMetrics;
 
-  typedef struct VPEStatusRegs {
+  typedef struct StatusRegs {
     /** Статус операции сравнения кубов данных. eq==0, neq==1 */
     int32_t cmp_result;
     /** Число входных элементов со значением бесконечность. */
@@ -552,20 +552,23 @@
     uint32_t lut_cnt_hit_tab1;
     /** Кол-во совместных попаданий в TAB0 и TAB1. */
     uint32_t lut_cnt_hit_hybr;
-  } VPEStatusRegs;
 
-  typedef struct PPEStatusRegs {
-    uint32_t inf_num_in;
-    uint32_t nan_num_in;
-    uint32_t nan_num_out;
-  } PPEStatusRegs;
+    uint32_t ppe_inf_num_in ;
+    uint32_t ppe_nan_num_in ;
+    uint32_t ppe_nan_num_out;
+
+    uint32_t mpe_inf_num_in ;
+    uint32_t mpe_nan_num_in ;
+    uint32_t mpe_nan_num_out;
+
+  } StatusRegs;
 
   typedef struct NPEReg {
     uint32_t address;
     uint32_t value;
   } NPEReg;
   
-#define SIZEOF_VPEStatusRegs_BIN sizeof(VPEStatusRegs)
+#define SIZEOF_StatusRegs_BIN sizeof(StatusRegs)
   
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);
@@ -590,9 +593,9 @@ bool nu_vpe_mode_to_bool (Mode in_mode);
 
 // void nu_calc_mpe2vpe_cube_metrics(CubeMetrics* mpe2vpe_metrics,CubeMetrics* cube_metrics,WarrMetrics* warr_metrics);
 
-void nu_vpe_load_status_regs(VPEStatusRegs* status_regs, void* status_regs_bin);
-void nu_vpe_print_status_regs_etalon(VPEStatusRegs* status_regs);
-int nu_vpe_check_status_regs(uintptr_t base, VPEStatusRegs* status_regs);// 0 - Ok
+void nu_vpe_load_status_regs(StatusRegs* status_regs, void* status_regs_bin);
+void nu_vpe_print_status_regs_etalon(StatusRegs* status_regs);
+int nu_vpe_check_status_regs(uintptr_t base, StatusRegs* status_regs);// 0 - Ok
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
 void nu_mpe_print_config(ConfigMPE* cfg);

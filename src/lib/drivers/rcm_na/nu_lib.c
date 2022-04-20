@@ -102,7 +102,7 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
 
 }
 
-void nu_vpe_load_status_regs(VPEStatusRegs* status_regs, void* status_regs_bin) {
+void nu_vpe_load_status_regs(StatusRegs* status_regs, void* status_regs_bin) {
   uint32_t* ptr;
   
   ptr = (uint32_t*) status_regs_bin;
@@ -548,7 +548,7 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   
 }
 
-void nu_vpe_print_status_regs_etalon(VPEStatusRegs* status_regs) {
+void nu_vpe_print_status_regs_etalon(StatusRegs* status_regs) {
 #ifndef NU_NO_PRINT
   rumboot_printf("VPEStatusRegs:\n");
   rumboot_printf("  cmp_result = %d\n",status_regs->cmp_result);
@@ -1416,7 +1416,7 @@ int nu_vpe_check_reg(uintptr_t addr, char* name, int shift, uint32_t mask, uint3
   return 0;
 }
 
-int nu_vpe_check_status_regs(uintptr_t base, VPEStatusRegs* status_regs) {
+int nu_vpe_check_status_regs(uintptr_t base, StatusRegs* status_regs) {
   rumboot_printf("Checking Status Regs\n");
   
   if(

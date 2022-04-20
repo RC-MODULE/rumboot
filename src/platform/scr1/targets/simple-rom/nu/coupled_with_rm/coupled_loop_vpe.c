@@ -84,7 +84,7 @@ CubeMetrics* res_metrics;
 VectorMetrics* lut1_metrics;
 VectorMetrics* lut2_metrics;
 
-VPEStatusRegs status_regs_etalon;
+StatusRegs status_regs_etalon;
 
 int main() {
   int heap_id;

@@ -110,7 +110,7 @@ CubeMetrics* res_vpe_metrics;
 VectorMetrics* lut1_metrics;
 VectorMetrics* lut2_metrics;
 
-VPEStatusRegs status_regs_etalon;
+StatusRegs status_regs_etalon;
 
 void* in_mpe_data = NULL;
 void* in_warr = NULL;
