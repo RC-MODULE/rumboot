@@ -479,7 +479,7 @@
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
 				resw18 || resw19 || resw20  || resw21 || resw22 || resw23 || resw24 || resw25 ||
 				resw26 || resw27 || resw28 || resw29 || resw30 || resw31 || resw32 || resw33 ||
-				resw34 /*||resw35 */|| resw36 || resw37 || resw38 || /*resw39 ||*/ resw40 || resw41 ||
+				resw34 || resw36 || resw37 || resw38 || /*resw39 ||*/ resw40 || resw41 ||
 				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 || resw48 || resw49 || resw50 || resw51; 
 	   		
 	res = resr  || resw;
@@ -1063,6 +1063,12 @@ int main() {
 	 na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
 	#endif
    // Configure RDMA initial state
+   
+	nu_na_ppe_pause(NPE_BASE);		
+	nu_na_ppe_soft_reset(NPE_BASE);	
+	nu_na_ppe_dev_pause_resume(NPE_BASE);
+   
+   
    res1 = nu_ppe_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE);
 
   if ( res1 !=0)
