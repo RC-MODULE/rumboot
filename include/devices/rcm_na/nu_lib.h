@@ -753,5 +753,8 @@ void nu_ppe_wdma_print_reg_map(uint32_t* ppe_base);
 
 void print_part_of_memory(uint32_t* base, uint32_t start_shift, uint32_t end_shift);
 
-
+void nu_npe_cmd_dma_setup(uintptr_t npe_base, uint32_t cmd_dma_base_addr, uint32_t cmd_dma_page_size);
+void nu_npe_cmd_dma_run(uintptr_t npe_base);
+void nu_npe_cmd_dma_wait_page_complete(uintptr_t npe_base);
+void nu_npe_cmd_dma_wait_cntx_appl(uintptr_t npe_base);
 #endif

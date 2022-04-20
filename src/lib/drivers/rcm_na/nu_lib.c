@@ -3214,11 +3214,29 @@ void print_part_of_memory(uint32_t* base, uint32_t start_shift, uint32_t end_shi
 }
 
 void nu_npe_run(uintptr_t npe_base, NPEReg* cfg_diff_start_ptr, NPEReg* cfg_diff_end_ptr) {
-  rumboot_printf("NA run work..\n");
+  rumboot_printf("NA run..\n");
   for (NPEReg* cfg_diff_curr_ptr = cfg_diff_start_ptr; cfg_diff_curr_ptr < cfg_diff_end_ptr; cfg_diff_curr_ptr++)
     iowrite32(cfg_diff_curr_ptr->value, npe_base + cfg_diff_curr_ptr->address);
 }
 
+void nu_npe_cmd_dma_setup(uintptr_t npe_base, uint32_t cmd_dma_base_addr, uint32_t cmd_dma_page_size) {
+    rumboot_printf("NPE cmd dma setup..\n");
+    iowrite32((1<<8), npe_base + NA_CU_REGS_BASE + NA_UNITS_MODE);
+    iowrite32(cmd_dma_base_addr, npe_base + NA_CU_REGS_BASE + CMD_DMA_BASE_ADDR);
+    iowrite32(cmd_dma_page_size, npe_base + NA_CU_REGS_BASE + CMD_DMA_PAGE_SIZE);
+    iowrite32(0xF              , npe_base + NA_CU_REGS_BASE + CMD_DMA_AXI_PARAM); // For perfomance
+}
+
+void nu_npe_cmd_dma_run(uintptr_t npe_base) {
+    rumboot_printf("NPE cmd dma run..\n");
+    iowrite32((1<<0), npe_base + NA_CU_REGS_BASE + CMD_DMA_CFG);
+}
+
+void nu_npe_cmd_dma_wait_page_complete(uintptr_t npe_base) {
+    rumboot_printf("NPE cmd dma wait page complete..\n");
+    while ((ioread32(npe_base + NA_CU_REGS_BASE + CMD_DMA_INT_STATUS) & (1<<0)) != 1) {};
+    rumboot_printf("NPE cmd dma page complete done\n");
+}
 
 void nu_npe_set_int_mask(uintptr_t npe_base){
 

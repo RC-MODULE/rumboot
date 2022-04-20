@@ -1,6 +1,6 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
-#define RUMBOOT_PLATFORM_NUM_IRQS 8
-
+#define RUMBOOT_PLATFORM_NUM_IRQS 15
+#define IRQ_VPE_CNTX_APPLY			0
 #endif 
