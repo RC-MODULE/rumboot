@@ -11,7 +11,7 @@ set(RUMBOOT_HAS_V3_BOOTROM Yes)
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_DUMP_FLAGS     "-EL")
-    SET(CMAKE_C_FLAGS     "-std=gnu99 -g -DRUMBOOT_NATIVE -DRUMBOOT_REMOTE")
+    SET(CMAKE_C_FLAGS     "-std=gnu99 -g -DRUMBOOT_NATIVE -DRUMBOOT_REMOTE -DREMOTE_TICKS_PER_US=5")
     if (NOT CROSS_COMPILE)
       SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32") #x86
       SET(CMAKE_EXE_LINKER_FLAGS     "-m32")
@@ -79,24 +79,26 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES common/tools/print-heaps.c
   )
 
-  if (XILINX_FPGA_PROTO)
-    add_rumboot_target_dir(fpga/ 
+  add_rumboot_target(
+    CONFIGURATION NATIVE
+    FILES hello.c
+  )
+
+  add_rumboot_target_dir(fpga/ 
       CONFIGURATION NATIVE
       PREFIX fpga
-    )
+  )
 
 
-    add_rumboot_target(
-      CONFIGURATION NATIVE
-      FILES scr1/targets/load_bin_example/hello_load_bin.c
-      LOAD 
-        myfile ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
-    )
+  add_rumboot_target(
+    CONFIGURATION NATIVE
+    FILES scr1/targets/load_bin_example/hello_load_bin.c
+    LOAD 
+      myfile ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
+  )
 
-    na_testsuite_init("NPE")
-    na_testsuite_add_npe_tests("NATIVE")
-    #na_testsuite_add_vpe_tests("NATIVE")
-  endif()
+  na_testsuite_init("NPE")
+  na_testsuite_add_npe_tests("NATIVE")
 
 endmacro()
 
