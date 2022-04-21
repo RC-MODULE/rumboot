@@ -4,6 +4,8 @@
 #define RUMBOOT_ARCH_HAS_IO
 
 #include <rumboot/platform.h>
+#include <platform/vl_api.h>
+
 extern struct vl_instance *g_vl_instance; 
 
 static __attribute__((no_instrument_function)) inline double ioread64d(uint32_t const base_addr)

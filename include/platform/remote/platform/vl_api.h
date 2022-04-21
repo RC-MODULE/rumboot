@@ -41,7 +41,6 @@ struct vl_shmem{
 	uint32_t 	id;
 	char 	 	name[32];
 	char 		ipc_key[128];
-	//-----
 	uint64_t	sys_addr;
 	uint64_t	size;
 } __attribute__((packed));
@@ -54,9 +53,12 @@ struct vl_instance {
 	int sockfd;
 	struct vl_shmem* shared_mem_list;
 	struct vl_irq* irq_mem_list;
+	uint64_t ticks_per_us;
 };
 
 //-------------- low-level communication verilator api --------------------
+
+uint64_t vl_get_ticks_per_us(struct vl_instance *vl);
 int vl_send(struct vl_instance *vl, const struct vl_message* message);
 int vl_recv(struct vl_instance *vl, struct vl_message* message);
 int vl_transaction(struct vl_instance *vl, const struct vl_message* send_message, struct vl_message* recv_message);

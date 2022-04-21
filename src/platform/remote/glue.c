@@ -30,6 +30,7 @@
 int g_argc = 0;
 static int   vl_port = 3425;
 static char *vl_host = "localhost";
+struct vl_instance *g_vl_instance; 
 
 char *g_argv[64];
 
@@ -51,14 +52,13 @@ void my_handler(int signum)
 }
 
 
-/* Platform-specific glue */
-static uint64_t _boottime;
+/* FixMe: ??? */
+
+
 uint32_t rumboot_platform_get_uptime()
 {
-        struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        uint32_t  ret = (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000) - _boottime;
-        return ret;
+        uint64_t timestamp  = vl_get_uptime(g_vl_instance);
+        return timestamp / REMOTE_TICKS_PER_US;
 }
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
@@ -69,7 +69,6 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
 
 static int do_selftest = 0;
 static int do_host = 0;
-static char *hfile = "null";
 
 static struct option long_options[] =
 {
@@ -82,10 +81,16 @@ static struct option long_options[] =
 uintptr_t DUT_BASE;
 #endif
 
-struct vl_instance *g_vl_instance; 
+
+
+void cleanup()
+{
+        printf("Disconnecting from model\n");
+        vl_disconnect(g_vl_instance);
+}
 
 void rumboot_platform_setup()
-{        _boottime = rumboot_platform_get_uptime();
+{
         rumboot_platform_runtime_info = malloc(sizeof(*rumboot_platform_runtime_info));
         signal(SIGUSR1, my_handler);
         signal(SIGUSR2, my_handler);
@@ -122,29 +127,47 @@ void rumboot_platform_setup()
                         break;
 
                 case 'h':
-                        vl_port = strdup(optarg);
+                        vl_host = strdup(optarg);
                         break;
                 }
+        }
+        //printf("%d %s\n", optind, g_argv[optind]);
+
+
+        for (int i=optind; i<g_argc; i++) {
+                if (g_argv[i][0]!='+')
+                        continue;
+
+                char *tmp = strdup(&g_argv[i][1]);
+                char *key = strtok(tmp, "=");
+                char *value = strtok(NULL, "");
+                setenv(key, value, 1);
+                free(tmp);
         }
 
         #define IM0_HEAP_SIZE (512 * 1024)
         uint8_t *heap = malloc(IM0_HEAP_SIZE);
-	rumboot_malloc_register_heap("IM0", heap, &heap[IM0_HEAP_SIZE]);
+	rumboot_malloc_register_heap("IM0", &heap[0], &heap[IM0_HEAP_SIZE]);
+
         g_vl_instance = vl_create(vl_host, vl_port);
         if (!g_vl_instance) {
                 rumboot_platform_panic("VL_API: Failed to connect to %s:%d\n", vl_host, vl_port);
         }
-        #if 0
         struct vl_shmem* shm = vl_shmem_list(g_vl_instance);
-        while (shm->id) {
-                rumboot_printf("VL_API: shmem #%d name: %s size: %u \n", shm->id, shm->name, shm->size);
-                sleep(1);
+        while (shm->size) {
+                printf("VL_API: shmem #%d name: %s size: %llx start: %llx\n", shm->id, shm->name, shm->size, shm->sys_addr);
+                uint8_t *ptr = vl_shmem_map(shm);
+                if (!ptr) {
+                        printf("VL_API: Fatal. Failed to mmap heap %s\n", shm->name);
+                }
+                rumboot_malloc_register_heap(shm->name, &ptr[0], &ptr[shm->size]);
+                shm++;
         }
-        #endif
+        atexit(cleanup);
 }
 
 
-static void upload(void *addr)
+static void upload(const char *hfile, void *addr)
 {
         if (!hfile) {
                 return;
@@ -168,22 +191,23 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t 
         case EVENT_TERM:
                 exit(data[0]);
                 break;
-        case EVENT_GENERIC: {
-                size_t tmp;
-                const char *plusarg = (void *)data[0];
-                void *addr = rumboot_platform_get_spl_area(&tmp);
-                if (strcmp(plusarg, "HOST") == 0) {
-                        upload(addr);
-                }
-                break;
-        }
         case EVENT_UPLOAD: {
                 size_t dummy;
                 const char *plusarg = (void *)data[0];
                 void *addr = (void *)data[1];
-                if (strcmp(plusarg, "HOSTMOCK") == 0) {
-                        upload(addr);
+                if (access(plusarg, R_OK) == 0) {
+                        upload(plusarg, addr);
+                        return;
+                } 
+                
+                if (NULL != getenv(plusarg)) {
+                        char * path = getenv(plusarg);
+                        if (access(path, R_OK) == 0) {
+                                upload(path, addr);
+                                return;        
+                        }
                 }
+                rumboot_platform_panic("FATAL: Upload of %s failed", plusarg);
                 break;
         }
         default:
@@ -293,7 +317,16 @@ uint32_t rumboot_virt_to_dma(volatile const void *addr)
         if (id == -1 ) {
                 rumboot_platform_panic("rumboot_virt_to_dma: can't find heap id for addr %x\n", addr);
         }
-        const char *name =  rumboot_malloc_heap_name(id);
+        const char *name     = rumboot_malloc_heap_name(id);
+        struct vl_shmem* shm = vl_shmem_list(g_vl_instance);
+        while (shm->size) {
+                if (strcmp(shm->name, name) == 0) {
+
+                        return (shm->sys_addr + (addr - rumboot_platform_runtime_info->heaps[id].start));
+                }
+                shm++;
+        }
+
 
 #if 0
         if (strcmp(name, "IM1") == 0) {

@@ -11,6 +11,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <netdb.h>	
+#include <signal.h>
+#include <arpa/inet.h>
+
 
 #include <platform/vl_api.h>    
 
@@ -19,7 +22,7 @@ int vl_recv(struct vl_instance *vl, struct vl_message* in_message){
 	int header_len = (char*)(in_message->data)-(char*)(in_message);
 	int bytes_read = recv(vl->sockfd, in_message, header_len, 0);
 	if (bytes_read!= header_len) {
-		rumboot_printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, header_len);
+		printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, header_len);
 		//std::cout << *in_message <<std::endl;
 		return -1;
 		//exit(4);
@@ -27,7 +30,7 @@ int vl_recv(struct vl_instance *vl, struct vl_message* in_message){
     if (in_message->data_len){
     	int data_read = recv(vl->sockfd, in_message->data,  in_message->data_len, 0);
     	if (data_read!= in_message->data_len) {
-			rumboot_printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, in_message->data_len);
+			printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, in_message->data_len);
 			//std::cout << *in_message <<std::endl;
 			//exit(4);
 			return -1;
@@ -85,6 +88,7 @@ int vl_transaction(struct vl_instance *vl, const struct vl_message* send_message
 	return recv_message->value;	
 }
 
+
 uint32_t vl_wait(struct vl_instance *vl, uint32_t irq_mask, const uint64_t clocks){
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
@@ -124,7 +128,7 @@ struct vl_shmem* vl_shmem_list(struct vl_instance *vl){
 	vl_recv(vl,&ans);  // accept
 	vl_recv(vl,&ans);  // started
 	//vl->shared_mem_list = new vl_shmem[ans.value+1];
-	vl->shared_mem_list = (struct vl_shmem*)malloc (sizeof(struct vl_shmem)*(ans.value+1));
+	vl->shared_mem_list = (struct vl_shmem*) calloc (1, sizeof(struct vl_shmem)*(ans.value+1));
 	int indx=0;
 	memcpy(&(vl->shared_mem_list[indx++]),ans.data,ans.data_len);
 	while (ans.op!=VL_OP_FINISHED){
@@ -166,23 +170,96 @@ void *vl_shmem_create(struct vl_shmem* shmem){
 // client  side fuction
 int vl_shmem_unmap(void* ptr, uint64_t size){
     int err = munmap(ptr, size);
-
-    //if(err != 0){
-    //    rumboot_printf("VLAPI: UnMapping Failed\n");
-    //}
     return err;
 }
 
-// client  side fuction
-void *vl_shmem_map(struct vl_shmem* shmem){
-    int fd = open(shmem->ipc_key, O_RDWR | O_CREAT, 0666);
-    if (fd < 0){
-        perror("Error mappinng shared memory: cannot open file");        
-        return (void*)-1;
+#include <errno.h>
+static void sigsegv_handler(int signum, siginfo_t *info, void *context)
+{
+	printf("SEGFAULT: %p\n", info->si_addr);
+
+#if 0
+    if (info->si_addr >= 100 && info->si_addr < 5000) {
+        const int saved_errno = errno;
+        //emulate(&((ucontext_t *)context)->uc_mcontext,
+        //        your_load_function, your_store_function);
+        errno = saved_errno;
+    } else {
+#endif
+        struct sigaction act;
+        sigemptyset(&act.sa_mask);
+        act.sa_handler = SIG_DFL;
+        act.sa_flags = 0;
+        if (sigaction(SIGSEGV, &act, NULL) == 0)
+            raise(SIGSEGV);
+        else
+            raise(SIGKILL);
+#if 0
     }
-    void *result = mmap(NULL, shmem->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    close(fd);
-    return result;
+#endif
+
+}
+
+struct shm_internal_mapping {
+	struct vl_instance *inst;
+	struct vl_shmem    *shm;
+	void *start;
+	void *end;
+	struct shm_internal_mapping *next;
+};
+
+static struct shm_internal_mapping *imaps;
+
+static void *vl_shm_internal_mapping_create(struct vl_instance *inst, struct vl_shmem *shm)
+{
+	struct shm_internal_mapping *map = calloc(1, sizeof(*map));
+	map->shm = shm;
+	map->inst = inst;
+	map->start = mmap(NULL, shm->size, PROT_NONE,
+	                MAP_PRIVATE | MAP_ANONYMOUS, -1, (off_t)0);
+	if (map->start != MAP_FAILED)
+	    map->end = (void *)(shm->size + (char *)map->start);
+	else {
+		return 0;
+	}
+	/* Append the map to internal list */
+	if (!imaps) {
+		imaps = map;
+	} else {
+		struct shm_internal_mapping *pos = imaps;
+		while (pos->next) {
+			pos = pos->next;
+		}
+		pos->next = map;
+	}
+
+	return map->start;
+}
+
+
+void *vl_shmem_map(struct vl_shmem* shmem){
+
+	if (access(shmem->ipc_key, R_OK) == 0) {
+		printf("VL_API: Using shared memory transport acceleration\n");
+    	int fd = open(shmem->ipc_key, O_RDWR | O_CREAT, 0666);
+    	if (fd < 0){
+    	    perror("Error mapping shared memory: cannot open file");        
+    	    return (void*)-1;
+    	}
+    	void *result = mmap(NULL, shmem->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    	close(fd);
+		return result;
+	}
+	printf("VL_API: Using mirrored memory emulation\n");
+	struct sigaction act;
+    sigemptyset(&act.sa_mask);
+    act.sa_sigaction = sigsegv_handler;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SA_SIGINFO);
+    if (sigaction(SIGSEGV, &act, NULL) == -1)
+        return NULL;
+
+    return vl_shm_internal_mapping_create(NULL, shmem);
 }
 
 
@@ -190,7 +267,7 @@ struct vl_instance *vl_create(const char *host, uint16_t port){
 	struct sockaddr_in addr;
 	struct in_addr **addr_list;
 	struct hostent *he;
-	struct vl_instance* vl = (struct vl_instance*) malloc(sizeof(struct vl_instance));
+	struct vl_instance* vl = (struct vl_instance*) malloc(sizeof(*vl));
 
 	vl->sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(vl->sockfd < 0)
