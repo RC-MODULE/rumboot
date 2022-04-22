@@ -296,7 +296,7 @@ typedef struct NPETestDescriptor {
   OpArrayDescriptor op2_array_desc;
   
   void* mpe_cfg_lut;
-
+  int invocations;
   //~ StatusRegs* array_of_status_regs_etalon;
 }NPETestDescriptor;
 

@@ -2002,12 +2002,37 @@ int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc) {
 
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
   if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigMPE)*iterations,sizeof(uint32_t));
+      test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", iterations);
   }
-  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*iterations,sizeof(uint32_t));
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+  
+  if(test_desc->array_of_in_metrics  ==NULL ||
+     test_desc->array_of_res_metrics ==NULL ||
+    (test_desc->array_of_warr_metrics==NULL && test_desc->MPE_ENABLED==Enable_En) ) return -1;
+    
+  test_desc->invocations = nu_vpe_invocations_cnt(test_desc->array_of_in_metrics,iterations);
+  
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,iterations);
+  }
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
+  
+  if(test_desc->array_of_in_data ==NULL || 
+    (test_desc->array_of_warr    ==NULL && test_desc->MPE_ENABLED==Enable_En) ||
+     test_desc->array_of_etalon  ==NULL || 
+     test_desc->array_of_res_data==NULL ) return -1;
+  
+  
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigMPE)*(test_desc->invocations),sizeof(uint32_t));
+  }
+  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*(test_desc->invocations),sizeof(uint32_t));
   if(test_desc->PPE_ENABLED==Enable_En) {
-    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)*iterations,sizeof(uint32_t));
-    test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
+    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)*(test_desc->invocations),sizeof(uint32_t));
+    test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*(test_desc->invocations),sizeof(uint32_t));
   }
 
   if((test_desc->array_of_cfg_mpe==NULL && test_desc->MPE_ENABLED==Enable_En) ||
@@ -2022,22 +2047,14 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   if(test_desc->PPE_ENABLED==Enable_En)
     if(nu_ppe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_ppe,iterations) !=0) return -1;
   
-  if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", iterations);
-  }
-  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
-  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+  nu_vpe_batch_size_stride_cnt(test_desc->array_of_in_metrics,test_desc->array_of_cfg_vpe,iterations);
   
-  if(test_desc->array_of_in_metrics  ==NULL ||
-     test_desc->array_of_res_metrics ==NULL ||
-    (test_desc->array_of_warr_metrics==NULL && test_desc->MPE_ENABLED==Enable_En) ) return -1;
-  
-    // Temporary CRUTCH - We Do Not Support Batches Yet
+ /*   // Temporary CRUTCH - We Do Not Support Batches Yet
     //                    But We Need src_rdma_config.dma_bsize For nu_vpe_load_arrays_of_op_metrics
   for(int i=0;i<iterations;i++) {
     test_desc->array_of_cfg_vpe[i].src_rdma_config.dma_bsize=0;
   }
-    // 
+    // */
   
   if(nu_vpe_load_arrays_of_op_metrics(
     heap_id,
@@ -2046,18 +2063,14 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     &(test_desc->op2_array_desc),
     test_desc->array_of_cfg_vpe,
     iterations) !=0) return -1;
-  
-  if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,iterations);
-  }
-  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
-  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
-  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
-  
-  if(test_desc->array_of_in_data ==NULL || 
-    (test_desc->array_of_warr    ==NULL && test_desc->MPE_ENABLED==Enable_En) ||
-     test_desc->array_of_etalon  ==NULL || 
-     test_desc->array_of_res_data==NULL ) return -1;
+    
+  nu_vpe_batch_size_stride_of_ops_cnt(
+   &test_desc->op0_array_desc,
+   &test_desc->op1_array_desc,
+   &test_desc->op2_array_desc,
+    test_desc->array_of_cfg,
+    test_desc->invocations
+  );
   
   if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
   
