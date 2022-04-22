@@ -1,14 +1,14 @@
 #ifndef VL_API_H
 #define VL_API_H
-
 #include <stdint.h>
 
-#define VL_API_VERSION 1
+#define VL_API_VERSION 0.9
 
 #define VL_OP_READ				1 //
 #define VL_OP_WRITE				2 //
 #define VL_OP_WAIT				3 //
 #define VL_OP_UPTIME			4 //
+#define VL_OP_SET_MIN_TIME		5
 
 #define VL_OP_ACCEPTED			0x20
 #define VL_OP_STARTED			0x40
@@ -50,27 +50,39 @@ struct vl_irq{
 };
 
 struct vl_instance {
+	float version;
 	int sockfd;
 	struct vl_shmem* shared_mem_list;
 	struct vl_irq* irq_mem_list;
 	uint64_t ticks_per_us;
+	void (*error_handler)(int err);
+	int debug;
 };
 
 //-------------- low-level communication verilator api --------------------
-
-uint64_t vl_get_ticks_per_us(struct vl_instance *vl);
-int vl_send(struct vl_instance *vl, const struct vl_message* message);
-int vl_recv(struct vl_instance *vl, struct vl_message* message);
-int vl_transaction(struct vl_instance *vl, const struct vl_message* send_message, struct vl_message* recv_message);
-
+int 	vl_send(struct vl_instance *vl, const struct vl_message* message);
+int 	vl_recv(struct vl_instance *vl, struct vl_message* message);
+int 	vl_transaction(struct vl_instance *vl, const struct vl_message* send_message, struct vl_message* recv_message);
+void 	vl_print_message(const struct vl_message* msg);
 //--------------- main verilator clint-api -------------------------------------
+uint64_t			vl_get_ticks_per_us(struct vl_instance *vl);
 struct vl_instance* vl_create(const char *host, uint16_t port); /* 0.0.0.0, localhost, /tmp/my.sock */
 void 				vl_disconnect(struct vl_instance *vl);
 struct vl_shmem* 	vl_shmem_list(struct vl_instance *vl);
 void *				vl_shmem_map(struct vl_shmem* shmem);
 int 				vl_shmem_unmap(void* ptr, uint64_t size);
+
+void 				vl_set_rw_min_time(struct vl_instance *vl, uint32_t read_min_time, uint32_t write_min_time);
+void 				vl_iowrite64(struct vl_instance *vl, uint64_t const value, uint32_t const base_addr);
 void 				vl_iowrite32(struct vl_instance *vl, uint32_t const value, uint32_t const base_addr);
+void 				vl_iowrite16(struct vl_instance *vl, uint16_t const value, uint32_t const base_addr);
+void 				vl_iowrite8 (struct vl_instance *vl, uint8_t  const value, uint32_t const base_addr);
+
+uint64_t 			vl_ioread64 (struct vl_instance *vl, uint32_t const base_addr);
 uint32_t 			vl_ioread32 (struct vl_instance *vl, uint32_t const base_addr);
+uint16_t 			vl_ioread16 (struct vl_instance *vl, uint32_t const base_addr);
+uint8_t 			vl_ioread8  (struct vl_instance *vl, uint32_t const base_addr);
+
 int 				vl_destroy(struct vl_instance *vl);
 struct vl_irq*   	vl_irq_list(struct vl_instance *vl);
 int 				vl_irq_enable(struct vl_instance *vl, int irq, uint32_t flags);
