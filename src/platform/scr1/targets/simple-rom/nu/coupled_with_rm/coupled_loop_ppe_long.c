@@ -130,6 +130,9 @@ int main() {
     ppe_clk_f = 1;
   #endif
 
+  nu_ppe_wdma_err_mask(MY_PPE_REGS_BASE);
+  nu_ppe_rdma_err_mask(MY_PPE_REGS_BASE);
+
   for (perf_avg=0, i=skip; i<it_nmb && !res; i++) {
     //rumboot_malloc_update_heaps(1);
 
@@ -149,7 +152,6 @@ int main() {
     iteration_desc.cfg_reg->wOpEn  = 0x0;
 
     #if SKIP_ITERATIONS != 0
-      // Print Them When We Debug
       nu_ppe_print_config(iteration_desc.cfg);
       nu_ppe_print_config_reg(iteration_desc.cfg_reg);
     #endif
@@ -200,6 +202,7 @@ int main() {
     }
     else {
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
+
       clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 
       #ifdef MEMtoPPE
@@ -211,18 +214,14 @@ int main() {
       while (!nu_ppe_page_cmpl_status(MY_PPE_REGS_BASE)) {};
       nu_ppe_page_cmpl_reset(MY_PPE_REGS_BASE);
 
-      dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
-      clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
+      res = nu_ppe_wdma_err_status(MY_PPE_REGS_BASE) ||
+            nu_ppe_rdma_err_status(MY_PPE_RDMA_BASE)
+      ;
+      if (res) rumboot_printf("There is error on AXI bus iteration %d\n", i);
 
-      rumboot_printf("Comparing...\n");
-      res = nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
-
-      if (res) {
-        nu_ppe_print_config(iteration_desc.cfg);
-        nu_ppe_print_config_reg(iteration_desc.cfg_reg);
-
-        // rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-        // rumboot_platform_dump_region("cfg_reg.bin", cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
+      if (!res) {
+        rumboot_printf("Comparing...\n");
+        res = nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
       }
 
       if (!res) {
@@ -248,6 +247,9 @@ int main() {
       if (!res) {
         rumboot_printf("Iteration %d PASSED\n", i);
 
+        dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
+        clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
+
         #ifdef ShowPerf
           clk_cnt = (clk_cnt*100)/ppe_clk_f;
           perf_avg += clk_cnt;
@@ -270,7 +272,15 @@ int main() {
           nu_ppe_iterate_desc(&iteration_desc);
         #endif
       }
-      else rumboot_printf("Test FAILED at iteration %d\n", i);
+      else {
+        nu_ppe_print_config(iteration_desc.cfg);
+        nu_ppe_print_config_reg(iteration_desc.cfg_reg);
+
+        // rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
+        // rumboot_platform_dump_region("cfg_reg.bin", cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
+
+        rumboot_printf("Test FAILED at iteration %d\n", i);
+      }
 
       #ifdef PPE_SWRST
         ppe_swrst_en = 1;

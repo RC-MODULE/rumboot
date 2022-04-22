@@ -766,4 +766,12 @@ void nu_na_ppe_pause_clr(uintptr_t base);
 uint32_t nu_ppe_page_cmpl_status(uintptr_t base);
 void nu_ppe_page_cmpl_reset(uintptr_t base);
 
+void nu_ppe_wdma_err_mask (uintptr_t base);
+uint32_t nu_ppe_wdma_err_status(uintptr_t base);
+void nu_ppe_wdma_err_reset (uintptr_t base);
+
+void nu_ppe_rdma_err_mask (uintptr_t base);
+uint32_t nu_ppe_rdma_err_status(uintptr_t base);
+void nu_ppe_rdma_err_reset (uintptr_t base);
+
 #endif
