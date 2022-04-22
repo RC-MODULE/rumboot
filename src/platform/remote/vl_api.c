@@ -1,4 +1,4 @@
-#define _GNU_SOURCE 1 
+#define _GNU_SOURCE 1
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -342,15 +342,19 @@ with the program code stuck in that instruction!
 
 */
 
-int eacdx(uint8_t code) {
+unsigned int eacdx(uint8_t code) {
 	switch (code & 0xF) {
 		case 0:
+			printf("EAX\n");
 			return REG_EAX;
 		case 1:
+			printf("ECX\n");
 			return REG_ECX;
 		case 2:
+			printf("EDX\n");
 			return REG_EDX;
 		case 3:
+			printf("EBX\n");
 			return REG_EBX;
 		default:
 			printf("DECODE FAILED\n");
@@ -363,16 +367,19 @@ static void emulate(struct shm_internal_mapping *map, mcontext_t *const context,
 	uintptr_t offset = (uintptr_t) (addr - map->start);
 	printf("VA_API: Emulating access to: %p (off %p) (%s)\n", addr, offset, map->shm->name);
 	uint8_t *ptr = context->gregs[REG_EIP];
-    /*13f7:	c7 40 04 55 55 aa aa 	movl   $0xaaaa5555,0x4(%eax) */
-	if (*ptr == 0xc7) {
-		uint32_t *data = (uint32_t*) &ptr[3];
-		printf("DATA: %x REG %d\n", *data, eacdx(ptr[1]));
-		context->gregs[eacdx(ptr[1])] = data;
-		context->gregs[REG_EIP]+=7;
-	}
-
 	printf("EIP: %p\n", ptr);
 	printf("OPCODEZ: %p: %x %x %x %x %x %x %x %x \n", ptr, ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5], ptr[6], ptr[7]);
+	if (*ptr == 0xc7) {
+    	/*13f7:	c7 40 04 55 55 aa aa 	movl   $0xaaaa5555,0x4(%eax) */
+		uint32_t *data = (uint32_t*) &ptr[3];
+		printf("DATA: %x REG %d\n", *data, eacdx(ptr[1]));
+		//context->gregs[eacdx(ptr[1])] = data;
+		context->gregs[REG_EIP]+=7;
+	} else {
+		printf("EMULATION FAILED: UNKNOWN OPCODEZ\n");
+		_exit(1);
+	}
+
 }
 
 
@@ -447,6 +454,7 @@ void *vl_shmem_map(struct vl_shmem* shmem){
 	printf("VL_API: Using mirrored memory emulation\n");
 	struct sigaction act;
     sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_SIGINFO;
     act.sa_sigaction = sigsegv_handler;
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SA_SIGINFO);
