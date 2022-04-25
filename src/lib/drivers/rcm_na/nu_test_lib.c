@@ -1906,18 +1906,18 @@ void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty
 }
 
 void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
-  desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s );
+  desc->in_data = (void*) ( (char*)(desc->in_data) + (desc->cfg_vpe->src_rdma_config.dma_bsize+1) * (desc->in_metrics->s) );
   if(desc->MPE_ENABLED==Enable_En) {
-    desc->warr    = (void*) ( (char*)(desc->warr)    + desc->warr_metrics->s);
+    desc->warr    = (void*) ( (char*)(desc->warr)    + desc->warr_metrics->s); // ???: with batch * bsize ?
   }
-  desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s);
-  desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s);
+  desc->etalon  = (void*) ( (char*)(desc->etalon ) + (desc->cfg_vpe->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
+  desc->res_data= (void*) ( (char*)(desc->res_data)+ (desc->cfg_vpe->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
   if    (desc->cfg_vpe->op0_en==Enable_En) {
     if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Element) ||
         (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Element) ) {
              desc->op0_cube = (void*) ( (char*)(desc->op0_cube) + 
                                                 desc->op0_cube_metrics->s );
-             desc->op0_cube_metrics += 1;
+             desc->op0_cube_metrics += (desc->cfg_vpe->op0_rdma_config.dma_bsize+1);
     }
     if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Channel) ||
         (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Channel) ) {
@@ -1930,8 +1930,8 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Element) ||
         (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Element) ) {
              desc->op1_cube = (void*) ( (char*)(desc->op1_cube) + 
-                                                desc->op1_cube_metrics->s );
-             desc->op1_cube_metrics += 1;
+                                                (desc->cfg_vpe->op1_rdma_config.dma_bsize+1) * (desc->op1_cube_metrics->s) );
+             desc->op1_cube_metrics += (desc->cfg_vpe->op1_rdma_config.dma_bsize+1);
     }
     if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Channel) ||
         (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Channel) ) {
@@ -1944,8 +1944,8 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Element) ||
         (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Element) ) {
              desc->op2_cube = (void*) ( (char*)(desc->op2_cube) + 
-                                                desc->op2_cube_metrics->s );
-             desc->op2_cube_metrics += 1;
+                                                (desc->cfg_vpe->op2_rdma_config.dma_bsize+1) * (desc->op2_cube_metrics->s) );
+             desc->op2_cube_metrics += (desc->cfg_vpe->op2_rdma_config.dma_bsize+1);
     }
     if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Channel) ||
         (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Channel) ) {
@@ -1965,8 +1965,8 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
   if(desc->MPE_ENABLED) {
     desc->warr_metrics       += 1;
   }
-  desc->in_metrics         += 1;
-  desc->res_metrics        += 1;
+  desc->in_metrics         += (desc->cfg_vpe->src_rdma_config.dma_bsize+1);
+  desc->res_metrics        += (desc->cfg_vpe->    wdma_config.dma_bsize+1);
   //~ desc->status_regs_etalon += 1;
   
   if(desc->MPE_ENABLED) {
@@ -2068,7 +2068,7 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
    &test_desc->op0_array_desc,
    &test_desc->op1_array_desc,
    &test_desc->op2_array_desc,
-    test_desc->array_of_cfg,
+    test_desc->array_of_cfg_vpe,
     test_desc->invocations
   );
   
