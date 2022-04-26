@@ -191,8 +191,8 @@ int main() {
 
       while (nu_na_ppe_soft_reset_status(NPE_BASE+NA_CU_REGS_BASE)){}
 
-      nu_ppe_rdma_regs_swrst_check(MY_PPE_RDMA_BASE);
-      nu_ppe_regs_swrst_check(MY_PPE_REGS_BASE);
+      res = nu_ppe_rdma_regs_swrst_check(MY_PPE_RDMA_BASE);
+      if (!res) res = nu_ppe_regs_swrst_check(MY_PPE_REGS_BASE);
 
       nu_na_ppe_pause_clr(NPE_BASE+NA_CU_REGS_BASE);
 
