@@ -37,10 +37,11 @@ int main() {
   int clk_cnt, perf_avg;
   int res;
 
-  uint32_t flying_mode, lbs, mv;
+  uint32_t flying_mode, lbs, mv,mark_cube;
 
   rumboot_printf("coupled_loop_ppe\n");
-
+  
+//  mark_cube  = 0;
 
   #ifdef LIN
     lbs = 0x0;
@@ -71,7 +72,13 @@ int main() {
     na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, 0x00000000);
   #endif
   
-	
+//#if PPE_MARK_CUBE
+//   mark_cube = 1;
+    nu_ppe_marked_page_cmpl_mask(MY_PPE_REGS_BASE);
+//  #else
+//    mark_cube = 0;
+//  #endif
+		
   #ifdef PPE_CUBE_CMPL
   nu_ppe_set_wdma_int_mask(MY_PPE_REGS_BASE);  
   #else 
@@ -109,6 +116,11 @@ int main() {
     nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
     
     iteration_desc.cfg_reg->wOpEn  = 0x1;
+	if (i== it_nmb -1) {
+	  // MARKED_CNTX
+        iteration_desc.cfg_reg->wOpEn = iteration_desc.cfg_reg->wOpEn | 0x1<<8;
+      }	 
+	
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
   
     #ifdef MEMtoPPE
@@ -175,6 +187,11 @@ int main() {
    
 	if(i!=it_nmb-1)
     nu_ppe_iterate_desc(&iteration_desc);
+	else
+	{rumboot_printf("marked_cube_iteration = %d \n",i);	
+	 nu_na_ppe_wait_marked_cube_complete(NPE_BASE);
+	//rumboot_printf("Marked cube = %x \n",ioread32(MY_PPE_REGS_BASE + NU_PPE + NA_INT_UNITS_STATUS));
+	} 	
  }
   
   #ifdef ShowPerf

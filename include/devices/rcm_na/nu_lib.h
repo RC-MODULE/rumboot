@@ -665,7 +665,7 @@ void nu_na_wait_int(uintptr_t npe_base);
 void nu_na_vpe_wait_int_dev_off(uintptr_t npe_base);
 void nu_na_vpe_wait_complete(uintptr_t npe_base);
 void nu_na_vpe_wait_marked_cube_complete(uintptr_t npe_base);
- 
+ void nu_na_ppe_wait_marked_cube_complete(uintptr_t npe_base);
 
 void nu_mpe_wait_ready(uintptr_t base);
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
