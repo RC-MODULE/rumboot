@@ -2325,6 +2325,50 @@ void nu_ppe_marked_page_cmpl_reset (uintptr_t base) {
   iowrite32(ioread32(base + NU_PPE_WDMA_INT_RESET) | 0x1<<1, base + NU_PPE_WDMA_INT_RESET);
 }
 
+void nu_ppe_wdma_err_mask (uintptr_t base) {
+  //WDMA_IDERR 6 WDMA_SLVERR 5 WDMA_DECERR 4
+
+  iowrite32(ioread32(base + NU_PPE_WDMA_INT_MASK) | 0x1<<6 | 0x1<<5 | 0x1<<4, base + NU_PPE_WDMA_INT_MASK);
+}
+
+uint32_t nu_ppe_wdma_err_status(uintptr_t base) {
+  //WDMA_IDERR 6 WDMA_SLVERR 5 WDMA_DECERR 4
+
+  return  (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<6) >> 6 |
+          (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<5) >> 5 |
+          (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<4) >> 4
+  ;
+}
+
+void nu_ppe_wdma_err_reset (uintptr_t base) {
+  //WDMA_IDERR 6 WDMA_SLVERR 5 WDMA_DECERR 4
+
+  iowrite32(ioread32(base + NU_PPE_WDMA_INT_RESET) | 0x1<<6 | 0x1<<5 | 0x1<<4, base + NU_PPE_WDMA_INT_RESET);
+
+}
+
+void nu_ppe_rdma_err_mask (uintptr_t base) {
+  //RDMA_IDERR 6 RDMA_SLVERR 5 RDMA_DECERR 4
+
+  iowrite32(ioread32(base + NU_PPE_RDMA_INT_MASK) | 0x1<<6 | 0x1<<5 | 0x1<<4, base + NU_PPE_RDMA_INT_MASK);
+}
+
+uint32_t nu_ppe_rdma_err_status(uintptr_t base) {
+  //RDMA_IDERR 6 RDMA_SLVERR 5 RDMA_DECERR 4
+
+  return  (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<6) >> 6 |
+          (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<5) >> 5 |
+          (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<4) >> 4
+  ;
+}
+
+void nu_ppe_rdma_err_reset (uintptr_t base) {
+  //RDMA_IDERR 6 RDMA_SLVERR  5 RDMA_DECERR 4
+
+  iowrite32(ioread32(base + NU_PPE_RDMA_INT_RESET) | 0x1<<6 | 0x1<<5 | 0x1<<4, base + NU_PPE_RDMA_INT_RESET);
+
+}
+
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
@@ -2617,7 +2661,12 @@ void nu_na_vpe_wait_marked_cube_complete(uintptr_t npe_base){
 	{iowrite32(0x00040000,npe_base + NA_CU_REGS_BASE   + NA_INT_UNITS_RESET);
 	rumboot_printf("Done VPE marked cube complete...\n");}
 }
-
+void nu_na_ppe_wait_marked_cube_complete(uintptr_t npe_base){
+	rumboot_printf("Wait marked cube complete...\n");
+	while (( (ioread32(npe_base + NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS)>> 29) & 1) !=1) {}
+	{iowrite32( (1<<29),npe_base + NA_CU_REGS_BASE   + NA_INT_UNITS_RESET);
+	rumboot_printf("Done PPE marked cube complete...\n");}
+}
 void nu_na_mpe_wait_int_dev_off(uintptr_t npe_base){
 	rumboot_printf("Wait NA_MPE dev off\n");
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 1) & 1) !=1) {}

@@ -1234,6 +1234,7 @@ macro(na_testsuite_add_npe_tests CONF)
         || exit 1
 
       IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+                 +clk_div_en
       SUBPROJECT_DEPS npe_rm:main_npe_power
     )
   endif()

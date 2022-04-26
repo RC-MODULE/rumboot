@@ -665,7 +665,7 @@ void nu_na_wait_int(uintptr_t npe_base);
 void nu_na_vpe_wait_int_dev_off(uintptr_t npe_base);
 void nu_na_vpe_wait_complete(uintptr_t npe_base);
 void nu_na_vpe_wait_marked_cube_complete(uintptr_t npe_base);
- 
+ void nu_na_ppe_wait_marked_cube_complete(uintptr_t npe_base);
 
 void nu_mpe_wait_ready(uintptr_t base);
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
@@ -757,4 +757,21 @@ void nu_npe_cmd_dma_setup(uintptr_t npe_base, uint32_t cmd_dma_base_addr, uint32
 void nu_npe_cmd_dma_run(uintptr_t npe_base);
 void nu_npe_cmd_dma_wait_page_complete(uintptr_t npe_base);
 void nu_npe_cmd_dma_wait_cntx_appl(uintptr_t npe_base);
+
+void nu_na_ppe_pause_set(uintptr_t base);
+uint32_t nu_na_ppe_pause_status(uintptr_t base);
+void nu_na_ppe_soft_reset_set (uintptr_t base);
+uint32_t nu_na_ppe_soft_reset_status (uintptr_t base);
+void nu_na_ppe_pause_clr(uintptr_t base);
+uint32_t nu_ppe_page_cmpl_status(uintptr_t base);
+void nu_ppe_page_cmpl_reset(uintptr_t base);
+
+void nu_ppe_wdma_err_mask (uintptr_t base);
+uint32_t nu_ppe_wdma_err_status(uintptr_t base);
+void nu_ppe_wdma_err_reset (uintptr_t base);
+
+void nu_ppe_rdma_err_mask (uintptr_t base);
+uint32_t nu_ppe_rdma_err_status(uintptr_t base);
+void nu_ppe_rdma_err_reset (uintptr_t base);
+
 #endif

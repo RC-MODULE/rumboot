@@ -55,10 +55,10 @@ extern char rumboot_emem1_heap_end;
 void rumboot_platform_setup()
 {
         iowrite32(0, TIMER_BASE);
-        iowrite32(99 , TIMER_BASE + 4);
+        iowrite32(0, TIMER_BASE + 4);
         iowrite32(0, TIMER_BASE + 8);
         iowrite32(0, TIMER_BASE + 0xc);      
-        iowrite32(1, TIMER_BASE);
+        iowrite32(3, TIMER_BASE);
 
 #ifndef RUMBOOT_ONLY_STACK
         rumboot_malloc_register_heap("IRAM",

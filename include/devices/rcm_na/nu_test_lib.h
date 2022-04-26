@@ -395,4 +395,7 @@ int nu_npe_place_associative_regs_dump(int heap_id, NPETestDescriptor* test_desc
 int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc);
 int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc,int iterations);
 
+int nu_ppe_rdma_regs_swrst_check (uintptr_t base);
+int nu_ppe_regs_swrst_check (uintptr_t base);
+
 #endif

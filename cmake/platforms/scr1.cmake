@@ -35,10 +35,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION ROM
         FILES common/tools/print-heaps.c
       )
-    add_rumboot_target(
-        CONFIGURATION ROM
-        FILES common/bootrom/timer.c
-    )
+     # It Is Long Now
+    #add_rumboot_target(
+    #    CONFIGURATION ROM
+    #    FILES common/bootrom/timer.c
+    #)
 
     ################################################################
     ######################## quad_spi tests ########################
