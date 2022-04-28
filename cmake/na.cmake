@@ -429,6 +429,35 @@ macro(ADD_NPE_MPE_TEST CONF name number rm_bin_name)
     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
 endmacro()
+
+macro(ADD_NPE_MPE_BATCH_TEST CONF name number rm_bin_name)
+  if (${number} EQUAL 0)
+    set(TESTNAME ${name})
+  else()
+    set(TESTNAME "MPE_VPE_LONG_BATCH_${number}")
+  endif()
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${TESTNAME}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long_batch_mode.c
+    CFLAGS -DDONT_USE_PPE=1 -D${name}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} 
+      ${RM_TF_KEYS}
+      > ${RM_LOGFILE} &&
+
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+      || exit 1
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endmacro()
+
 macro(ADD_NPE_MPE_VPE_RST_TEST CONF name rm_bin_name make_tight comparer)
   if("${comparer}" STREQUAL "EPS")
     set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
@@ -1287,6 +1316,9 @@ macro(na_testsuite_add_npe_tests CONF)
     ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_WRCH 20 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_WRCH)
     #ADD_NPE_MPE_TEST(${CONF} MPE_CFG_TESTPLAN_RDMA_THRE 0 main_mpe_direct_ex_MPE_CFG_TESTPLAN_RDMA_THRE)
     ADD_NPE_MPE_TEST(${CONF} MPE_CFG_POWER 0 main_mpe_direct_ex_MPE_CFG_POWER)
+    
+    ADD_NPE_MPE_BATCH_TEST(${CONF} MPE_VPE_LONG_BATCH 0 main_npe_batch_0)
+    ADD_NPE_MPE_BATCH_TEST(${CONF} MPE_VPE_LONG_BATCH 1 main_npe_batch_1)
 
         ###
       #add_rumboot_target(
@@ -1405,6 +1437,12 @@ macro(na_testsuite_add_npe_tests CONF)
       ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP MAKE_TIGHT EPS)
       ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE NO_TIGHT EPS)
     endforeach()
+    #foreach(label RANGE 0 1)
+    #  ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_batch main_npe_batch_${label} NO_TIGHT BITWISE)
+    #endforeach()
+    #ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_0_batch main_npe_batch_0 NO_TIGHT BITWISE)
+    #ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_1_batch main_npe_batch_1 NO_TIGHT BITWISE)
+    #ADD_NPE_MPE_VPE_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_2_batch main_npe_batch_2 NO_TIGHT BITWISE)
 
     ADD_NPE_MPE_VPE_RST_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_24_FP main_mpe_direct_ex_MPE_CFG_24_FP MAKE_TIGHT EPS)
       ##################################

@@ -110,6 +110,7 @@ int main() {
   int i;
   int iterations;
   uint8_t  axi_len;
+  int num_cubes;
   
   rumboot_printf("Hellooooooo\n");
 
@@ -289,7 +290,7 @@ int main() {
     rumboot_printf("Comparing..\n");
     
       // Result vs Etalon Comparision
-    if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, (iteration_desc.res_metrics->s*(iteration_desc.cfg->wdma_config.dma_bsize+1))) == 0)
+    if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, (iteration_desc.res_metrics->s*(iteration_desc.cfg_vpe->wdma_config.dma_bsize+1))) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       //nu_mpe_print_config(iteration_desc.cfg_mpe);
