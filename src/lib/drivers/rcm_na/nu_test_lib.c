@@ -2314,6 +2314,28 @@ int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc
   return 0;
 }
 
+NADependTable* nu_load_array_of_depend_table(int heap_id, char* file_tag, int iterations) {
+  void* array_of_depend_table;
+  int size = sizeof(NADependTable)*iterations;
+  array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, size, sizeof(NADependTable));
+  if(array_of_depend_table==NULL)
+    return NULL;
+
+  rumboot_platform_request_file_ex(file_tag,(uintptr_t)array_of_depend_table,size);
+  return array_of_depend_table;
+}
+
+void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations) {
+    for (int i = 0; i < iterations; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 7; k++) {
+                rumboot_printf("rd num %d\n", test_desc->array_of_depend_table[i].read_after_write[j][k]);
+                rumboot_printf("wr num %d\n", test_desc->array_of_depend_table[i].write_after_read[j][k]);
+            }
+        }
+    }
+}
+
 void nu_npe_add_depend_rd_after_wr(
   NPETestDescriptor* desc,
   int curr_i
