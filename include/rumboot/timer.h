@@ -14,9 +14,11 @@ static inline void udelay(uint32_t us)
 #else
 #include <platform/vl_api.h>
 extern struct vl_instance *g_vl_instance;
+extern uint64_t g_ticks_per_us;
+
 static inline void udelay(uint32_t us)
 {
-  uint64_t ticks = us * REMOTE_TICKS_PER_US;
+  uint64_t ticks = us * g_ticks_per_us;
   vl_wait(g_vl_instance, 0, ticks);
 }
 #endif

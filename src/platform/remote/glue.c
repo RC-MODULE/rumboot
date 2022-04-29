@@ -31,6 +31,7 @@ int g_argc = 0;
 static int   vl_port = 3425;
 static char *vl_host = "localhost";
 struct vl_instance *g_vl_instance; 
+uint64_t g_ticks_per_us = 5;
 
 char *g_argv[64];
 
@@ -58,7 +59,7 @@ void my_handler(int signum)
 uint32_t rumboot_platform_get_uptime()
 {
         uint64_t timestamp  = vl_get_uptime(g_vl_instance);
-        return timestamp / REMOTE_TICKS_PER_US;
+        return timestamp / g_ticks_per_us;
 }
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
@@ -69,11 +70,16 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
 
 static int do_selftest = 0;
 static int do_host = 0;
+static int wdelay = 0;
+static int rdelay = 0;
 
 static struct option long_options[] =
 {
-        { "host",     required_argument, 0,            'h' },
-        { "port",     required_argument, 0,	       'p' },
+        { "host",       required_argument, 0,          'H' },
+        { "port",       required_argument, 0,	       'p' },
+        { "wdelay",     required_argument, 0,	       'w' },
+        { "rdelay",     required_argument, 0,	       'r' },
+        { "help",       no_argument,       0,	       'h' },
         { 0,	      0,		 0,	       0   }
 };
 
@@ -110,7 +116,7 @@ void rumboot_platform_setup()
 
         while (1) {
                 int option_index = 0;
-                int c = getopt_long(g_argc, g_argv, "h:p:",
+                int c = getopt_long(g_argc, g_argv, "H:p:w:r:h",
                                     long_options, &option_index);
                 if (c == -1) {
                         break;
@@ -125,15 +131,26 @@ void rumboot_platform_setup()
                 case 'p':
                         vl_port = atoi(optarg);
                         break;
-
-                case 'h':
+                case 'H':
                         vl_host = strdup(optarg);
+                        break;
+                case 'w':
+                        wdelay = atoi(optarg);
+                        break;
+                case 'r':
+                        rdelay = atoi(optarg);
+                        break;
+                case 'h':
+                        rumboot_printf("--- Valid commandline options ---\n");
+                        rumboot_printf("--help           - this help\n");
+                        rumboot_printf("--host=localhost - specify server host\n");
+                        rumboot_printf("--port=3425      - specify server port\n");
+                        rumboot_printf("--wdelay=0       - specify iowrite delay (in cycles)\n");
+                        rumboot_printf("--rdelay=0       - specify ioread delay  (in cycles)\n");
                         break;
                 }
         }
-        //printf("%d %s\n", optind, g_argv[optind]);
-
-
+        
         for (int i=optind; i<g_argc; i++) {
                 if (g_argv[i][0]!='+')
                         continue;
@@ -153,7 +170,20 @@ void rumboot_platform_setup()
         if (!g_vl_instance) {
                 rumboot_platform_panic("VL_API: Failed to connect to %s:%d\n", vl_host, vl_port);
         }
-        struct vl_shmem* shm = vl_shmem_list(g_vl_instance);
+
+        if (wdelay || rdelay) {
+                rumboot_printf("VL_API: Adjusting io delays: wdelay: %d rdelay: %d\n", wdelay, rdelay);
+                vl_set_io_delay(g_vl_instance, rdelay, wdelay);
+        }
+
+        g_ticks_per_us = vl_get_ticks_per_us(g_vl_instance);
+        if (g_ticks_per_us == 0) {
+                rumboot_platform_panic("VL_API: FATAL: g_ticks_per_us can't be zero");
+        }
+        rumboot_printf("VL_API: Simulation timescale: %u ticks per us\n", (uint32_t) g_ticks_per_us);
+
+
+        struct vl_shmem* shm = vl_shmem_list(g_vl_instance, 0);
         while (shm->size) {
                 printf("VL_API: shmem #%d name: %s size: %llx start: %llx\n", shm->id, shm->name, shm->size, shm->sys_addr);
                 uint8_t *ptr = vl_shmem_map(shm);
@@ -317,28 +347,11 @@ uint32_t rumboot_virt_to_dma(volatile const void *addr)
         if (id == -1 ) {
                 rumboot_platform_panic("rumboot_virt_to_dma: can't find heap id for addr %x\n", addr);
         }
-        const char *name     = rumboot_malloc_heap_name(id);
-        struct vl_shmem* shm = vl_shmem_list(g_vl_instance);
-        while (shm->size) {
-                if (strcmp(shm->name, name) == 0) {
-
-                        return (shm->sys_addr + (addr - rumboot_platform_runtime_info->heaps[id].start));
-                }
-                shm++;
+        uint32_t ret = (uint32_t) (vl_virt_to_phys(g_vl_instance, addr) & 0xffffffff);
+        if (ret == 0) {
+                rumboot_platform_panic("rumboot_virt_to_dma: No dma mapping for heap %s", rumboot_malloc_heap_name(id));
         }
-
-
-#if 0
-        if (strcmp(name, "IM1") == 0) {
-                return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start);
-        }
-
-        if (strcmp(name, "IM2") == 0) {
-                return (uint32_t) addr - (uint32_t) (rumboot_platform_runtime_info->heaps[id].start) + PCIE_MEM_OFFSET;
-        }
-#endif
-
-        rumboot_platform_panic("rumboot_virt_to_dma: No dma mapping for heap %s", name);
+        return ret;
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)

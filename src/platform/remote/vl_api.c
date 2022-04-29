@@ -1,4 +1,5 @@
-#define _GNU_SOURCE 1
+#define _GNU_SOURCE 1 
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -23,7 +24,10 @@
 #endif
 
 #ifdef __cplusplus
-std::ostream& operator << (std::ostream& out, const vl_message& msg){
+#include <ostream>
+#include <iomanip>
+std::ostream& operator << (std::ostream& out, const vl_message& msg)
+{
 	out << std::setfill('0') << std::hex 
 	<< " sync=0x" << std::setw(2*sizeof(msg.sync)) 		<< (int)(msg.sync) 
 	<< " op=0x"   << std::setw(2*sizeof(msg.op)) 		<< (int)(msg.op)
@@ -38,6 +42,10 @@ std::ostream& operator << (std::ostream& out, const vl_message& msg){
 	    if (msg.data[msg.data_len-1]==0){
 			data_is_text=true;
 			for (int i=0;i<msg.data_len-1;i++){
+				if (msg.data[i]=='\n')
+					continue;
+				if (msg.data[i]=='\r')
+					continue;
 				if (msg.data[i]<' ' || msg.data[i]>'~'){
 					data_is_text=false;
 					break;
@@ -59,7 +67,8 @@ std::ostream& operator << (std::ostream& out, const vl_message& msg){
 
 #endif
 
-void vl_print_message(const struct vl_message* msg){
+void vl_print_message(const struct vl_message* msg)
+{
 	printf (" sync=0x%04x",msg->sync);
 	printf (" op=0x%02x",msg->op);
 	printf (" addr=0x%08llx",msg->addr);
@@ -72,7 +81,12 @@ void vl_print_message(const struct vl_message* msg){
 	    bool data_is_text=false;
 	    if (msg->data[msg->data_len-1]==0){
 			data_is_text=true;
-			for (int i=0;i<msg->data_len-1;i++){
+			int i;
+			for (i=0;i<msg->data_len-1;i++){
+				if (msg->data[i]=='\n')
+					continue;
+				if (msg->data[i]=='\r')
+					continue;
 				if (msg->data[i]<' ' || msg->data[i]>'~'){
 					data_is_text=false;
 					break;
@@ -83,7 +97,8 @@ void vl_print_message(const struct vl_message* msg){
 			printf(" data='%s'",msg->data);
 	    else {
 	    	printf(" data= ");
-	    	for (int i=0;i<msg->data_len;i++){
+	    	int i=0;
+	    	for (i=0;i<msg->data_len;i++){
 			        uint8_t ch=msg->data[i];
 	       		printf("%02x",ch);
 	       	}
@@ -98,16 +113,17 @@ uint64_t vl_get_ticks_per_us(struct vl_instance *vl)
 	return vl->ticks_per_us; 
 }
 
-void vl_set_rw_min_time(struct vl_instance *vl, uint32_t read_min_time, uint32_t write_min_time )
+void vl_set_io_delay(struct vl_instance *vl, uint32_t read_min_delay, uint32_t write_min_delay )
 {
 	struct vl_message command;
 	struct vl_message answer;
-	command.op = 	VL_OP_SET_MIN_TIME;
-	command.value = read_min_time| (((uint64_t)write_min_time)<<32);
+	command.op = 	VL_OP_SET_IO_DELAY;
+	command.value = read_min_delay| (((uint64_t)write_min_delay)<<32);
 	vl_transaction(vl,&command,&answer);
 }
 
-int vl_recv(struct vl_instance *vl, struct vl_message* in_message){
+int vl_recv(struct vl_instance *vl, struct vl_message* in_message)
+{
  	memset(in_message,0,sizeof(struct vl_message));
 	int header_len = (char*)(in_message->data)-(char*)(in_message);
 	int bytes_read = recv(vl->sockfd, in_message, header_len, 0);
@@ -154,12 +170,14 @@ int vl_send(struct vl_instance *vl, const struct vl_message* out_message){
 
 
 int static vl_sync=0;
-void vl_iowrite64(struct vl_instance *vl, uint64_t const value, uint32_t const base_addr){
+void vl_iowrite64(struct vl_instance *vl, uint64_t const value, uint64_t const base_addr)
+{
 	vl_iowrite32(vl,value,base_addr);
 	vl_iowrite32(vl,value>>32,base_addr+4);
 }
 
-void vl_iowrite32(struct vl_instance *vl, uint32_t const value, uint32_t const base_addr){
+void vl_iowrite32(struct vl_instance *vl, uint32_t const value, uint64_t const base_addr)
+{
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
 	cmd.op 		= VL_OP_WRITE;
@@ -172,34 +190,33 @@ void vl_iowrite32(struct vl_instance *vl, uint32_t const value, uint32_t const b
 	} while (ans.op!=VL_OP_FINISHED);
 	
 }
-void vl_iowrite16(struct vl_instance *vl, uint16_t const value, uint32_t const base_addr){
+void vl_iowrite16(struct vl_instance *vl, uint16_t const value, uint64_t const base_addr)
+{
 	vl_iowrite32(vl, value, base_addr);
 }
-void vl_iowrite8 (struct vl_instance *vl, uint8_t  const value, uint32_t const base_addr){
+void vl_iowrite8 (struct vl_instance *vl, uint8_t  const value, uint64_t const base_addr)
+{
 	vl_iowrite32(vl, value, base_addr);
 }
 
-uint64_t vl_ioread64 (struct vl_instance *vl, uint32_t const base_addr){
-	#if 0 //This shit doesn't work
-	union{
-		uint32_t res32[2];
-		uint64_t res64;
-	};
-	res32[0] = vl_ioread32(vl,base_addr);
-	res32[1] = vl_ioread32(vl,base_addr);
+uint64_t vl_ioread64 (struct vl_instance *vl, uint64_t const base_addr)
+{
+	uint64_t res64;
+	res64 = vl_ioread32(vl,base_addr);
+	res64|= ((uint64_t)vl_ioread32(vl,base_addr+4))<<32;
 	return res64;
-	#endif
-	return 0;
+}
+uint16_t vl_ioread16 (struct vl_instance *vl, uint64_t const base_addr)
+{
+	return 0;//vl_ioread32 (vl, base_addr);
+}
+uint8_t vl_ioread8  (struct vl_instance *vl, uint64_t const base_addr)
+{
+	return 0;//vl_ioread32 (vl, base_addr);	
 }
 
-uint16_t vl_ioread16 (struct vl_instance *vl, uint32_t const base_addr){
-	return vl_ioread32 (vl, base_addr);
-}
-uint8_t vl_ioread8  (struct vl_instance *vl, uint32_t const base_addr){
-	return vl_ioread32 (vl, base_addr);	
-}
-
-uint32_t vl_ioread32(struct vl_instance *vl, uint32_t const base_addr){
+uint32_t vl_ioread32(struct vl_instance *vl, uint64_t const base_addr)
+{
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
 	cmd.op 		= VL_OP_READ;
@@ -213,7 +230,8 @@ uint32_t vl_ioread32(struct vl_instance *vl, uint32_t const base_addr){
 	return ans.value;
 }
 
-int vl_transaction(struct vl_instance *vl, const struct vl_message* send_message, struct vl_message* recv_message){
+int vl_transaction(struct vl_instance *vl, const struct vl_message* send_message, struct vl_message* recv_message)
+{
 	int res=vl_send(vl,send_message);
 	do {
 		vl_recv(vl,recv_message); 
@@ -221,7 +239,8 @@ int vl_transaction(struct vl_instance *vl, const struct vl_message* send_message
 	return recv_message->value;	
 }
 
-uint32_t vl_wait(struct vl_instance *vl, uint32_t irq_mask, const uint64_t clocks){
+uint32_t vl_wait(struct vl_instance *vl, uint32_t irq_mask, const uint64_t clocks)
+{
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
 	cmd.op 		= VL_OP_WAIT;
@@ -235,7 +254,8 @@ uint32_t vl_wait(struct vl_instance *vl, uint32_t irq_mask, const uint64_t clock
 	return ans.value;
 }
 
-uint64_t vl_get_uptime(struct vl_instance *vl){
+uint64_t vl_get_uptime(struct vl_instance *vl)
+{
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
 	cmd.op 		= VL_OP_UPTIME;
@@ -249,7 +269,8 @@ uint64_t vl_get_uptime(struct vl_instance *vl){
 	return ans.value;
 }
 
-struct vl_shmem* vl_shmem_list(struct vl_instance *vl){
+struct vl_shmem* vl_shmem_list(struct vl_instance *vl, bool automap)
+{
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
 	cmd.op 		= VL_OP_SHMEM_LIST;
@@ -258,19 +279,47 @@ struct vl_shmem* vl_shmem_list(struct vl_instance *vl){
 	cmd.data_len= 0;
 	int res=vl_send(vl,&cmd);
 	vl_recv(vl,&ans);  // accept
-	vl_recv(vl,&ans);  // started
-	vl->shared_mem_list = (struct vl_shmem*) malloc (sizeof(struct vl_shmem)*(ans.value+1));
-	int indx=0;
-	memcpy(&(vl->shared_mem_list[indx++]),ans.data,ans.data_len);
-	while (ans.op!=VL_OP_FINISHED){
+	
+	vl_recv(vl,&ans);  // started & first shmem
+	
+
+	if (ans.value<1 || ans.value>16){
+		printf ("ERROR: incorrect number of shared memories=%d\n",ans.value);
+		return 0;
+	}
+	vl->shared_mem_list = (struct vl_shmem*) calloc (1, sizeof(struct vl_shmem)*(ans.value+1));	
+	struct vl_shmem* shmem=vl->shared_mem_list;
+
+	memcpy(shmem,ans.data,ans.data_len);
+	if (automap) 
+		vl_shmem_map(shmem);
+	shmem++;
+
+	int i;
+	for (i=1; i< ans.value; i++, shmem++){
 		vl_recv(vl,&ans); 
-		memcpy(&(vl->shared_mem_list[indx++]),ans.data,ans.data_len);
-	};
+		memcpy(shmem,ans.data,ans.data_len);
+		if (automap) 
+			vl_shmem_map(shmem);
+	}
+	shmem->size=0; 	// last terminating shem must have size=0 
+	if (ans.op!=VL_OP_FINISHED){
+		printf("ERROR: Incorrect shmem_list answer \n");
+	}
+	//{
+	//
+	//	memcpy(&(vl->shared_mem_list[indx]),ans.data,ans.data_len);
+	//	if (vl->shared_mem_list[indx].size>0)
+	//		vl_shmem_map(&vl->shared_mem_list[indx]);
+	//	indx++;
+	//};
+
 	return vl->shared_mem_list;	
 }
 
 // server  side fuction
-void *vl_shmem_create(struct vl_shmem* shmem){
+void *vl_shmem_create(struct vl_shmem* shmem)
+{
 	//char template[] = 
 
     //int fd = open(shmem->ipc_key, O_RDWR | O_CREAT, 0666);
@@ -293,7 +342,7 @@ void *vl_shmem_create(struct vl_shmem* shmem){
         return (void*)-1;
     }
 
-    /* write just one byte at the end */
+    // write just one byte at the end 
     ok = write(fd, "", 1);
     if (ok < 0) {
         perror("Error creating shared memory:  writing a byte at the end of the file");
@@ -307,14 +356,59 @@ void *vl_shmem_create(struct vl_shmem* shmem){
     return result;
 }
 
+void *vl_shmem_map(struct vl_shmem* shmem){
+
+	if (access(shmem->ipc_key, R_OK) == 0) {
+		printf("VL_API: Using shared memory transport acceleration\n");
+    	int fd = open(shmem->ipc_key, O_RDWR | O_CREAT, 0666);
+    	if (fd < 0){
+    	    perror("ERROR mapping shared memory: ");        
+    	    return (void*)-1;
+    	}
+    	shmem->ptr = (uint8_t*)mmap(NULL, shmem->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    	if (shmem->ptr== MAP_FAILED){
+    		perror("ERROR mapping shared memory: ");        
+    	}
+
+    	//printf("shmem info:\n");
+    	//printf(" id      :%d\n",shmem->id);
+    	//printf(" name    :%s\n",shmem->name);
+    	//printf(" ipc_key :%s\n",shmem->ipc_key);
+    	//printf(" sys_addr:%08x\n",shmem->sys_addr);
+    	//printf(" size    :%x\n",shmem->size);
+    	//printf(" ptr     :%08x\n",shmem->ptr);
+    	close(fd);
+		return shmem->ptr;
+	}
+	return 0;
+	#ifdef INTERNAL_MAPPING
+	printf("VL_API: Using mirrored memory emulation\n");
+	struct sigaction act;
+    sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_SIGINFO;
+    act.sa_sigaction = sigsegv_handler;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SA_SIGINFO);
+    if (sigaction(SIGSEGV, &act, NULL) == -1)
+        return NULL;
+
+    return vl_shm_internal_mapping_create(NULL, shmem);
+	#endif
+}
+
 // client  side fuction
-int vl_shmem_unmap(void* ptr, uint64_t size){
-    int err = munmap(ptr, size);
+int vl_shmem_unmap(struct vl_shmem* shmem)
+{
+    int err = munmap(shmem->ptr, shmem->size);
     if(err == -1){
         printf("VLAPI: UnMapping Failed\n");
     }
     return err;
 }
+
+
+#ifdef INTERNAL_MAPPING
+
 
 struct shm_internal_mapping {
 	struct vl_instance *inst;
@@ -410,7 +504,6 @@ static void sigsegv_handler(int signum, siginfo_t *info, void *context)
     errno = saved_errno;
 	printf("EMULATION SUCCESS\n");
 }
-
 static void *vl_shm_internal_mapping_create(struct vl_instance *inst, struct vl_shmem *shm)
 {
 	struct shm_internal_mapping *map = (struct shm_internal_mapping*) calloc(1, sizeof(*map));
@@ -423,7 +516,7 @@ static void *vl_shm_internal_mapping_create(struct vl_instance *inst, struct vl_
 	else {
 		return 0;
 	}
-	/* Append the map to internal list */
+	// Append the map to internal list 
 	if (!imaps) {
 		imaps = map;
 	} else {
@@ -437,32 +530,7 @@ static void *vl_shm_internal_mapping_create(struct vl_instance *inst, struct vl_
 	return map->start;
 }
 
-
-void *vl_shmem_map(struct vl_shmem* shmem){
-
-	if (access(shmem->ipc_key, R_OK) == 0) {
-		printf("VL_API: Using shared memory transport acceleration\n");
-    	int fd = open(shmem->ipc_key, O_RDWR | O_CREAT, 0666);
-    	if (fd < 0){
-    	    perror("Error mapping shared memory: cannot open file");        
-    	    return (void*)-1;
-    	}
-    	void *result = mmap(NULL, shmem->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    	close(fd);
-		return result;
-	}
-	printf("VL_API: Using mirrored memory emulation\n");
-	struct sigaction act;
-    sigemptyset(&act.sa_mask);
-	act.sa_flags = SA_SIGINFO;
-    act.sa_sigaction = sigsegv_handler;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SA_SIGINFO);
-    if (sigaction(SIGSEGV, &act, NULL) == -1)
-        return NULL;
-
-    return vl_shm_internal_mapping_create(NULL, shmem);
-}
+#endif
 
 
 struct vl_instance *vl_create(const char *host, uint16_t port){
@@ -493,7 +561,8 @@ struct vl_instance *vl_create(const char *host, uint16_t port){
 
 	addr_list = (struct in_addr **) he->h_addr_list;
 
-	for(int i = 0; addr_list[i] != NULL; i++) {
+	int i;
+	for(i = 0; addr_list[i] != NULL; i++) {
 		char str[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, addr_list[i], str, INET_ADDRSTRLEN);
 		printf("VL_API: Trying to connect to %s\n", str);
@@ -516,8 +585,14 @@ err_free_inst:
 
 int vl_destroy(struct vl_instance *vl){
 	close(vl->sockfd);
-	free (vl->shared_mem_list);
+	struct vl_shmem* shmem=vl->shared_mem_list;
+	while (shmem->size){
+		vl_shmem_unmap(shmem);
+		shmem++;
+	}
+	free(vl->shared_mem_list);
 	free(vl);
+
 	return 0;
 }
 
@@ -527,6 +602,104 @@ void vl_disconnect(struct vl_instance *vl){
 	disconnect.op=VL_OP_DISCONNECT;
 	vl_transaction(vl,&disconnect,&answer);
 	printf("VLAPI: ack: %s\n",answer.data);
+}
+uint32_t vl_fread(struct vl_instance *vl, const char* path, const uint64_t addr ){
+	printf ("reading file %s to %Xh ...\n",path,addr);	    
+	void* virt= vl_phys_to_virt(vl,addr);
+	if (virt){
+		FILE *file = fopen(path,"rb");
+		if (!file) {
+			printf("ERROR: cannot open file  %s\n",path); 
+			return 0;
+		}		
+		fseek(file,0,SEEK_END);
+		size_t file_size=ftell(file);
+		void* fit = vl_phys_to_virt(vl,addr+file_size);
+		if (fit==0){
+			printf("ERROR: file size cannot fit memory\n");
+			return 0;
+		}
+		rewind(file);
+		size_t res=fread(virt,1, file_size,file);
+		fclose(file);
+		//printf ("%d bytes were read\n",i );
+		return res;
+	}
+	return 0;
+}
+
+uint32_t vl_fwrite(struct vl_instance *vl, const char* path, const uint64_t addr, const uint64_t size){
+	printf ("writing file %s from %Xh of %d bytes...\n",path,addr,size);	    
+    
+	void* virt= vl_phys_to_virt(vl,addr);
+	if (virt){
+		FILE* file = fopen(path,"wb");
+		if (!file) {
+			printf("ERROR: cannot open file  %s\n",path); 
+			return 0;
+		}		
+		size_t res=fwrite(virt,1,size,file);
+		fclose(file);
+		//printf (" %d bytes from %X were written to file %s...\n",size,base_addr,path);
+		return res;
+	}
+	return 0;
+}
+
+uint64_t  			vl_virt_to_phys  (struct vl_instance *vl,volatile void *addr){
+	if (vl->shared_mem_list==0){
+		printf("ERROR: vl->shared_mem_list=0\n");
+		return 0;
+	}
+	struct vl_shmem* shmem=vl->shared_mem_list;
+	while (shmem->size){
+		if (addr>=(void*)shmem->ptr && addr<(void*)(shmem->ptr+shmem->size)){
+			return shmem->sys_addr+(uint8_t*)addr-shmem->ptr;
+		}
+		shmem++;
+	}
+	printf ("ERROR: no shared memory found at virt[%x]\n",addr );
+	return 0;
+}
+
+void*				vl_phys_to_virt (struct vl_instance *vl,uint64_t base_addr)
+{
+	if (vl->shared_mem_list==0){
+		printf("ERROR: vl->shared_mem_list=0\n");
+		return 0;
+	}
+	struct vl_shmem* shmem=vl->shared_mem_list;
+	while (shmem->size){
+		if (base_addr>=shmem->sys_addr && base_addr<shmem->sys_addr+shmem->size){
+			return shmem->ptr+base_addr-shmem->sys_addr;
+		}
+		shmem++;
+	}
+	printf ("ERROR: no shared memory found at phys[%x]\n",base_addr );
+	return 0;
+}
+
+void vl_set_error_handler(struct vl_instance *vl, void (*error_handler)(int)){
+	vl->error_handler=error_handler;
+}
+
+void vl_exit(struct vl_instance *vl){
+	struct vl_message cmd;
+	struct vl_message answer;
+	cmd.op=VL_OP_EXIT;
+	vl_transaction(vl,&cmd,&answer);
+}
+void vl_soft_reset(struct vl_instance *vl){
+	struct vl_message cmd;
+	struct vl_message answer;
+	cmd.op=VL_OP_SOFT_RESET;
+	vl_transaction(vl,&cmd,&answer);
+}
+void vl_hard_reset(struct vl_instance *vl){
+	struct vl_message cmd;
+	struct vl_message answer;
+	cmd.op=VL_OP_HARD_RESET;
+	vl_transaction(vl,&cmd,&answer);
 }
 
 ; /* 0.0.0.0, localhost, /tmp/my.sock */

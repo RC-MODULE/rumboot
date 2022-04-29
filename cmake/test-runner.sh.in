@@ -45,13 +45,18 @@ free >> serverinfo.txt
 cat /proc/loadavg >> serverinfo.txt
 
 #Rebuild target
-${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${product}.all
+${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${product}.all || exit 1
 
 #setup the environment
 @TARGET_ENVIRONMENT@
 @TARGET_PREPCMD@
 
-@PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/rumboot-tools/rumboot_xrun.py -f @CMAKE_BINARY_DIR@/@product@@_suffix@ @_plusargs@ $* $IRUN_EXTRA_FLAGS
+if [ "@RUMBOOT_NEEDS_XRUN@" ]; then
+    @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/rumboot-tools/rumboot_xrun.py -f @CMAKE_BINARY_DIR@/@product@@_suffix@ @_plusargs@ $* $IRUN_EXTRA_FLAGS
+else
+    @CMAKE_BINARY_DIR@/@product@ -- @_plusargs@ $* $IRUN_EXTRA_FLAGS
+fi
+
 code=$?
 echo -e "[!] Exit code: $code"
 exit $code

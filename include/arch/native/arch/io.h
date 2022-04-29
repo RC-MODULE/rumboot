@@ -10,26 +10,22 @@ extern struct vl_instance *g_vl_instance;
 
 static __attribute__((no_instrument_function)) inline double ioread64d(uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
-    return  0;
+    return (double) vl_ioread64(g_vl_instance, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline void iowrite64d(double const value, uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
+    vl_iowrite64(g_vl_instance, (double) value, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline uint64_t ioread64(uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
-    return 0;
-
+    return vl_ioread64(g_vl_instance, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline void iowrite64(uint64_t const value, uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
-
+    vl_iowrite64(g_vl_instance, value, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline uint32_t ioread32(uint32_t const base_addr)
@@ -44,24 +40,22 @@ static __attribute__((no_instrument_function)) inline void iowrite32(uint32_t co
 
 static __attribute__((no_instrument_function)) inline uint16_t ioread16(uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
-    return 0;
+    return vl_ioread16(g_vl_instance, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline void iowrite16(uint16_t const value, uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
+    vl_iowrite16(g_vl_instance, value, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline uint8_t ioread8(uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
-    return 0;
+    return vl_ioread8(g_vl_instance, base_addr);
 }
 
 static __attribute__((no_instrument_function)) inline void iowrite8(uint8_t const value, uint32_t const base_addr)
 {
-    rumboot_platform_panic("Unsupported io access function: %s\n", __FUNCTION__);
+    vl_iowrite8(g_vl_instance, value, base_addr);
 }
 
 
