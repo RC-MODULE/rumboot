@@ -1,0 +1,5 @@
+#ifndef IRQ_REMOTE
+
+#define RUMBOOT_PLATFORM_NUM_IRQS 16
+
+#endif // !IRQ_REMOTE

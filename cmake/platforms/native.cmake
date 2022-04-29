@@ -17,6 +17,7 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
       SET(CMAKE_EXE_LINKER_FLAGS     "-m32")
     elseif (${CROSS_COMPILE} STREQUAL "arm-rcm-linux-gnueabihf")
       SET(XILINX_FPGA_PROTO YES)
+      SET(RUMBOOT_NEEDS_XRUN YES)
       SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -DDUT=NPE -DRUMBOOT_ENABLE_NATIVE_PCIE -DASSUME_TCP") #FixMe: This shouldn't be here
     else()
       message(FATAL_ERROR "Check flags before cross-compiling native for a weird arch")
