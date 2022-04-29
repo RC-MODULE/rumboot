@@ -30,7 +30,7 @@ int g_argc = 0;
 static int ipc_id;
 char *g_argv[64];
 #define NAME CMAKE_BINARY_DIR "/rumboot-native-" CMAKE_BUILD_TYPE "-spl-fail"
-#define PCIE_MEM_OFFSET  (32 * 1024 * 1024)
+#define PCIE_MEM_OFFSET  (1024 * 1024 * 1024)
 
 static struct rumboot_bootsource arr[] = {
         {
@@ -231,11 +231,12 @@ void rumboot_platform_setup()
                 heap = &heap[sizeof(*rumboot_platform_runtime_info)];
 	        rumboot_malloc_register_heap("IM0", heap, &heap[HEAP_SIZE]);
 #ifdef RUMBOOT_ENABLE_NATIVE_PCIE
-                void *ptr = rumboot_native_request_device(0, 0x0000, PCIE_MEM_OFFSET);
+                void *ptr = rumboot_native_request_device(2, 0x0000, PCIE_MEM_OFFSET);
         	rumboot_malloc_register_heap("IM1", ptr, ptr + PCIE_MEM_OFFSET);
 
-                ptr = rumboot_native_request_device(2, PCIE_MEM_OFFSET, (512-32) * 1024 * 1024);
-        	rumboot_malloc_register_heap("IM2", ptr, ptr + (512-32) * 1024 * 1024);
+                ptr = rumboot_native_request_device(2, PCIE_MEM_OFFSET, PCIE_MEM_OFFSET);
+        	rumboot_malloc_register_heap("IM2", ptr, ptr + PCIE_MEM_OFFSET);
+                
                 DUT_BASE = rumboot_native_request_device(1, 0x0000, 0xfd0000);
 #endif
         }

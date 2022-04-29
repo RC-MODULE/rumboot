@@ -1,0 +1,8 @@
+#ifndef PLATFORM_BOOTHEADER_H
+#define PLATFORM_BOOTHEADER_H
+
+#define RUMBOOT_PLATFORM_CHIPID   0
+#define RUMBOOT_PLATFORM_CHIPREV  0
+
+
+#endif /* end of include guard: PLATFORM_BOOTHEADER_h */

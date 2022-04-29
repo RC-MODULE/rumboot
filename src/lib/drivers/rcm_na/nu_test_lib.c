@@ -2097,14 +2097,14 @@ void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
 	 iowrite32(((1<<17) | (1<<0)|(1<<6)) ,vpe_base + NU_VPE + NU_VPE_INT_RESET); 
 	}
 void nu_na_mpe_pause_fail_stop(uintptr_t npe_base){
-    rumboot_printf("Prepare for Stop NA_MPE begin...\n");
+    //rumboot_printf("Prepare for Stop NA_MPE begin...\n");
 	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 0) & 1) !=1) {}
 	iowrite32((1<<0) ,npe_base +  NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	
-	rumboot_printf("Soft reset NA_MPE ...\n");	
+	//rumboot_printf("Soft reset NA_MPE ...\n");	
 	iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
-	rumboot_printf("NA_MPE soft reset done ...\n");
+	//rumboot_printf("NA_MPE soft reset done ...\n");
 	
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 5) & 1) !=1) {}
 	iowrite32((1<<5) ,npe_base +  NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
@@ -2123,14 +2123,15 @@ void nu_na_mpe_pause_fail_stop(uintptr_t npe_base){
 	rumboot_printf("Done NA_MPE fail soft reset\n");
 	}		
 void nu_na_ppe_pause_fail_stop(uintptr_t npe_base){
-	rumboot_printf("Prepare for Stop NA_PPE begin...\n");
+	//rumboot_printf("Prepare for Stop NA_PPE begin...\n");
 	while( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) == 0xC0200000) !=1) {}
-	rumboot_printf("Soft reset NA_PPE ...\n");	
+	//rumboot_printf("Soft reset NA_PPE ...\n");	
 	iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET);
-	rumboot_printf("Soft reset done ...\n");
+	//rumboot_printf("Soft reset done ...\n");
 	while(( (ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 26) & 1) !=1) {}
-	rumboot_printf("NA_PPE fail soft reset passed\n");	
-	iowrite32(((1<<31) | (1<<21)|(1<<26)) ,npe_base +  NA_CU_REGS_BASE + NA_INT_UNITS_RESET); 
+	//rumboot_printf("NA_PPE fail soft reset passed\n");	
+	iowrite32(((1<<31) | (1<<21)|(1<<26)) ,npe_base +  NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Soft reset done ...\n");
 	}		
 void nu_na_vpe_fail_mpe_srst_stop(uintptr_t npe_base){
     rumboot_printf("Prepare for Stop NA_VPE begin...\n");
@@ -2312,6 +2313,28 @@ int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc
   test_desc->array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NADependTable)*iterations, sizeof(uint32_t));
   if (test_desc->associative_regs_dump_start_ptr == NULL) return -1;
   return 0;
+}
+
+NADependTable* nu_load_array_of_depend_table(int heap_id, char* file_tag, int iterations) {
+  void* array_of_depend_table;
+  int size = sizeof(NADependTable)*iterations;
+  array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, size, sizeof(NADependTable));
+  if(array_of_depend_table==NULL)
+    return NULL;
+
+  rumboot_platform_request_file_ex(file_tag,(uintptr_t)array_of_depend_table,size);
+  return array_of_depend_table;
+}
+
+void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations) {
+    for (int i = 0; i < iterations; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 7; k++) {
+                rumboot_printf("rd num %d\n", test_desc->array_of_depend_table[i].read_after_write[j][k]);
+                rumboot_printf("wr num %d\n", test_desc->array_of_depend_table[i].write_after_read[j][k]);
+            }
+        }
+    }
 }
 
 void nu_npe_add_depend_rd_after_wr(

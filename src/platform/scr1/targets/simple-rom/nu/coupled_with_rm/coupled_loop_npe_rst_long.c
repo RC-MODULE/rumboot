@@ -7,8 +7,52 @@
 
 #include <devices/rcm_na/nu_lib.h> 
 #include <devices/rcm_na/nu_test_lib.h> 
-#include <devices/rcm_na/nu_test_macro.h> 
+#include <devices/rcm_na/nu_test_macro.h>
+ 
+void nu_na_ppe_wait_int_pause_ext(uintptr_t base){
+	rumboot_printf("Wait NA_PPE context got\n");
+     	
+	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 25 ) & 1) !=1) {}
+	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 31 ) & 1) !=1) {}
+	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 21 ) & 1) !=1) {}
+	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 23 ) & 1) !=1) {}
+	iowrite32(((1<<21) | (1<<22) |  (1<<23) | (1<<24) |  (1<<2) |   (1<<31) |  (1<<21) | (1<<25)),base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Done NA_PPE context\n");
+}
+void na_rst(uintptr_t base){
 
+uint32_t busy;
+      busy = ((ioread32(base + NA_CU_REGS_BASE + NA_STAT)>> 19) & 1); 
+      if (busy  !=0)
+      {iowrite32(0xf,(base    + NA_CU_REGS_BASE  + NA_PAUSE));
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_PAUSE) >> 20) & 1) !=1) {}   //   
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 2) & 1) !=1) {}  //stopped		    
+	  iowrite32(0x1,(base 	  +  NA_CU_REGS_BASE +  NA_SOFT_RESET));
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {} 
+	  iowrite32(0x0,(base     + NA_CU_REGS_BASE  + NA_PAUSE));	
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 0) & 1) !=1) {}
+	  }
+	   else
+	  {iowrite32(0x1,(base + NA_CU_REGS_BASE + NA_SOFT_RESET));		
+	   while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {}
+	   rumboot_printf("NA_RESET passed\n");
+	  } 
+ }
+ 
+void nu_na_mpe_ppe_wait_int_pause_ext(uintptr_t npe_base){
+	rumboot_printf("Wait NA_MPE context\n");
+    while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 0) & 1) !=1) {}
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 10 ) & 1) !=1) {}   
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 11 ) & 1) !=1) {}
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 13) & 1) !=1) {} 
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 4 ) & 1) !=1) {}	
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 2) & 1) !=1) {}
+	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 15 ) & 1) !=1) {}
+	//while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 25 ) & 1) !=1) {}
+ 
+	iowrite32(((1<<0) | (1<<10) |  (1<<11) | (1<<2) |  (1<<4)  | (1<<13)  |  (1<<15)  ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Done NA_MPE context\n");
+}
 
 int nu_mpe_decide_dma_config(
   ConfigMPE* cfg, 
@@ -49,7 +93,7 @@ void nu_vpe_decide_dma_config (
 ) {
   cfg->trace_mode = TraceMode_MPE;  // Make VPE To Use MPE Trace Mode // FIRST!!!! Because nu_vpe_decide_dma_config_trivial depends On It
   
-  /*cfg->src_rdma_config.dma_bsize=0;   // Batch Parameters Are Default In This Program (Do Not Use Batch)
+  cfg->src_rdma_config.dma_bsize=0;   // Batch Parameters Are Default In This Program (Do Not Use Batch)
   cfg->src_rdma_config.dma_bstride=0;
   cfg->op0_rdma_config.dma_bsize=0;
   cfg->op0_rdma_config.dma_bstride=0;
@@ -58,7 +102,7 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_bsize=0;
   cfg->op2_rdma_config.dma_bstride=0;
   cfg->wdma_config.dma_bsize=0;
-  cfg->wdma_config.dma_bstride=0;*/
+  cfg->wdma_config.dma_bstride=0;
   cfg->depend_mask=0; // Does Not Depend On Any Other Channel Run
   
   cfg->src_flying = Enable_En;  // Make VPE To Get Data From MPE
@@ -110,15 +154,23 @@ int main() {
   int i;
   int iterations;
   uint8_t  axi_len;
-  int num_cubes;
   
-  rumboot_printf("Hellooooooo\n");
+  rumboot_printf("Hello-o-o-o\n");
+//#ifdef NA_SRST  
+  na_rst(NPE_BASE);
+//#endif
 
+#if DUT_IS_NPE
+  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
+  nu_npe_mpe_set_int_mask(NPE_BASE);
+	nu_npe_ppe_set_int_mask(NPE_BASE);
+#endif
+  
   heap_id = nu_get_heap_id();
   
-    // Read The Number Of Test Iterations - Num. of cubes
-  rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &num_cubes,sizeof(num_cubes));
-  rumboot_printf("Number of cubes %d\n",num_cubes);
+    // Read The Number Of Test Iterations
+  rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
+  rumboot_printf("Number of iterations %d\n",iterations);
   
     // Zero The Test Descriptor Fields
   nu_npe_init_test_desc(&test_desc);
@@ -133,8 +185,6 @@ int main() {
     // Load All The Test Data Into Memory
   if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
   
-  rumboot_printf("Invocations = %d\n",test_desc.invocations);
-  
     // Make The Iteration Descriptor To Point At The First Test Data
   nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
   
@@ -142,8 +192,8 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
   
     // Main Loop 
-  for(i=0;i<test_desc.invocations;i++) {
-    rumboot_printf("Starting invocation %d\n",i);
+  for(i=0;i<iterations;i++) {
+    rumboot_printf("Starting iteration %d\n",i);
 	
       // Prepare Iteration Descriptor (Some Modifications Should Be Made Before Each Iteration)
     nu_npe_iteration_start(&iteration_desc);
@@ -279,8 +329,60 @@ int main() {
     
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
-    
-    
+	
+      if ((i== (iterations-1))  |  (i == 0)){
+		 
+//	#ifdef NA_SRST
+		na_rst(NPE_BASE);		
+	/*#else
+		{nu_na_mpe_pause(NPE_BASE);			
+		nu_na_vpe_pause(NPE_BASE);
+		nu_na_ppe_pause(NPE_BASE);
+		nu_na_mpe_soft_reset(NPE_BASE);
+		nu_na_vpe_soft_reset(NPE_BASE);
+		nu_na_ppe_soft_reset(NPE_BASE)
+		nu_na_mpe_dev_pause_resume(NPE_BASE);
+		nu_na_vpe_dev_pause_resume(NPE_BASE);
+		nu_na_ppe_dev_pause_resume(NPE_BASE);}
+	#endif*/
+		
+		iowrite32(0x0,NPE_BASE+NA_MPE_BASE+MPE_CMD_IRCW);
+
+	if	(nu_mpe_regs_check((MY_MPE_REGS_BASE+MPE_MA_BASE),4,33) != 0){
+		rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
+
+	if	(nu_vpe_regs_check((MY_VPE_REGS_BASE + NU_VPE),2,64) != 0){
+		rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
+	
+	if	(nu_regs_check((MY_VPE_REGS_BASE + NU_VPE_SRC_RDMA),0,31) != 0){
+		 rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
+	if	(nu_ppe_regs_check((MY_PPE_REGS_BASE),0,48) != 0){
+		rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}
+	rumboot_printf("Test check1 |n");
+	if	(nu_regs_check((MY_PPE_RDMA_BASE),1,28) != 0){
+		 rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+	}	
+	rumboot_printf("Test check2 |n");
+
+    nu_na_mpe_ppe_wait_int_pause_ext(NPE_BASE);
+	nu_na_ppe_wait_int_pause_ext(NPE_BASE);
+	
+	//#ifdef NA_SRST
+	//nu_na_mpe_wait_int_pause_light(NPE_BASE);
+	//#else
+	//nu_na_mpe_wait_int_pause(NPE_BASE);
+	//#endif
+	} 	
+	else
       // Wait For The Corresponding DMA Channels To Complete
     if(iteration_desc.PPE_ENABLED==Enable_En)
       nu_ppe_wait_complete(MY_PPE_REGS_BASE);
@@ -290,7 +392,8 @@ int main() {
     rumboot_printf("Comparing..\n");
     
       // Result vs Etalon Comparision
-    if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, (iteration_desc.res_metrics->s*(iteration_desc.cfg_vpe->wdma_config.dma_bsize+1))) == 0)
+  if ((i!= (iterations-1))  &  (i != 0)) { 
+    if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       //nu_mpe_print_config(iteration_desc.cfg_mpe);
@@ -298,11 +401,11 @@ int main() {
       //if(iteration_desc.PPE_ENABLED==Enable_En)
       //  nu_ppe_print_config(iteration_desc.cfg_ppe);
       
-      rumboot_printf("Test FAILED at invocation %d\n",i);
+      rumboot_printf("Test FAILED at iteration %d\n",i);
 
       return 1;
-    }
-
+		}
+	}
       // Point At The Next Iteration Data
     nu_npe_iterate_desc(&iteration_desc);
   }

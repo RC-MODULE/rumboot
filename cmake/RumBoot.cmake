@@ -622,7 +622,11 @@ function(add_rumboot_target)
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/runners)
 
     foreach(arg ${TARGET_IRUN_FLAGS})
-      set(_plusargs "${_plusargs};-A;${arg}")      
+      if (RUMBOOT_NEEDS_XRUN)
+        set(_plusargs "${_plusargs};-A;${arg}")
+      else()
+        set(_plusargs "${_plusargs};${arg}")
+      endif()
     endforeach()
 
     string(REPLACE ";" " " _plusargs "${_plusargs}")

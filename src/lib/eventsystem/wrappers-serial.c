@@ -45,6 +45,7 @@ static void memcpy_cb(size_t curpos, void *data, size_t length, void *arg)
 }
 #include <rumboot/timer.h>
 
+#ifndef ASSUME_TCP
 uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, uint32_t bufsize)
 {
         rumboot_printf("UPLOAD: %s to 0x%x. 'X' for X-modem, 'E' for EDCL\n", plusarg, addr);
@@ -74,8 +75,52 @@ uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, ui
 		}
 		return dsc.length;
 }
+#else
+uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, uint32_t bufsize)
+{
+        rumboot_printf("UPLOAD: %s to 0x%x. 'R' for raw upload\n", plusarg, addr);
+		int prev;
+		while(1) {
+			int tmp = rumboot_platform_getchar(500);
+			if (tmp < 0)
+				continue;
+			if ((tmp == 'R') && (prev == 'R')) {
+				break;
+			}
+			prev = tmp;
+		}
+		void *dest = (void *) addr;
+		unsigned int bytes;
+		while (1) {
+			char tmp[4096];
+			fgets(tmp, 4096, stdin);
+			int ret = sscanf(tmp, "UPLOAD SIZE: %d bytes", &bytes);;
+			if (ret == 1) {
+				break;
+			}
+		}
+		int extra = 0;
+		if (bytes > bufsize) {
+			rumboot_printf("WARNING: Truncating file, it's too big (%d > %d)\n", bytes, bufsize);
+			extra = bytes - bufsize;
+			bytes = bufsize;
 
+		}
+		int ret = fread(dest, bytes, 1, stdin) ? bytes : 0;
+		while (extra) {
+			char tmp[8192];
+			int toread = 8192;
+			if (extra < toread) {
+				toread = extra;
+			}
+			fread(tmp, toread, 1, stdin);
+			extra -= toread;
+		}
+		return ret;
 
+}
+#endif
+//UPLOAD SIZE: 16 bytes
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
 	rumboot_platform_request_file_ex(plusarg, addr, 0);
@@ -93,7 +138,11 @@ void rumboot_platform_sim_restore(const char *filename)
 
 void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
 {
+#ifndef ASSUME_TCP
 	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s. 'X' for X-modem, 'E' for EDCL\n", len, addr, filename);
+#else
+	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s. 'R' for RAW\n", len, addr, filename);
+#endif
 	while(1) {
 		char tmp = rumboot_platform_getchar(500);
 		if (tmp == 'X') {
@@ -104,6 +153,13 @@ void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t 
 		if (tmp == 'E') {
 			break;
 		}
+#ifdef ASSUME_TCP
+		if (tmp == 'R') {
+			fwrite((void *) addr, len, 1, stdout);
+			fflush(stdout);
+			break;
+		}
+#endif
 	}
 }
 
