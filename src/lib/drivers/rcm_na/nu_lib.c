@@ -2468,13 +2468,13 @@ void nu_vpe_set_int_mask(uintptr_t vpe_base){
 	rumboot_printf("Read [%x]=%x\n",ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX));
     if (( (ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) >> 12) & 1) ==0 )
     iowrite32((1<<12) | (1<<8)| (1<<0) | (1<<4) |(1<<5) | (1<<6) | (1<<7) | (1<<16),vpe_base + NU_VPE + NU_VPE_INT_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
-	rumboot_printf("Writing [%x]=%x\n",ioread32(vpe_base + NU_VPE + NU_VPE_INT_MASK));
+	rumboot_printf("nu_vpe_set_int_mask: Writing [0x%x]=0x%x\n",vpe_base + NU_VPE + NU_VPE_INT_MASK,ioread32(vpe_base + NU_VPE + NU_VPE_INT_MASK));
 }
 void nu_npe_vpe_set_int_mask(uintptr_t npe_base){
 
 	if (( (ioread32(npe_base  + NA_CU_REGS_BASE + NA_UNITS_MODE) >> 1) & 1) ==0 )
     iowrite32((1<<11) | (1<<12)| (1<<13) | (1<<14) |(1<<15) | (1<<16) | (1<<17) | (1<<18) | (1<<19),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
-	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
+	rumboot_printf("nu_npe_vpe_set_int_mask: Writing [0x%x]=0x%x\n",npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK,ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }		
 void nu_vpe_wait_cntx_appl(uintptr_t vpe_base){
     rumboot_printf("Wait VPE context got...\n");
@@ -2695,7 +2695,7 @@ void nu_npe_mpe_set_int_mask(uintptr_t npe_base){
 	iowrite32((1<<0) | (1<<1)| (1<<2) | (1<<3) |(1<<4) | (1<<5) | (1<<6) | (1<<7) | (1<<8)	|(1<<9)	|(1<<10)
 		| (1<<11) | (1<<12)| (1<<13) |(1<<14) | (1<<15) | (1<<16) | (1<<17) | (1<<18)	|(1<<19), //????
 	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
-	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
+	rumboot_printf("nu_npe_mpe_set_int_mask: Writing [0x%x]=0x%x\n",npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK,ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
 void nu_na_mpe_soft_reset(uintptr_t npe_base){
     rumboot_printf("Soft reset NA_MPE ...\n");	
@@ -2870,12 +2870,12 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
 void nu_ppe_set_wdma_int_mask(uintptr_t ppe_base){
     if (( (ioread32(ppe_base + NU_PPE_WDMA_INT_STATUS) >> 12) & 1) ==0 )
     iowrite32((1<<12) | (1<<8)| (1<<4) | (1<<5) |(1<<6) | (1<<0) | (1<<1),ppe_base + NU_VPE + NU_VPE_INT_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
-	rumboot_printf("Writing [%x]=%x\n",ioread32(ppe_base  + NU_PPE_WDMA_INT_MASK));
+	rumboot_printf("nu_ppe_set_wdma_int_mask: Writing [0x%x]=0x%x\n",ppe_base + NU_VPE + NU_VPE_INT_MASK,ioread32(ppe_base  + NU_PPE_WDMA_INT_MASK));
 }
 void nu_npe_ppe_set_int_mask(uintptr_t npe_base){
 	if (( (ioread32(npe_base + NA_CU_REGS_BASE + NA_UNITS_MODE) >> 1) & 1) ==0 )
     iowrite32((1<<31) | (1<<30)| (1<<29) | (1<<28) |(1<<27) | (1<<26) | (1<<25) | (1<<24) | (1<<23) | (1<<22) |  (1<<21),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
-	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
+	rumboot_printf("nu_npe_ppe_set_int_mask: Writing [0x%x]=0x%x\n",npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK,ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
 
 
@@ -2961,7 +2961,7 @@ void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   uint32_t temp;
   temp = ioread32(base + NA_UNITS_MODE);
   temp = temp | mask;
-  rumboot_printf("Writing [0x%x]=0x%x\n",base + NA_UNITS_MODE,temp);
+  rumboot_printf("na_cu_set_units_direct_mode: Writing [0x%x]=0x%x\n",base + NA_UNITS_MODE,temp);
   iowrite32(temp,base + NA_UNITS_MODE);
 }
 
@@ -3303,7 +3303,7 @@ void nu_npe_set_int_mask(uintptr_t npe_base){
 	iowrite32((1<<0) | (1<<1)| (1<<2) | (1<<3) |(1<<4) | (1<<5) | (1<<6) | (1<<7) | (1<<8)	|(1<<9)	|(1<<10)
 		| (1<<11) | (1<<12)| (1<<13) |(1<<14) | (1<<15) | (1<<16) | (1<<17) | (1<<18)	|(1<<19), //????
 	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
-	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
+	rumboot_printf("nu_npe_set_int_mask: Writing [0x%x]=0x%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
 void na_rst(uintptr_t base){
 	
