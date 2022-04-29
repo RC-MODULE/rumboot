@@ -99,7 +99,24 @@ uint32_t rumboot_platform_request_file_ex(const char *plusarg, uint32_t addr, ui
 				break;
 			}
 		}
-		return fread(dest, bytes, 1, stdin) ? bytes : 0;
+		int extra = 0;
+		if (bytes > bufsize) {
+			rumboot_printf("WARNING: Truncating file, it's too big (%d > %d)\n", bytes, bufsize);
+			extra = bytes - bufsize;
+			bytes = bufsize;
+
+		}
+		int ret = fread(dest, bytes, 1, stdin) ? bytes : 0;
+		while (extra) {
+			char tmp[8192];
+			int toread = 8192;
+			if (extra < toread) {
+				toread = extra;
+			}
+			fread(tmp, toread, 1, stdin);
+			extra -= toread;
+		}
+		return ret;
 
 }
 #endif
