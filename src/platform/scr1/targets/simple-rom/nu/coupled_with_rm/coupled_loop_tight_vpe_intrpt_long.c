@@ -144,7 +144,7 @@ static struct rumboot_irq_entry * init_irq() {
     rumboot_irq_cli();
     struct rumboot_irq_entry * const tbl = rumboot_irq_create( NULL );
 	VPE_IRQ = IRQ_VPE_CNTX_APPLY;
-	rumboot_printf( "Int_VPE_qu-qu\n");
+	//rumboot_printf( "Int_VPE_qu-qu\n");
 	
     rumboot_irq_set_handler( tbl,IRQ_VPE_CNTX_APPLY, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	rumboot_irq_set_handler( tbl,IRQ_VPE_CNTX_APPLY, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
@@ -161,11 +161,11 @@ static struct rumboot_irq_entry * init_irq() {
 	rumboot_irq_set_handler( tbl,IRQ_VPE_CNTX_APPLY, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	
 	rumboot_irq_table_activate( tbl );
-	rumboot_printf( "Int_VPE_qu-qu5\n");
+	//rumboot_printf( "Int_VPE_qu-qu5\n");
 	rumboot_irq_enable(VPE_IRQ);
-	rumboot_printf( "Int_VPE_qu-qu6\n");
+	//rumboot_printf( "Int_VPE_qu-qu6\n");
     rumboot_irq_sei();
-	rumboot_printf( "Int_VPE_qu-qu7\n");
+	//rumboot_printf( "Int_VPE_qu-qu7\n");
     return tbl;
 }
 	
@@ -176,8 +176,8 @@ static void deinit_irq( struct rumboot_irq_entry * const tbl ) {
 uint32_t wait_na_int_handled( uint32_t timeout, volatile uint32_t * const  flag ) {
    do {     
 
-			while (( (ioread32(VPE_REGS_BASE + NA_CU_REGS_BASE +  NU_VPE + NU_VPE_INT_STATUS) >> 12) & 1) !=1) {}
-					 iowrite32((1<<12),VPE_REGS_BASE + NA_CU_REGS_BASE + NU_VPE + NU_VPE_INT_RESET);
+			while (( (ioread32(MY_VPE_REGS_BASE +  NU_VPE + NU_VPE_INT_STATUS) >> 4) & 1) !=1) {}
+					 iowrite32((1<<4),MY_VPE_REGS_BASE +  NU_VPE + NU_VPE_INT_RESET);
 					// rumboot_printf(" NA_VPE wait is completed\n");
 					
 			
@@ -186,7 +186,7 @@ uint32_t wait_na_int_handled( uint32_t timeout, volatile uint32_t * const  flag 
 			//rumboot_printf( "Int_12345\n");
            * flag = 0;
             return 1;
-       }cd
+       }
     } while ( --timeout );
 
     return 0;
@@ -312,10 +312,10 @@ int main() {
   }
 
  nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg);
- // if( !wait_na_int_handled( 100, &Int_VPE_FINISH ) ) {
-//			rumboot_printf( "NA_VPE interrupt timeout_2\n" );
-//			return 1;
-//	} 
+  if( !wait_na_int_handled( 100, &Int_VPE_FINISH ) ) {
+			rumboot_printf( "NA_VPE interrupt timeout_2\n" );
+			return 1;
+	} 
     // And Third Turn - Check The Data
   rumboot_printf("Comparing..\n");
   nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
