@@ -42,7 +42,7 @@ int main() {
   int skip;
 
   uint32_t flying_mode, lbs, mv, max_red, ppe_clk_f;
-  uint32_t ppe_swrst_en, setup_reg, mark_cube;
+  uint32_t ppe_swrst_en, setup_reg, mark_cube, resperr;
 
   flying_mode = 0x0;
   lbs         = 0x0;
@@ -128,6 +128,12 @@ int main() {
     ppe_clk_f = 100;
   #else
     ppe_clk_f = 1;
+  #endif
+
+  #ifdef RESP_ERR
+    resperr = 1;
+  #else
+    resperr = 0;
   #endif
 
   nu_ppe_wdma_err_mask(MY_PPE_REGS_BASE);
@@ -217,7 +223,9 @@ int main() {
       res = nu_ppe_wdma_err_status(MY_PPE_REGS_BASE) ||
             nu_ppe_rdma_err_status(MY_PPE_RDMA_BASE)
       ;
-      if (res) rumboot_printf("There is error on AXI bus iteration %d\n", i);
+      if (res) rumboot_printf("There is an error on AXI bus at iteration %d\n", i);
+
+      if (resperr) res = 0;
 
       if (!res) {
         rumboot_printf("Comparing...\n");

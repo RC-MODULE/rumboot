@@ -1078,12 +1078,20 @@ macro (ADD_PPE_PY_TESTS CONF)
       set (PPE_NAN_INF "NoPPE_NAN_INF")
     endif()
 
+    if ("${test_name}" MATCHES "dc_ppe_axi_error") 
+      set (AXI128_RESPERR "+axi128_resperr")
+      set (RESP_ERR "RESP_ERR")
+    else()
+      set (AXI128_RESPERR "")
+      set (RESP_ERR "NO_RESP_ERR")
+    endif()
+
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ppe_py_${test_name}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c
  
-      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_PAUSE} -D${PPE_SWRST} -D${PPE_CFG_CONST} -D${PPE_MARK_CUBE} -D${ShowPerf} -D${PPE_NAN_INF}
+      CFLAGS -D${LBS} -D${MAX_RED} -DDUT=${DUT_LETTER_QUOTED} -DMEMtoPPE=1 -D${PPE_PAUSE} -D${PPE_SWRST} -D${PPE_CFG_CONST} -D${PPE_MARK_CUBE} -D${ShowPerf} -D${PPE_NAN_INF} -D${RESP_ERR}
 
       PREPCMD 
         cp ${file} . 
@@ -1095,7 +1103,7 @@ macro (ADD_PPE_PY_TESTS CONF)
         ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
         ||
         exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS} ${AXI_BLOCKINGS}
+      IRUN_FLAGS ${NA_RM_PLUSARGS} ${AXI_BLOCKINGS} ${AXI128_RESPERR}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
     )
 

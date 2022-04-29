@@ -805,7 +805,7 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf ("wOpM  = 0x%x\n", cfg_reg->wOpM );
   rumboot_printf ("wK    = %d\n", cfg_reg->wK   );
 
-  rumboot_printf ("wKWHr  = 0x%x\n", cfg_reg->wKWHr );
+  rumboot_printf ("wKWHr = 0x%x\n", cfg_reg->wKWHr );
 
   rumboot_printf ("wP    = 0x%x\n", cfg_reg->wP   );
   rumboot_printf ("wPV1  = 0x%x\n", cfg_reg->wPV1 );
@@ -2332,12 +2332,17 @@ void nu_ppe_wdma_err_mask (uintptr_t base) {
 }
 
 uint32_t nu_ppe_wdma_err_status(uintptr_t base) {
-  //WDMA_IDERR 6 WDMA_SLVERR 5 WDMA_DECERR 4
+  //WDMA_IDERR  6 WDMA_SLVERR 5 WDMA_DECERR 4
 
-  return  (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<6) >> 6 |
-          (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<5) >> 5 |
-          (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<4) >> 4
-  ;
+  uint32_t iderr  = (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<6) >> 6;
+  uint32_t slverr = (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<5) >> 5;
+  uint32_t decerr = (ioread32(base + NU_PPE_WDMA_INT_STATUS) & 0x1<<4) >> 4;
+
+  if (iderr ) rumboot_printf ("WDMA_IDERR \n");
+  if (slverr) rumboot_printf ("WDMA_SLVERR\n");
+  if (decerr) rumboot_printf ("WDMA_DECERR\n");
+
+  return iderr | slverr | decerr;
 }
 
 void nu_ppe_wdma_err_reset (uintptr_t base) {
@@ -2356,10 +2361,15 @@ void nu_ppe_rdma_err_mask (uintptr_t base) {
 uint32_t nu_ppe_rdma_err_status(uintptr_t base) {
   //RDMA_IDERR 6 RDMA_SLVERR 5 RDMA_DECERR 4
 
-  return  (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<6) >> 6 |
-          (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<5) >> 5 |
-          (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<4) >> 4
-  ;
+  uint32_t iderr  = (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<6) >> 6;
+  uint32_t slverr = (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<5) >> 5;
+  uint32_t decerr = (ioread32(base + NU_PPE_RDMA_INT_STATUS) & 0x1<<4) >> 4;
+
+  if (iderr ) rumboot_printf ("RDMA_IDERR \n");
+  if (slverr) rumboot_printf ("RDMA_SLVERR\n");
+  if (decerr) rumboot_printf ("RDMA_DECERR\n");
+
+  return iderr | slverr | decerr;
 }
 
 void nu_ppe_rdma_err_reset (uintptr_t base) {
