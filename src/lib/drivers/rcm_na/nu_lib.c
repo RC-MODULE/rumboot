@@ -3295,3 +3295,22 @@ void nu_npe_set_int_mask(uintptr_t npe_base){
 	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
 	rumboot_printf("Writing [%x]=%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
+void na_rst(uintptr_t base){
+	
+uint32_t busy;
+      busy = ((ioread32(base + NA_CU_REGS_BASE + NA_STAT)>> 19) & 1); 
+      if (busy  !=0)
+      {iowrite32(0xf,(base    + NA_CU_REGS_BASE  + NA_PAUSE));
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_PAUSE) >> 20) & 1) !=1) {}   //   
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 2) & 1) !=1) {}  //stopped		    
+	  iowrite32(0x1,(base 	  +  NA_CU_REGS_BASE +  NA_SOFT_RESET));
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {} 
+	  iowrite32(0x0,(base     + NA_CU_REGS_BASE  + NA_PAUSE));	
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 0) & 1) !=1) {}
+	  }
+	   else
+	  {iowrite32(0x1,(base + NA_CU_REGS_BASE + NA_SOFT_RESET));		
+	   while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {}
+	   rumboot_printf("NA_RESET passed\n");
+	  } 
+ }
