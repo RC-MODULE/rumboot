@@ -1525,6 +1525,10 @@ macro(na_testsuite_add_npe_tests CONF)
     endforeach()
   endif()
 
+  if(NA_TESTGROUP STREQUAL "NKBVS")
+    ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_1 main_nkbvs_1 NOT_MAKE_TIGHT BITWISE)
+  endif()
+
   na_testsuite_add_vpe_tests(${CONF})
   na_testsuite_add_ppe_tests(${CONF})
 endmacro()
