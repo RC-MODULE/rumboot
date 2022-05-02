@@ -634,7 +634,10 @@ function(add_rumboot_target)
     if (NOT "${TARGET_PREPCMD}" STREQUAL "")
       string(REPLACE ";" " " TARGET_PREPCMD "${TARGET_PREPCMD}")
     endif()
-    
+
+    if (RUMBOOT_NEEDS_XRUN)
+      set(RUMBOOT_NEEDS_XRUN "YES") #Make comparison's in bash easier
+    endif()
     configure_file(${CMAKE_SOURCE_DIR}/cmake/test-runner.sh.in ${PROJECT_BINARY_DIR}/runners/${product})
     
     if(CHMOD_PROG)
