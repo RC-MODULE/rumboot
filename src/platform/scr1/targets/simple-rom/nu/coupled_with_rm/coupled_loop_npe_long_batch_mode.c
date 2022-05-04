@@ -108,7 +108,7 @@ NPEIterationDescriptor iteration_desc;
 int main() {
   int heap_id;
   int i;
-  int iterations;
+  //int iterations;
   uint8_t  axi_len;
   int num_cubes;
   
@@ -131,7 +131,7 @@ int main() {
   axi_len = 15; // 15 - Most Performance-Friendly Option
   
     // Load All The Test Data Into Memory
-  if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
+  if(nu_npe_place_arrays(heap_id,&test_desc,num_cubes) !=0) return -1;
   
   rumboot_printf("Invocations = %d\n",test_desc.invocations);
   
