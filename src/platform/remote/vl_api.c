@@ -110,7 +110,11 @@ void vl_print_message(const struct vl_message* msg)
 
 uint64_t vl_get_ticks_per_us(struct vl_instance *vl)
 {
-	return vl->ticks_per_us; 
+	struct vl_message command;
+	struct vl_message answer;
+	command.op = 	VL_OP_GET_TICKS_PER_US;
+	vl_transaction(vl,&command,&answer);
+	return answer.value;
 }
 
 void vl_set_io_delay(struct vl_instance *vl, uint32_t read_min_delay, uint32_t write_min_delay )
@@ -271,6 +275,8 @@ uint64_t vl_get_uptime(struct vl_instance *vl)
 
 struct vl_shmem* vl_shmem_list(struct vl_instance *vl, bool automap)
 {
+	if (vl->shared_mem_list!=0) 
+		return vl->shared_mem_list;
 	struct vl_message cmd,ans;
 	cmd.sync	= vl_sync++;
 	cmd.op 		= VL_OP_SHMEM_LIST;
@@ -283,10 +289,10 @@ struct vl_shmem* vl_shmem_list(struct vl_instance *vl, bool automap)
 	vl_recv(vl,&ans);  // started & first shmem
 	
 
-	if (ans.value<1 || ans.value>16){
-		printf ("ERROR: incorrect number of shared memories=%d\n",ans.value);
-		return 0;
-	}
+	//if (ans.value>16){
+	//	printf ("ERROR: incorrect number of shared memories=%d\n",ans.value);
+	//	return 0;
+	//}
 	vl->shared_mem_list = (struct vl_shmem*) calloc (1, sizeof(struct vl_shmem)*(ans.value+1));	
 	struct vl_shmem* shmem=vl->shared_mem_list;
 
@@ -306,14 +312,6 @@ struct vl_shmem* vl_shmem_list(struct vl_instance *vl, bool automap)
 	if (ans.op!=VL_OP_FINISHED){
 		printf("ERROR: Incorrect shmem_list answer \n");
 	}
-	//{
-	//
-	//	memcpy(&(vl->shared_mem_list[indx]),ans.data,ans.data_len);
-	//	if (vl->shared_mem_list[indx].size>0)
-	//		vl_shmem_map(&vl->shared_mem_list[indx]);
-	//	indx++;
-	//};
-
 	return vl->shared_mem_list;	
 }
 
@@ -542,10 +540,10 @@ struct vl_instance *vl_create(const char *host, uint16_t port){
 	
 
 	vl->sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if(vl->sockfd < 0)
+	if(vl->sockfd ==-1)
 	{
 	    perror("socket");
-	    exit(1);
+	    goto err_free_inst;
 	}
 
 	addr.sin_family = AF_INET;
@@ -565,7 +563,7 @@ struct vl_instance *vl_create(const char *host, uint16_t port){
 	for(i = 0; addr_list[i] != NULL; i++) {
 		char str[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, addr_list[i], str, INET_ADDRSTRLEN);
-		printf("VL_API: Trying to connect to %s\n", str);
+		printf("VL_API: Trying to connect to %s:%d\n", str,port);
 		addr.sin_addr = *addr_list[i];
 		if(connect(vl->sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
 		{
@@ -701,5 +699,11 @@ void vl_hard_reset(struct vl_instance *vl){
 	cmd.op=VL_OP_HARD_RESET;
 	vl_transaction(vl,&cmd,&answer);
 }
-
+int	vl_get_api_version(struct vl_instance *vl){
+	struct vl_message cmd;
+	struct vl_message answer;
+	cmd.op=VL_OP_GET_API_VERSION;
+	vl_transaction(vl,&cmd,&answer);	
+	return answer.value;
+}
 ; /* 0.0.0.0, localhost, /tmp/my.sock */

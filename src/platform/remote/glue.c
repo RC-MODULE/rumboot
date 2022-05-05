@@ -197,7 +197,7 @@ void rumboot_platform_setup()
 }
 
 
-static void upload(const char *hfile, void *addr)
+static void upload(const char *hfile, void *addr, uint32_t maxsize)
 {
         if (!hfile) {
                 return;
@@ -210,6 +210,8 @@ static void upload(const char *hfile, void *addr)
         fseek(fd, 0, SEEK_END);
         sz = ftell(fd);
         fseek(fd, 0, SEEK_SET);
+        if (maxsize<sz)
+                sz=maxsize;
         fread((void *)addr, sz, 1, fd);
         fclose(fd);
         hfile = strtok(NULL, ",");
@@ -226,14 +228,14 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t 
                 const char *plusarg = (void *)data[0];
                 void *addr = (void *)data[1];
                 if (access(plusarg, R_OK) == 0) {
-                        upload(plusarg, addr);
+                        upload(plusarg, addr,data[2]);
                         return;
                 } 
                 
                 if (NULL != getenv(plusarg)) {
                         char * path = getenv(plusarg);
                         if (access(path, R_OK) == 0) {
-                                upload(path, addr);
+                                upload(path, addr,data[2]);
                                 return;        
                         }
                 }

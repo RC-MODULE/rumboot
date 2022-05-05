@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define VL_API_VERSION 0.91
+#define VL_API_VERSION 0.93
 
 #define VL_OP_READ				1 
 #define VL_OP_WRITE				2 
@@ -13,6 +13,8 @@
 #define VL_OP_EXIT				6
 #define VL_OP_SOFT_RESET		7
 #define VL_OP_HARD_RESET		8
+#define VL_OP_GET_TICKS_PER_US	9
+#define VL_OP_GET_API_VERSION	10
 
 #define VL_OP_ACCEPTED			0x20
 #define VL_OP_STARTED			0x40
@@ -72,6 +74,7 @@ int 	vl_transaction(struct vl_instance *vl, const struct vl_message* send_messag
 void 	vl_print_message(const struct vl_message* msg);
 //--------------- main verilator clint-api -------------------------------------
 uint64_t			vl_get_ticks_per_us(struct vl_instance *vl);
+int					vl_get_api_version(struct vl_instance *vl);
 struct vl_instance* vl_create(const char *host, uint16_t port); /* 0.0.0.0, localhost, /tmp/my.sock */
 void 				vl_disconnect(struct vl_instance *vl);
 struct vl_shmem* 	vl_shmem_list(struct vl_instance *vl, bool automap);
