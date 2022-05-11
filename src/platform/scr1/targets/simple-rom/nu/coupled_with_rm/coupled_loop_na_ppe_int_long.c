@@ -3,7 +3,6 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
 
-
 #include <platform/devices.h> 
 
 #include <devices/rcm_na/nu_lib.h> 
@@ -34,8 +33,7 @@ PPEIterationDescriptor iteration_desc;
 
 int main() {
   int heap_id ;
-  int i, it_nmb, dtB;
-  int clk_cnt, perf_avg;
+  int i, it_nmb;
   int res;
 
   uint32_t flying_mode, lbs, mv;
@@ -61,8 +59,7 @@ int main() {
   #endif
 
   flying_mode = ((lbs&0x3)<<1) | (mv&0x1);
-  perf_avg = 0;
-  
+ 
   heap_id = nu_get_heap_id();
   
   rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
@@ -141,10 +138,10 @@ int main() {
 	} 	
 	else
 	{	
-    clk_cnt = rumboot_platform_get_uptime();
+  //  clk_cnt = rumboot_platform_get_uptime();
 //--------------------------------------------  
-    while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
-    clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
+   // while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
+   // clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
   
     #ifdef MEMtoPPE
     nu_na_ppe_rdma_wait_complete(NPE_BASE);
@@ -156,36 +153,20 @@ int main() {
     #endif
     #endif
 	nu_na_ppe_dev_resume(NPE_BASE);
-	//nu_na_ppe_wait_complete(NPE_BASE);
 	}
 	nu_na_wait_int(NPE_BASE); //reset NA interrupts
 //--------------------------------------------    
-    // Sizeof(DataCube)/(times*frequency); time measure is us, frequency measure is MHz
-    // clk_cnt will be divided by frequency later
-    dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
-    clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
-  
-    rumboot_printf("Comparing...\n");
-  
-   // res =0; // nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
+ 
+    rumboot_printf("Comparing...\n");  
   res = nu_bitwise_compare(iteration_desc.res_data,iteration_desc.etalon,iteration_desc.res_metrics->s);
     if (res) {
       nu_ppe_print_config(iteration_desc.cfg);
       nu_ppe_print_config_reg(iteration_desc.cfg_reg);
     
-      //~ rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-      //~ rumboot_platform_dump_region("cfg_reg.bin", cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
     }
   
     if (!res) {
       rumboot_printf("Iteration %d PASSED\n", i);
-
-      #ifdef ShowPerf
-      clk_cnt = (clk_cnt*100)/ppe_clk_f;
-      perf_avg += clk_cnt;
-
-      rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
-      #endif
     }
     else {
       rumboot_printf("Test FAILED at iteration %d\n", i);
@@ -195,16 +176,6 @@ int main() {
 
     nu_ppe_iterate_desc(&iteration_desc);
   }
-  
-  #ifdef ShowPerf
-  if (it_nmb == 0) rumboot_printf("ShowPerf failed\n");
-  else {
-    perf_avg = perf_avg/it_nmb;
-
-    rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/100, perf_avg-(perf_avg/100)*100);
-  }
-  #endif
-
   return 0;
 }
 
