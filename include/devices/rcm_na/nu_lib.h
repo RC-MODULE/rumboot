@@ -11,7 +11,7 @@
 #define NU_PPE_REG_CFG_PARAMS_NUM 62
 
 //#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-2*(7+2+2))
-#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE 268
+#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE 269 // 268 + 1 ()batch_size
 
 #define NU_VPE_LUT1_SIZE 257
 #define NU_VPE_LUT2_SIZE 65
@@ -271,10 +271,10 @@
     uint32_t Sh       ;
     uint32_t K        ;
     DataType dt       ;
+    uint32_t batch_size ;
     RoundMode rnd_mode;
     Enable   sat_en   ;
-    uint32_t rnd_size ;
-    uint32_t batch_size ;
+    uint32_t rnd_size ;    
     ConfigDMAMPE dma_d_config;
     ConfigDMAMPE dma_w_config;
     ConfigMAMPE ma_config;

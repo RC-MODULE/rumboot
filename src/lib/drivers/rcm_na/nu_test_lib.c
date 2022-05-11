@@ -548,9 +548,10 @@ void* nu_malloc_array_of_warr(int heap_id,WarrMetrics* array_of_metrics,int num,
   
   *size=0;
   for(int i=0;i<num;i++) {
+      //rumboot_printf("*size += array_of_metrics[%d].s\n", i);
     *size += array_of_metrics[i].s;
   }
-  
+  //rumboot_printf("rumboot_malloc_from_heap_aligned\n");
   aow = rumboot_malloc_from_heap_aligned(heap_id,*size,16);
   if(aow==NULL)
     return NULL;
@@ -822,9 +823,12 @@ int nu_vpe_load_arrays_of_op_metrics(
   op2_array_desc->num_vecs=0;
   op2_array_desc->num_luts=0;
   
+  
+  
     // For Each Configuration
   for(int i=0;i<num;i++) {
-    
+      
+      
       // Calculate The Size Of OP0 Metrics Arrays
     if(array_of_cfg[i].op0_en==Enable_En) {
       
@@ -1616,15 +1620,17 @@ int nu_vpe_invocations_cnt(CubeMetrics* array_of_in_metrics,int num_cubes){
     rumboot_printf("Invocations_cnt start\n");
     int invocations_cnt = 0;
     for (int i=0;i<num_cubes;i++) {
-        
         if (array_of_in_metrics[i].role == CubeRole_LastInBatch){
+            //rumboot_printf("This is LastInBatch!\n");
             invocations_cnt += 1;
         }
         else{
             if (array_of_in_metrics[i].role == CubeRole_NotLastInBatch){
+                //rumboot_printf("This is NotLastInBatch!\n");
             }
         }
     }
+    //rumboot_printf("Invocations_cnt end\n");
     return invocations_cnt;    
 }
 
@@ -1635,24 +1641,23 @@ void nu_vpe_batch_size_stride_cnt(CubeMetrics* array_of_in_metrics,ConfigVPE* ar
     uint32_t bstride_rdma_temp;
     uint8_t bsize_temp = 0;
     for (int i=0;i<num_cubes;i++) {
-        rumboot_printf("batch_size for index: %d\n", i);
         
         if (array_of_in_metrics[i].role == CubeRole_LastInBatch){
-            rumboot_printf("This is LastInBatch!\n");
+            //rumboot_printf("This is LastInBatch!\n");
             array_of_cfg[invocations_index].src_rdma_config.dma_bsize = bsize_temp;
             array_of_cfg[invocations_index].wdma_config.dma_bsize = bsize_temp;
             bstride_rdma_temp = array_of_in_metrics[i].s;
             bstride_wdma_temp = array_of_in_metrics[i].H*array_of_in_metrics[i].W*array_of_in_metrics[i].C*(array_of_cfg[invocations_index].out_data_type == DataType_Int8 ? 1 : 2);
             array_of_cfg[invocations_index].src_rdma_config.dma_bstride = bstride_rdma_temp;
             array_of_cfg[invocations_index].wdma_config.dma_bstride = bstride_wdma_temp;
-            rumboot_printf("Invocation = %d, batch_size = %d, bstride_rdma = %d, bstride_wdma = %d\n",invocations_index,bsize_temp,bstride_rdma_temp,bstride_wdma_temp);
+            //rumboot_printf("Invocation = %d, batch_size = %d, bstride_rdma = %d, bstride_wdma = %d\n",invocations_index,bsize_temp,bstride_rdma_temp,bstride_wdma_temp);
             invocations_index += 1; // increment 
             bsize_temp = 0; // reset
             
         }
         else{
             if (array_of_in_metrics[i].role == CubeRole_NotLastInBatch){
-                rumboot_printf("This is NotLastInBatch!\n");
+                //rumboot_printf("This is NotLastInBatch!\n");
                 bsize_temp += 1; //
             }
         }
@@ -2001,25 +2006,27 @@ int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc) {
 }
 
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
-  if(test_desc->MPE_ENABLED==Enable_En) {
-      test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", iterations);
-  }
+  
   test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
   test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
   
-  if(test_desc->array_of_in_metrics  ==NULL ||
-     test_desc->array_of_res_metrics ==NULL ||
-    (test_desc->array_of_warr_metrics==NULL && test_desc->MPE_ENABLED==Enable_En) ) return -1;
+  if(test_desc->array_of_in_metrics  ==NULL || test_desc->array_of_res_metrics ==NULL  ) return -1;
     
-  test_desc->invocations = nu_vpe_invocations_cnt(test_desc->array_of_in_metrics,iterations);
+  test_desc->invocations = nu_vpe_invocations_cnt(test_desc->array_of_res_metrics,iterations);
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,iterations);
+      test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", test_desc->invocations);
+  }
+  
+  if((test_desc->array_of_warr_metrics==NULL && test_desc->MPE_ENABLED==Enable_En) ) return -1;
+  
+  if(test_desc->MPE_ENABLED==Enable_En) {
+    test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,test_desc->invocations);
   }
   test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
   test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
   test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
-  
+    
   if(test_desc->array_of_in_data ==NULL || 
     (test_desc->array_of_warr    ==NULL && test_desc->MPE_ENABLED==Enable_En) ||
      test_desc->array_of_etalon  ==NULL || 
@@ -2041,13 +2048,13 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     ) return -1;
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-    if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,iterations) !=0) return -1;
+    if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,test_desc->invocations) !=0) return -1;
   }
-  if(nu_vpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_vpe,iterations) !=0) return -1;
+  if(nu_vpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_vpe,test_desc->invocations) !=0) return -1;
   if(test_desc->PPE_ENABLED==Enable_En)
-    if(nu_ppe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_ppe,iterations) !=0) return -1;
+    if(nu_ppe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_ppe,test_desc->invocations) !=0) return -1;
   
-  nu_vpe_batch_size_stride_cnt(test_desc->array_of_in_metrics,test_desc->array_of_cfg_vpe,iterations);
+  nu_vpe_batch_size_stride_cnt(test_desc->array_of_res_metrics,test_desc->array_of_cfg_vpe,iterations);
   
  /*   // Temporary CRUTCH - We Do Not Support Batches Yet
     //                    But We Need src_rdma_config.dma_bsize For nu_vpe_load_arrays_of_op_metrics
@@ -2062,7 +2069,7 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     &(test_desc->op1_array_desc),
     &(test_desc->op2_array_desc),
     test_desc->array_of_cfg_vpe,
-    iterations) !=0) return -1;
+    test_desc->invocations) !=0) return -1;
     
   nu_vpe_batch_size_stride_of_ops_cnt(
    &test_desc->op0_array_desc,
@@ -2080,9 +2087,6 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
       return -1;
   }
   
-  //~ test_desc->array_of_status_regs_etalon = nu_load_array_of_status_regs(heap_id,iterations);
-  //~ if(test_desc->array_of_status_regs_etalon==NULL)return -1;
-
   return 0;
 
 }

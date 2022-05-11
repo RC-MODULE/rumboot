@@ -1573,7 +1573,6 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
   row_ptr = (uint32_t*) table;
   res =  -1;
   in_param_match=0;
-  
   while(*row_ptr !=0 && !in_param_match) { // Til We Find A Match Or Reach An Empty Row
     cfg_ptr = (uint32_t*) cfg;  // First Element Of ConfigMPE
     tab_ptr = row_ptr;          // First Element Of A Row
@@ -1586,8 +1585,10 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
         in_param_match = *tab_ptr == *cfg_ptr || (*tab_ptr !=0 && *cfg_ptr !=0);
       else
         in_param_match = *tab_ptr == *cfg_ptr;
+      
       cnt++;tab_ptr++;cfg_ptr++;
-    } while(in_param_match && cnt<15);
+      
+    } while(in_param_match && cnt<16); // 15 -> 16 batch_size
     
     row_ptr = row_ptr + NU_MPE_DMA_PARAM_TABLE_ROW_SIZE;
   }

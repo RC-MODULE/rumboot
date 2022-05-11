@@ -258,7 +258,7 @@ int main() {
 #endif
 
     //~ nu_mpe_print_config(iteration_desc.cfg_mpe);
-    //~ nu_vpe_print_config(iteration_desc.cfg_vpe);
+    //nu_vpe_print_config(iteration_desc.cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
     if(iteration_desc.PPE_ENABLED==Enable_En) {
       nu_ppe_print_config(iteration_desc.cfg_ppe);
@@ -275,7 +275,7 @@ int main() {
       nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     }
     
-    nu_mpe_print_config(iteration_desc.cfg_mpe);
+    //nu_mpe_print_config(iteration_desc.cfg_mpe);
     
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
