@@ -1,7 +1,6 @@
   Test   #8: rumboot-native-Production-host-simple_direct_WITH_PPE
   Test   #9: rumboot-native-Production-host-simple_direct_WITH_VPE
   Test  #31: rumboot-native-Production-host-npe_mpe_alu_IN_INT16_64
-  Test  #32: rumboot-native-Production-host-npe_mpe_alu_IN_INT16_ZEROWARR_64
   Test  #47: rumboot-native-Production-host-npe_mpe_null_column
   Test  #52: rumboot-native-Production-host-NA_2_npe_mpe_direct_ex_MPE_CFG_25_WITH_VPE
   Test  #70: rumboot-native-Production-host-NA_2_npe_mpe_direct_ex_MPE_CFG_43_WITH_VPE
@@ -33,6 +32,7 @@
   Test #547: rumboot-native-Production-host-vpe_6_1_op0_f_fp_dma
   Test #549: rumboot-native-Production-host-vpe_12_0_op1_f_int_dma
   Test #553: rumboot-native-Production-host-vpe_4_op0_lshift_dma
+  Test #556: rumboot-native-Production-host-vpe_10_op1_lshift_dma
   Test #557: rumboot-native-Production-host-vpe_18_op2_c1_dma
   Test #559: rumboot-native-Production-host-vpe_16_op2_c2_dma
   Test #561: rumboot-native-Production-host-vpe_5_0_op0_alu_int8_low_dma
@@ -44,7 +44,7 @@
   Test #595: rumboot-native-Production-host-vpe_17_3_op2_alu_int16_high_dma
   Test #597: rumboot-native-Production-host-vpe_17_4_op2_alu_fp32_dma
   Test #599: rumboot-native-Production-host-vpe_3_c3_IN_INT8_OUT_INT8_dma
-  Test #605: rumboot-native-Production-host-vpe_3_c3_IN_INT16_OUT_INT8_dma
+  Test #608: rumboot-native-Production-host-vpe_3_c3_IN_INT16_OUT_INT16_dma
   Test #613: rumboot-native-Production-host-vpe_3_c3_IN_FP16_OUT_FP16_dma
   Test #615: rumboot-native-Production-host-vpe_9_0_op0_relu_int_dma
   Test #619: rumboot-native-Production-host-vpe_15_0_op1_relu_int_dma
@@ -74,10 +74,6 @@
   Test #721: rumboot-native-Production-host-vpe_21_2_lut_out_of_range_IN_FP16_dma
   Test #723: rumboot-native-Production-host-vpe_21_3_lut_offset_IN_FP16_dma
   Test #727: rumboot-native-Production-host-vpe_21_3_lut_offset_mirror_1_IN_FP16_dma
-  Test #729: rumboot-native-Production-host-vpe_ppe_op0_ch_mode_int_dma_0
-  Test #741: rumboot-native-Production-host-vpe_ppe_op1_ch_mode_int_dma_6
-  Test #746: rumboot-native-Production-host-vpe_ppe_op0_ch_mode_fp_dma_4
-  Test #755: rumboot-native-Production-host-vpe_ppe_op1_ch_mode_fp_dma_5
   Test #759: rumboot-native-Production-host-vpe_22_op0_together_dma
   Test #761: rumboot-native-Production-host-vpe_23_op1_together_dma
   Test #763: rumboot-native-Production-host-vpe_24_op2_together_dma
@@ -95,18 +91,6 @@
   Test #1151: rumboot-native-Production-host-vpe_batch_mode_IN_INT16_COEF0_INT16_COEF1_INT16_COEF2_INT16_OUT_FP16_2
   Test #1172: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_OUT_FP16_4
   Test #1173: rumboot-native-Production-host-PPE_1
-  Test #1174: rumboot-native-Production-host-ppe_i8_max_ml
-  Test #1176: rumboot-native-Production-host-ppe_i16_max_ml
-  Test #1178: rumboot-native-Production-host-ppe_fp16_max_ml
-  Test #1180: rumboot-native-Production-host-ppe_i8_min_ml
-  Test #1182: rumboot-native-Production-host-ppe_i16_min_ml
-  Test #1184: rumboot-native-Production-host-ppe_fp16_min_ml
-  Test #1186: rumboot-native-Production-host-ppe_i8_avg_ml
-  Test #1188: rumboot-native-Production-host-ppe_i16_avg_ml
-  Test #1190: rumboot-native-Production-host-ppe_fp16_avg_ml
-  Test #1192: rumboot-native-Production-host-ppe_fp16_max_ml_na_rst_fail
-  Test #1193: rumboot-native-Production-host-ppe_fp16_max_ml_na_rst
-  Test #1194: rumboot-native-Production-host-ppe_fp16_max_ml_pause
   Test #1195: rumboot-native-Production-host-ppe_py_2_dc_ppe_max_int8-dc_ppe_max_int8_KW2_py
   Test #1201: rumboot-native-Production-host-ppe_py_2_dc_ppe_max_int8-dc_ppe_max_int8_KW8_py
   Test #1206: rumboot-native-Production-host-ppe_py_3_dc_ppe_max_int16-dc_ppe_max_int16_KW6_py
