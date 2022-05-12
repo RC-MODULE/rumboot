@@ -26,6 +26,10 @@
 #include <time.h>
 #include <rumboot/rumboot.h>
 
+#ifdef NA_SW_RST_ON_START
+#include <devices/rcm_na/nu_lib.h>
+#endif
+
 int g_argc = 0;
 static int ipc_id;
 char *g_argv[64];
@@ -238,6 +242,10 @@ void rumboot_platform_setup()
         	rumboot_malloc_register_heap("IM2", ptr, ptr + PCIE_MEM_OFFSET);
                 
                 DUT_BASE = rumboot_native_request_device(1, 0x0000, 0xfd0000);
+  #ifdef NA_SW_RST_ON_START
+          na_rst(DUT_BASE);
+          rumboot_printf("NA Software Reset Made\n");
+  #endif
 #endif
         }
 
