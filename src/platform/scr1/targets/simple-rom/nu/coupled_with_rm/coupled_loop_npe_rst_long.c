@@ -10,35 +10,14 @@
 #include <devices/rcm_na/nu_test_macro.h>
  
 void nu_na_ppe_wait_int_pause_ext(uintptr_t base){
-	rumboot_printf("Wait NA_PPE context got\n");
-     	
-	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 25 ) & 1) !=1) {}
-	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 31 ) & 1) !=1) {}
-	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 21 ) & 1) !=1) {}
-	while(( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 23 ) & 1) !=1) {}
-	iowrite32(((1<<21) | (1<<22) |  (1<<23) | (1<<24) |  (1<<2) |   (1<<31) |  (1<<21) | (1<<25)),base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	rumboot_printf("Wait NA_PPE context\n");     		
+	while(( (ioread32(base +  NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 25 ) & 1) !=1) {}
+	iowrite32( (1<<25),base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+	while(( (ioread32(base +  NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) >> 24 ) & 1) !=1) {}	
+	iowrite32( (1<<24),base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);	
 	rumboot_printf("Done NA_PPE context\n");
 }
-void na_rst(uintptr_t base){
 
-uint32_t busy;
-      busy = ((ioread32(base + NA_CU_REGS_BASE + NA_STAT)>> 19) & 1); 
-      if (busy  !=0)
-      {iowrite32(0xf,(base    + NA_CU_REGS_BASE  + NA_PAUSE));
-	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_PAUSE) >> 20) & 1) !=1) {}   //   
-	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 2) & 1) !=1) {}  //stopped		    
-	  iowrite32(0x1,(base 	  +  NA_CU_REGS_BASE +  NA_SOFT_RESET));
-	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {} 
-	  iowrite32(0x0,(base     + NA_CU_REGS_BASE  + NA_PAUSE));	
-	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 0) & 1) !=1) {}
-	  }
-	   else
-	  {iowrite32(0x1,(base + NA_CU_REGS_BASE + NA_SOFT_RESET));		
-	   while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {}
-	   rumboot_printf("NA_RESET passed\n");
-	  } 
- }
- 
 void nu_na_mpe_ppe_wait_int_pause_ext(uintptr_t npe_base){
 	rumboot_printf("Wait NA_MPE context\n");
     while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 0) & 1) !=1) {}
@@ -48,8 +27,7 @@ void nu_na_mpe_ppe_wait_int_pause_ext(uintptr_t npe_base){
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 4 ) & 1) !=1) {}	
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 2) & 1) !=1) {}
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 15 ) & 1) !=1) {}
-	//while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 25 ) & 1) !=1) {}
- 
+
 	iowrite32(((1<<0) | (1<<10) |  (1<<11) | (1<<2) |  (1<<4)  | (1<<13)  |  (1<<15)  ),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
 	rumboot_printf("Done NA_MPE context\n");
 }
@@ -155,15 +133,12 @@ int main() {
   int iterations;
   uint8_t  axi_len;
   
-  rumboot_printf("Hello-o-o-o\n");
-//#ifdef NA_SRST  
-  na_rst(NPE_BASE);
-//#endif
+  rumboot_printf("Hello\n");
 
 #if DUT_IS_NPE
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
   nu_npe_mpe_set_int_mask(NPE_BASE);
-	nu_npe_ppe_set_int_mask(NPE_BASE);
+  nu_npe_ppe_set_int_mask(NPE_BASE);
 #endif
   
   heap_id = nu_get_heap_id();
@@ -332,19 +307,12 @@ int main() {
 	
       if ((i== (iterations-1))  |  (i == 0)){
 		 
-//	#ifdef NA_SRST
+
 		na_rst(NPE_BASE);		
-	/*#else
-		{nu_na_mpe_pause(NPE_BASE);			
-		nu_na_vpe_pause(NPE_BASE);
-		nu_na_ppe_pause(NPE_BASE);
-		nu_na_mpe_soft_reset(NPE_BASE);
-		nu_na_vpe_soft_reset(NPE_BASE);
-		nu_na_ppe_soft_reset(NPE_BASE)
 		nu_na_mpe_dev_pause_resume(NPE_BASE);
 		nu_na_vpe_dev_pause_resume(NPE_BASE);
-		nu_na_ppe_dev_pause_resume(NPE_BASE);}
-	#endif*/
+		nu_na_ppe_pause(NPE_BASE); 
+		nu_na_ppe_dev_pause_resume(NPE_BASE);
 		
 		iowrite32(0x0,NPE_BASE+NA_MPE_BASE+MPE_CMD_IRCW);
 
@@ -366,21 +334,14 @@ int main() {
 		rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}
-	rumboot_printf("Test check1 |n");
+
 	if	(nu_regs_check((MY_PPE_RDMA_BASE),1,28) != 0){
 		 rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
 	}	
-	rumboot_printf("Test check2 |n");
 
     nu_na_mpe_ppe_wait_int_pause_ext(NPE_BASE);
 	nu_na_ppe_wait_int_pause_ext(NPE_BASE);
-	
-	//#ifdef NA_SRST
-	//nu_na_mpe_wait_int_pause_light(NPE_BASE);
-	//#else
-	//nu_na_mpe_wait_int_pause(NPE_BASE);
-	//#endif
 	} 	
 	else
       // Wait For The Corresponding DMA Channels To Complete
