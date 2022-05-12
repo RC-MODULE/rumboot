@@ -2800,13 +2800,13 @@ void nu_na_ppe_pause(uintptr_t npe_base ){
 	
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 31 ) & 1) !=1) {}
 	iowrite32( (1<<31),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
-	rumboot_printf("Done NA_9 context\n");
+
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 21 ) & 1) !=1) {}
 	iowrite32( (1<<21),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
-	rumboot_printf("Done NA_6 context\n");
+
 	while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 23 ) & 1) !=1) {}
 	iowrite32( (1<<23),npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
-	rumboot_printf("Done NA_5 context\n");
+
 }
 
 void nu_na_ppe_pause_set(uintptr_t base) {
