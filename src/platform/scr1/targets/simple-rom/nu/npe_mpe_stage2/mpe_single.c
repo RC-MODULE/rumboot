@@ -345,6 +345,22 @@ void vpe_config_and_start(uint16_t* vpe_ptr, DataTypeExt in_data_type, DataType 
   cfg->wdma_config.dma_box_offset_y         = 0                                                            ;
   cfg->wdma_config.dma_box_offset_z         = 0                                                            ;
 
+  uint32_t bsize = 1;
+  cfg->src_rdma_config.dma_bsize          = bsize-1       ;
+    
+  cfg->src_rdma_config.dma_cube_size_c    = metrics->C    ;
+  cfg->src_rdma_config.dma_cube_size_w    = metrics->W    ;
+  cfg->src_rdma_config.dma_cube_size_h    = metrics->H    ;
+  cfg->src_rdma_config.dma_box_st_size_x  = 128/bsize - 1 ;
+  cfg->src_rdma_config.dma_box_st_size_y  = 1      - 1    ;
+  cfg->src_rdma_config.dma_box_st_size_z  = 128/16 - 1    ;
+  cfg->src_rdma_config.dma_box_size_x     = 128/bsize - 1 ;
+  cfg->src_rdma_config.dma_box_size_y     = 1      - 1    ;
+  cfg->src_rdma_config.dma_box_size_z     = 128/16 - 1    ;
+  cfg->src_rdma_config.dma_box_offset_x   = 0 ;
+  cfg->src_rdma_config.dma_box_offset_y   = 0 ;
+  cfg->src_rdma_config.dma_box_offset_z   = 0 ;
+
   nu_vpe_setup(NPE_BASE+NA_VPE_BASE,cfg);
   nu_vpe_run(NPE_BASE+NA_VPE_BASE,cfg);
 }
