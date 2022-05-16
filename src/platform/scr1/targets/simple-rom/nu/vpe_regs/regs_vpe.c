@@ -1877,13 +1877,15 @@ int main() {
   int res15;
   int res16;
   int res17;
-  int res18;  
- 
+  int res18; 
+  
+  int cycle = 2;
   uint32_t   vpe_rdma_offset;
   rumboot_printf("Test VPE regs run\n");
+   for(int r=0;r<cycle;r++) {
   rumboot_printf("Read REGS after reset begin\n");
   uint32_t temp;
-  ;
+
   //  READ VPE  and DMA REG's initial state 
 	#if DUT_IS_NPE
 		na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
@@ -2041,7 +2043,10 @@ int main() {
 	
 	{rumboot_printf("Test FAILED\n");
 	return 1;		
- }	
+  }
+  na_rst(NPE_BASE);
+ }  
+ 
    rumboot_printf("Test PASSED\n");  
    return 0;
 

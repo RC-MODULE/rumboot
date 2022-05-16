@@ -1050,7 +1050,10 @@ int nu_running_one(uintptr_t base, uint32_t ppe_offset, uint32_t mask, int end_n
 int main() {
  
   int res,res1,res2,res3,res4;
+  
+   int cycle = 2;
   rumboot_printf("Test PPE regs run\n");
+  for(int r=0;r<cycle;r++) {	  
   rumboot_printf("Read REGS after reset\n");
     rumboot_printf("NA_CU_PPE_UNIT_MODE = %x\n",NA_CU_PPE_UNIT_MODE);
 	rumboot_printf("NPE_BASE = %x\n",NPE_BASE);
@@ -1063,9 +1066,7 @@ int main() {
 	 na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
 	#endif
    // Configure RDMA initial state
-   
-
-   
+     
    res1 = nu_ppe_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE);
 
   if ( res1 !=0)
@@ -1107,7 +1108,8 @@ int main() {
   {rumboot_printf("Test FAILED\n");
 	return 1;
   }
-  
+  na_rst(NPE_BASE);
+ }  
    rumboot_printf("Test PASSED\n");
 
    return 0;
