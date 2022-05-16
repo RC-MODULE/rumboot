@@ -1064,10 +1064,7 @@ int main() {
 	#endif
    // Configure RDMA initial state
    
-	nu_na_ppe_pause(NPE_BASE);		
-	nu_na_ppe_soft_reset(NPE_BASE);	
-	nu_na_ppe_dev_pause_resume(NPE_BASE);
-   
+
    
    res1 = nu_ppe_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE);
 
