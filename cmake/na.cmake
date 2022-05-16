@@ -678,6 +678,18 @@ macro (ADD_MPE_VPE_BATCH_TEST CONF B C W H LP RP BP TP K S R SX SY)
 endmacro()
 
 
+macro (ADD_NKBVS_TEST CONF name arrays_path vpe_in_c vpe_in_w vpe_in_h)
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/npe/nkbvs.c
+    CFLAGS -Dvpe_in_c=${vpe_in_c} -Dvpe_in_w=${vpe_in_w} -Dvpe_in_h=${vpe_in_h}
+    PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${arrays_path}/mpe_arrays.txt && cp ${arrays_path}/config_vpe.bin .
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+  )
+endmacro()
+
+
 macro (ADD_MPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
   set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
   foreach(i RANGE 0 15)
@@ -1565,6 +1577,7 @@ macro(na_testsuite_add_npe_tests CONF)
 
   if(NA_TESTGROUP STREQUAL "NKBVS")
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_1 main_nkbvs_1 NOT_MAKE_TIGHT BITWISE)
+    ADD_NKBVS_TEST(${CONF} nkbvs_deconv_1 /home/v.gordeev/na_arrays/nkbvs_deconv_1 32 419 421)
   endif()
 
   na_testsuite_add_vpe_tests(${CONF})
