@@ -45,7 +45,8 @@
   typedef enum TraceMode {
     TraceMode_PPE,
     TraceMode_MPE,
-    TraceMode_Linear
+    TraceMode_Linear,
+    TraceMode_MPE_DW
   }TraceMode;
 
   /**

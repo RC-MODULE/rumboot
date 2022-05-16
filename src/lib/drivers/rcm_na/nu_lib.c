@@ -1004,7 +1004,7 @@ void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config, TraceMode trace_mo
     // CRUTCH - Because Of Wrong Batch Mode Algorythm This Fields Calculated Incorrectly By nu_vpe_decide_dma_cube_config
     //          We Should Fix Them Here
     //          Waiting For The Batch Mode Algorythm Edition To Remove This CRUTCH CHECK
-  if(trace_mode==TraceMode_MPE) {
+  if(trace_mode==TraceMode_MPE || trace_mode==TraceMode_MPE_DW) {
     dma_config->dma_box_st_size_x = (128/(dma_config->dma_bsize+1)) - 1;
     dma_config->dma_box_size_x    = (128/(dma_config->dma_bsize+1)) - 1;
   }
@@ -1075,7 +1075,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |
              ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |
              ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |
-             (                 (tmp_type>>1) <<  9) | ( (cfg->trace_mode==TraceMode_MPE?1:0)<<8) |
+             (                 (tmp_type>>1) <<  9) | ( ((cfg->trace_mode==TraceMode_MPE  || cfg->trace_mode==TraceMode_MPE_DW)?1:0)<<8) |
              (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
 
@@ -1207,7 +1207,26 @@ void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, Cub
       dma_cfg->dma_box_offset_x   = 0 ;
       dma_cfg->dma_box_offset_y   = 0 ;
       dma_cfg->dma_box_offset_z   = 0 ;
-    }     
+    }
+    else if (trace_mode == TraceMode_MPE_DW) { // MPE DeepWise read mode
+      dma_cfg->dma_frag_last_size = ((metrics->C%16) + ((metrics->C%16) == 0)*16) * elem_size ;
+      dma_cfg->dma_stride_z       = 16                      * elem_size                       ; //coef_z == vector_size * elem_size
+      dma_cfg->dma_stride_x       = metrics->C              * elem_size                       ; //coef_x == full_line_z             = full_line_C*elem_size
+      dma_cfg->dma_stride_y       = metrics->C * metrics->W * elem_size                       ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+      dma_cfg->dma_border_z       = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
+      dma_cfg->dma_border_x       = (metrics->W - 1) * dma_cfg->dma_stride_x                  ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+      dma_cfg->dma_border_y       = (metrics->H - 1) * dma_cfg->dma_stride_y                  ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+      dma_cfg->dma_box_st_size_x  = (128/(dma_cfg->dma_bsize+1)) - 1 ;
+      dma_cfg->dma_box_st_size_y  = 1      - 1 ;
+      dma_cfg->dma_box_st_size_z  = 16/16  - 1 ;
+      dma_cfg->dma_box_size_x     = (128/(dma_cfg->dma_bsize+1)) - 1 ;
+      dma_cfg->dma_box_size_y     = 1      - 1 ;
+      dma_cfg->dma_box_size_z     = 16/16  - 1 ;
+      dma_cfg->dma_box_offset_x   = 0 ;
+      dma_cfg->dma_box_offset_y   = 0 ;
+      dma_cfg->dma_box_offset_z   = 0 ;
+    }
     else { // PPE read mode
       dma_cfg->dma_frag_last_size = ((metrics->C%16) + ((metrics->C%16) == 0)*16) * elem_size ;
       dma_cfg->dma_stride_z       = 16                      * elem_size                       ; //coef_z == vector_size * elem_size
