@@ -272,8 +272,6 @@ int main() {
       nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     }
     
-    nu_mpe_print_config(iteration_desc.cfg_mpe);
-    
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
     
