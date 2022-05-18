@@ -32,8 +32,8 @@ void nu_vpe_decide_dma_config (
   cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
 #endif
 
-#ifdef VPE_TraceMode_PPE
-  cfg->trace_mode = TraceMode_PPE;
+#ifdef VPE_TraceMode_MPE_DW
+  cfg->trace_mode = TraceMode_MPE_DW;
 #else
   cfg->trace_mode = TraceMode_MPE;
 #endif
