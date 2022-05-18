@@ -124,9 +124,17 @@ int na_cu_rd_regs() {
 		{res10=0;}
 	
 	res11 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS);		
-	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFEFFFFF))
-		{res11 =1;
-		rumboot_printf("Unexpected NA_INT_UNITS_STATUS =0x%x\n",res11);}	
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFFFFFFF))		
+		{
+		if ((0x02008010)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFFFFFFF))
+			{res11 =1;
+			rumboot_printf("Unexpected NA_INT_UNITS_STATUS after soft reset =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS));
+			}
+			else
+			{res11= 0;
+		    rumboot_printf("SoftT reset passed after hardware reset\n");
+			}			
+		}	
 		else 
 		{res11=0;}
 	
@@ -215,6 +223,7 @@ int na_cu_rd_regs() {
 			res11 || res12 ||res13 || res14 ||res15 || res16 || res17  || res18 || res19 ||
 			 res20 ||res21 || res22;
 	
+
 	if( res ==1) {
 	 rumboot_printf("READ_REGS_CU ERROR\n");
 		return -1;}
@@ -226,15 +235,18 @@ int na_cu_rd_regs() {
 
 	 
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE);
-		if	((data & 0x00000107) != ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE)) 
+	if	((data & 0x00000107) != ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE)) 
 		{rumboot_printf("Unexpected NA_UNITS_MODE =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE));	
 		return 1;} 
   	
-	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET); // THERE INSERT  DELAY BEFORE READ SOFT RESET
-	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET);  // THERE INSERT  DELAY BEFORE READ SOFT RESET
-
+		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET); // THERE INSERT  DELAY BEFORE READ SOFT RESET
+		while (( (ioread32(NPE_BASE +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 25) & 1) !=1) {}
+		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET);  // THERE INSERT  DELAY BEFORE READ SOFT RESET
+		while (( (ioread32(NPE_BASE +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 15) & 1) !=1) {}
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET);
+		while (( (ioread32(NPE_BASE +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {}
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
+		while (( (ioread32(NPE_BASE +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 4) & 1) !=1) {}	
 	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET)& 0x00000001))
 		{rumboot_printf("Unexpected NA_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET));
 		return 1;}
@@ -300,6 +312,7 @@ int main() {
   int res,res1,res2,res3;
   
   rumboot_printf("Hello npe_regs\n");
+
   temp = ioread32(NPE_BASE + NA_VPE_BASE + NU_VPE + NU_VPE_DEV_ID);
   if(temp != 0xabcd2021) {
     rumboot_printf("Unexpected NU_VPE_DEV_ID=0x%x\n",temp);
