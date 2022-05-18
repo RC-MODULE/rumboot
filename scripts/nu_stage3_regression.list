@@ -1,5 +1,8 @@
   Test   #8: rumboot-native-Production-host-simple_direct_WITH_PPE
   Test   #9: rumboot-native-Production-host-simple_direct_WITH_VPE
+  Test  #53: rumboot-native-Production-host-NPE_1
+  Test  #54: rumboot-native-Production-host-MPE_1
+  Test #542: rumboot-native-Production-host-VPE_1
   Test  #31: rumboot-native-Production-host-npe_mpe_alu_IN_INT16_64
   Test  #47: rumboot-native-Production-host-npe_mpe_null_column
   Test  #52: rumboot-native-Production-host-NA_2_npe_mpe_direct_ex_MPE_CFG_25_WITH_VPE
