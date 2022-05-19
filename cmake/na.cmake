@@ -1604,6 +1604,7 @@ macro(na_testsuite_add_npe_tests CONF)
     #ADD_NKBVS_TEST(${CONF} depthwise_1 /home/v.gordeev/na_arrays/nkbvs_depthwise_1 VPE_TraceMode_MPE_DW 32 416 408)
     ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_5 main_nkbvs_5 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_6 main_nkbvs_6 NOT_MAKE_TIGHT BITWISE)
+    ADD_NKBVS_TEST(${CONF} depthwise_1 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_1 VPE_TraceMode_MPE_DW 32 416 408)
   endif()
 
   na_testsuite_add_vpe_tests(${CONF})
