@@ -11,7 +11,7 @@
 #define NU_PPE_REG_CFG_PARAMS_NUM 62
 
 //#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (289-2*(7+2+2))
-#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE 269 // 268 + 1 ()batch_size
+#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE 271 // 268 + 1 ()batch_size + 2
 
 #define NU_VPE_LUT1_SIZE 257
 #define NU_VPE_LUT2_SIZE 65
