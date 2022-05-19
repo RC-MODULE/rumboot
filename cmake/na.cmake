@@ -1328,9 +1328,9 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
-  #if(NOT DEFINED NU_SEED)
-  #  set(NU_SEED 1)
-  #endif()
+  if(NOT DEFINED NU_SEED)
+    set(NU_SEED 1)
+  endif()
 
   if(NOT DEFINED NU_IT_NMB)
     set(NU_IT_NMB 32)
