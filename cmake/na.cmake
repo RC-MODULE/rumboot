@@ -1328,16 +1328,6 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
-  if(NOT DEFINED NU_SEED)
-    set(NU_SEED 1)
-  endif()
-
-  if(NOT DEFINED NU_IT_NMB)
-    set(NU_IT_NMB 32)
-  endif()
-
-  message("NU_SEED ${NU_SEED}")
-
   if(NA_TESTGROUP STREQUAL "POWER")
     add_rumboot_target(
       CONFIGURATION ${CONF}
@@ -1963,6 +1953,14 @@ macro(na_testsuite_add_vpe_tests CONF)
 endmacro()
 
 macro(na_testsuite_add_ppe_tests CONF)
+
+  if(NOT DEFINED NU_SEED)
+    set(NU_SEED 1)
+  endif()
+
+  if(NOT DEFINED NU_IT_NMB)
+    set(NU_IT_NMB 32)
+  endif()
 
   set (i8_max   "--set_meth 1 --pool_meth 1 --data_type 0 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")
   set (i16_max  "--set_meth 1 --pool_meth 1 --data_type 1 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")
