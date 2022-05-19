@@ -97,14 +97,6 @@ macro(_na_init_variables DUT)
     # '.metrics' added by RM itself
   )
 
-  set (NA_RM_KEYS_PPE
-    --num_iterations_file      ${NA_TEST_num_iterations_file}
-    --in_file                  ${NA_TEST_in_file}
-    --etalon_file              ${NA_TEST_etalon_file}
-    --cfg_ppe_file             ${NA_TEST_cfg_ppe_file}
-    --status_regs_file         ${NA_TEST_status_regs_file}
-  )
-
   set(PLUSARG_num_iterations_file_tag num_iterations_file_tag)
   set(PLUSARG_in_file_tag in_file_tag)
   set(PLUSARG_in_ameba_file_tag in_ameba_file_tag)
@@ -350,7 +342,30 @@ endmacro()
 macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
   ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
 endmacro()
-      
+
+macro(ADD_MPE_RNDM_TEST CONF name rm_bin_name)
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
+    CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
+    PREPCMD 
+      ${NA_RM_BIN_PATH}/${rm_bin_name} 
+      ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB}
+      > ${RM_LOGFILE} &&
+
+      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+      || exit 1
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endmacro()
+
 macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
   if("${comparer}" STREQUAL "EPS")
     set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
@@ -1313,6 +1328,16 @@ macro(na_testsuite_add_npe_tests CONF)
   set (ConfigMPE_to_LUT ${CMAKE_SOURCE_DIR}/externals/py_mpe_test/ConfigMPE_to_LUT.py)
   set (ConfigMPE_to_LUT_LOGFILE ConfigMPE_to_LUT.log)
 
+  #if(NOT DEFINED NU_SEED)
+  #  set(NU_SEED 1)
+  #endif()
+
+  if(NOT DEFINED NU_IT_NMB)
+    set(NU_IT_NMB 32)
+  endif()
+
+  message("NU_SEED ${NU_SEED}")
+
   if(NA_TESTGROUP STREQUAL "POWER")
     add_rumboot_target(
       CONFIGURATION ${CONF}
@@ -1932,14 +1957,6 @@ macro(na_testsuite_add_vpe_tests CONF)
 endmacro()
 
 macro(na_testsuite_add_ppe_tests CONF)
-
-  if(NOT DEFINED NU_SEED)
-    set(NU_SEED 1)
-  endif()
-
-  if(NOT DEFINED NU_IT_NMB)
-    set(NU_IT_NMB 32)
-  endif()
 
   set (i8_max   "--set_meth 1 --pool_meth 1 --data_type 0 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")
   set (i16_max  "--set_meth 1 --pool_meth 1 --data_type 1 --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 32 --c_max 32")

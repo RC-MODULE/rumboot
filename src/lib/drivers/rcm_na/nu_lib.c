@@ -632,6 +632,7 @@ void nu_mpe_print_ConfigWRDMAMPE(ConfigWRDMAMPE* cfg, char* name) {
     nu_vpe_print_Enable(cfg->GLUE_EN,"GLUE_EN" );
     rumboot_printf("  BStrideX = %d\n",cfg->BStrideX) ;
     rumboot_printf("  BConvX = %d\n",cfg->BConvX) ;
+    rumboot_printf("  Batch = %d\n",cfg->Batch) ;
     rumboot_printf("  Thre_PLC = %d\n",cfg->Thre_PLC);
     rumboot_printf("  Thre_VLC = %d\n",cfg->Thre_VLC) ;
     rumboot_printf("  Thre_CXC = %d\n",cfg->Thre_CXC) ;
@@ -1563,6 +1564,7 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
   cfg->wdma.GLUE_EN=                   *ptr;ptr++;
   cfg->wdma.BStrideX=(uint8_t)         *ptr;ptr++;
   cfg->wdma.BConvX=(uint8_t)           *ptr;ptr++;
+  cfg->wdma.Batch=(uint8_t)            *ptr;ptr++;
   cfg->wdma.Thre_PLC=(uint8_t)         *ptr;ptr++;
   cfg->wdma.Thre_VLC=(uint8_t)         *ptr;ptr++;
   cfg->wdma.Thre_CXC=(uint8_t)         *ptr;ptr++;
@@ -1840,7 +1842,7 @@ void nu_mpe_wdma_setup(uintptr_t base, ConfigWRDMAMPE* cfg) {
     
     temp_BiasBase += WR_Bias2CntSha_MSha-WR_Bias1CntSha_MSha;
   }
-  temp = 0 | (cfg->BStrideX << 0) | (cfg->BConvX << 4);
+  temp = 0 | (cfg->BStrideX << 0) | (cfg->BConvX << 4) | (cfg->Batch << 8);
   iowrite32(temp,base + X_Cfg_MSha);
   
   temp = 0 | (cfg->Thre_PLC << 0) | (cfg->Thre_VLC << 3) | (cfg->Thre_CXC << 6);

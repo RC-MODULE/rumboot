@@ -239,6 +239,7 @@
     Enable  GLUE_EN ;
     uint8_t BStrideX ;
     uint8_t BConvX ;
+    uint8_t Batch;
     uint8_t Thre_PLC ;
     uint8_t Thre_VLC ;
     uint8_t Thre_CXC ;
