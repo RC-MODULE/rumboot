@@ -124,9 +124,9 @@ int na_cu_rd_regs() {
 		{res10=0;}
 	
 	res11 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS);		
-	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFFFFFFF))		
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFEFFFFF))		
 		{
-		if ((0x02008010)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFFFFFFF))
+		if ((0x02008010)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFEFFFFF))
 			{res11 =1;
 			rumboot_printf("Unexpected NA_INT_UNITS_STATUS after soft reset =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS));
 			}
@@ -310,9 +310,13 @@ int na_cu_rd_regs() {
 int main() {
   uint32_t temp;
   int res,res1,res2,res3;
-  
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
   rumboot_printf("Hello npe_regs\n");
-
+  na_rst(NPE_BASE);
+  
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  
   temp = ioread32(NPE_BASE + NA_VPE_BASE + NU_VPE + NU_VPE_DEV_ID);
   if(temp != 0xabcd2021) {
     rumboot_printf("Unexpected NU_VPE_DEV_ID=0x%x\n",temp);
@@ -337,7 +341,7 @@ int main() {
   {rumboot_printf("Test write-read ZEROs not passed \n");
 	return 1;
   }
-  {rumboot_printf("Test state write-read ZEROs passed\n");}
+  {rumboot_printf("Test state write-read ZEROs passed\n");} 
    res = res1 || res2;
   if (res !=0)
   {rumboot_printf("Test FAILED\n");
