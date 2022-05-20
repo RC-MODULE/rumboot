@@ -3336,7 +3336,7 @@ void nu_npe_set_int_mask(uintptr_t npe_base){
 	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
 	rumboot_printf("nu_npe_set_int_mask: Writing [0x%x]=0x%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
-void na_rst(uintptr_t base,uintptr_t vpe_base){
+void na_rst(uintptr_t base){
 	
 uint32_t busy;
       busy = ((ioread32(base + NA_CU_REGS_BASE + NA_STAT)>> 19) & 1); 
@@ -3366,23 +3366,23 @@ uint32_t busy;
 	  iowrite32(0x10171	  ,base + NA_CU_REGS_BASE + CMD_DMA_INT_RESET);
 	  iowrite32(0x00000000,base + NA_CU_REGS_BASE + CMD_DMA_INT_MASK);
 	  
-	  iowrite32(0x311F1   ,vpe_base + NU_VPE + NU_VPE_INT_RESET);
-	  iowrite32(0x00000000,vpe_base + NU_VPE + NU_VPE_INT_MASK);
+	  iowrite32(0x311F1   ,base + NA_VPE_BASE + NU_VPE + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE + NU_VPE_INT_MASK);
 	  
-	  iowrite32(0x1F1     ,vpe_base + NU_VPE_DST_WDMA + NU_VPE_INT_RESET);
-	  iowrite32(0x00000000,vpe_base + NU_VPE_DST_WDMA + NU_VPE_INT_MASK);
+	  iowrite32(0x1F1     ,base + NA_VPE_BASE + NU_VPE_DST_WDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE_DST_WDMA + NU_VPE_INT_MASK);
 	  
-	  iowrite32(0x1F1     ,vpe_base + NU_VPE_SRC_RDMA + NU_VPE_INT_RESET);
-	  iowrite32(0x00000000,vpe_base + NU_VPE_SRC_RDMA + NU_VPE_INT_MASK);
+	  iowrite32(0x1F1     ,base + NA_VPE_BASE + NU_VPE_SRC_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE_SRC_RDMA + NU_VPE_INT_MASK);
 	  
-	  iowrite32(0x1F1     ,vpe_base + NU_VPE_OP0_RDMA + NU_VPE_INT_RESET);
-	  iowrite32(0x00000000,vpe_base + NU_VPE_OP0_RDMA + NU_VPE_INT_MASK);
+	  iowrite32(0x1F1     ,base + NA_VPE_BASE + NU_VPE_OP0_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE_OP0_RDMA + NU_VPE_INT_MASK);
 	  
-	  iowrite32(0x1F1     ,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
-	  iowrite32(0x00000000,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);
+	  iowrite32(0x1F1     ,base + NA_VPE_BASE + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);
 	  
-	  iowrite32(0x1F1	  ,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
-	  iowrite32(0x00000000,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);	  
+	  iowrite32(0x1F1	  ,base + NA_VPE_BASE + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);	  
 	  
 	  
 	  

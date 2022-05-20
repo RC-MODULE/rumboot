@@ -315,7 +315,7 @@ int main() {
   //iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
   //iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
   rumboot_printf("Hello npe_regs\n");
-  na_rst(NPE_BASE,MY_VPE_REGS_BASE);
+  na_rst(NPE_BASE);
   
  // iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
   
