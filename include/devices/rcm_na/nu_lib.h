@@ -774,5 +774,5 @@ void nu_ppe_wdma_err_reset (uintptr_t base);
 void nu_ppe_rdma_err_mask (uintptr_t base);
 uint32_t nu_ppe_rdma_err_status(uintptr_t base);
 void nu_ppe_rdma_err_reset (uintptr_t base);
-void na_rst(uintptr_t base);
+void na_rst(uintptr_t base );
 #endif
