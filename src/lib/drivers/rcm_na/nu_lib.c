@@ -3336,22 +3336,54 @@ void nu_npe_set_int_mask(uintptr_t npe_base){
 	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
 	rumboot_printf("nu_npe_set_int_mask: Writing [0x%x]=0x%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
-void na_rst(uintptr_t base){
+void na_rst(uintptr_t base,uintptr_t vpe_base){
 	
 uint32_t busy;
       busy = ((ioread32(base + NA_CU_REGS_BASE + NA_STAT)>> 19) & 1); 
       if (busy  !=0)
-      {iowrite32(0xf,(base    + NA_CU_REGS_BASE  + NA_PAUSE));
-	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_PAUSE) >> 20) & 1) !=1) {}   //   
+      {iowrite32(0xf,(base    +  NA_CU_REGS_BASE +  NA_PAUSE));
+	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_PAUSE) >> 20) & 1) !=1) {}    
 	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 2) & 1) !=1) {}  //stopped		    
 	  iowrite32(0x1,(base 	  +  NA_CU_REGS_BASE +  NA_SOFT_RESET));
 	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {} 
-	  iowrite32(0x0,(base     + NA_CU_REGS_BASE  + NA_PAUSE));	
+	  iowrite32(0x0,(base     +  NA_CU_REGS_BASE +  NA_PAUSE));	
 	  while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 0) & 1) !=1) {}
 	  }
 	   else
-	  {iowrite32(0x1,(base + NA_CU_REGS_BASE + NA_SOFT_RESET));		
-	   while (( (ioread32(base +  NA_CU_REGS_BASE +  NA_INT_STATUS) >> 4) & 1) !=1) {}
+	  {iowrite32(0x1,(base 	   + NA_CU_REGS_BASE + NA_SOFT_RESET));		
+	   while (( (ioread32(base + NA_CU_REGS_BASE + NA_INT_STATUS) >> 4) & 1) !=1) {}
 	   rumboot_printf("NA_RESET passed\n");
-	  } 
+	  }
+      iowrite32(0xFFEFFFFF,base + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+      iowrite32(0x7F      ,base + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+      iowrite32(0x00000000,base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+      iowrite32(0x00000000,base + NA_CU_REGS_BASE + NA_INT_MASK);
+	  
+	  iowrite32(0x7FFFFFF ,base + NA_CU_REGS_BASE + NA_INT_AXI_RESET);
+	  iowrite32(0x00000000,base + NA_CU_REGS_BASE + NA_INT_AXI_MASK);
+	  
+	  iowrite32(0x10171	  ,base + NA_CU_REGS_BASE + CMD_DMA_INT_RESET);
+	  iowrite32(0x00000000,base + NA_CU_REGS_BASE + CMD_DMA_INT_MASK);
+	  
+	  iowrite32(0x311F1   ,vpe_base + NU_VPE + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,vpe_base + NU_VPE + NU_VPE_INT_MASK);
+	  
+	  iowrite32(0x1F1     ,vpe_base + NU_VPE_DST_WDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,vpe_base + NU_VPE_DST_WDMA + NU_VPE_INT_MASK);
+	  
+	  iowrite32(0x1F1     ,vpe_base + NU_VPE_SRC_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,vpe_base + NU_VPE_SRC_RDMA + NU_VPE_INT_MASK);
+	  
+	  iowrite32(0x1F1     ,vpe_base + NU_VPE_OP0_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,vpe_base + NU_VPE_OP0_RDMA + NU_VPE_INT_MASK);
+	  
+	  iowrite32(0x1F1     ,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);
+	  
+	  iowrite32(0x1F1	  ,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
+	  iowrite32(0x00000000,vpe_base + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);	  
+	  
+	  
+	  
  }
