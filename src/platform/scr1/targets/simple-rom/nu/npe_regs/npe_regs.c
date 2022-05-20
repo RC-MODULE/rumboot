@@ -7,7 +7,9 @@
 
 #include <devices/rcm_na/nu_lib.h>
 #include <regs/regs_na.h>
+#include <regs/regs_nu_vpe.h>
 #include <platform/devices.h>
+#include <devices/rcm_na/nu_test_macro.h>
 
 int na_cu_rd_regs() {
 
@@ -310,12 +312,12 @@ int na_cu_rd_regs() {
 int main() {
   uint32_t temp;
   int res,res1,res2,res3;
-  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
-  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+  //iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  //iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
   rumboot_printf("Hello npe_regs\n");
-  na_rst(NPE_BASE);
+  na_rst(NPE_BASE,MY_VPE_REGS_BASE);
   
-  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+ // iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
   
   temp = ioread32(NPE_BASE + NA_VPE_BASE + NU_VPE + NU_VPE_DEV_ID);
   if(temp != 0xabcd2021) {
@@ -342,7 +344,24 @@ int main() {
 	return 1;
   }
   {rumboot_printf("Test state write-read ZEROs passed\n");} 
-   res = res1 || res2;
+   res = res1 || res2 || res3;
+   
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK);
+  
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK);
+	  
+  iowrite32(0x7FFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_RESET);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_MASK);
+	  
+  iowrite32(0x10171,NPE_BASE + NA_CU_REGS_BASE + CMD_DMA_INT_RESET);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + CMD_DMA_INT_RESET);
+  
+  
   if (res !=0)
   {rumboot_printf("Test FAILED\n");
 	return 1;
