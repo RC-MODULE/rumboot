@@ -83,16 +83,16 @@
   Test #763: rumboot-native-Production-host-vpe_24_op2_together_dma
   Test #765: rumboot-native-Production-host-vpe_25_op012_together_dma
   Test #773: rumboot-native-Production-host-vpe_batch_mode_IN_INT8_COEF0_INT8_COEF1_INT8_COEF2_INT8_OUT_INT8_1
-  Test #774: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_INT8_COEF0_INT8_COEF1_INT8_COEF2_INT8_OUT_INT8_1
   Test #775: rumboot-native-Production-host-vpe_batch_mode_IN_INT8_COEF0_INT8_COEF1_INT8_COEF2_INT8_OUT_INT8_2
   Test #823: rumboot-native-Production-host-vpe_batch_mode_IN_INT8_COEF0_INT8_COEF1_INT16_COEF2_INT8_OUT_INT8_2
   Test #909: rumboot-native-Production-host-vpe_batch_mode_IN_INT8_COEF0_INT16_COEF1_INT8_COEF2_INT16_OUT_FP16_1
   Test #969: rumboot-native-Production-host-vpe_batch_mode_IN_INT16_COEF0_INT8_COEF1_INT8_COEF2_INT8_OUT_INT8_3
+  Test #1151: rumboot-native-Production-host-vpe_batch_mode_IN_INT16_COEF0_INT16_COEF1_INT16_COEF2_INT16_OUT_FP16_2
+  Test #774: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_INT8_COEF0_INT8_COEF1_INT8_COEF2_INT8_OUT_INT8_1
   Test #1000: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_INT16_COEF0_INT8_COEF1_INT8_COEF2_INT16_OUT_INT16_2
   Test #1050: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_INT16_COEF0_INT8_COEF1_INT16_COEF2_INT16_OUT_INT16_3
   Test #1090: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_INT16_COEF0_INT16_COEF1_INT8_COEF2_INT16_OUT_INT8_3
   Test #1128: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_INT16_COEF0_INT16_COEF1_INT16_COEF2_INT8_OUT_FP16_2
-  Test #1151: rumboot-native-Production-host-vpe_batch_mode_IN_INT16_COEF0_INT16_COEF1_INT16_COEF2_INT16_OUT_FP16_2
   Test #1172: rumboot-native-Production-host-vpe_batch_mode_with_element_IN_FP16_COEF0_FP16_COEF1_FP16_COEF2_FP16_OUT_FP16_4
   Test #1195: rumboot-native-Production-host-ppe_py_2_dc_ppe_max_int8-dc_ppe_max_int8_KW2_py
   Test #1201: rumboot-native-Production-host-ppe_py_2_dc_ppe_max_int8-dc_ppe_max_int8_KW8_py
@@ -135,7 +135,6 @@
   Test #1301: rumboot-native-Production-host-ppe_py_26_dc_ppe_irq-dc_ppe_irq_KW2_py 
   Test #1397: rumboot-native-Production-host-ppe_py_27_dc_ppe_a_few_cube-dc_ppe_a_few_cube_KW3_py 
   Test #1408: rumboot-native-Production-host-ppe_py_28_dc_ppe_mark_cube-dc_ppe_mark_cube_KW2_py
-  Test #1196: rumboot-native-Production-host-ppe_py_29_dc_ppe_axi_mode-dc_ppe_axi_mode_KW2_py 
   Test #1296: rumboot-native-Production-host-ppe_py_33_dc_ppe_sw_rst-dc_ppe_sw_rst_KW3_py 
   Test #1440: rumboot-native-Production-host-vpe_ppe_w1_128_k16_32_h2_16_BOX_8b
   Test #1481: rumboot-native-Production-host-vpe_ppe_w128_128_k16_32_h2_2_BOX_16b
