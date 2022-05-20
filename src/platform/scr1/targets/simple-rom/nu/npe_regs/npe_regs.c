@@ -162,9 +162,9 @@ int na_cu_rd_regs() {
 		{res14=0;}
 
 	res15 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_STATUS);
-	if ((0x00000010)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_STATUS)& 0x0000007F))
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_STATUS)& 0x0000007F))
 		{res15 =1;	  
-		rumboot_printf("Unexpected NA_INT_STATUS =0x%x\n",res15);	
+		rumboot_printf("Unexpected NA_INT_STATUS =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_STATUS));	
 		}
 		
 		else 
