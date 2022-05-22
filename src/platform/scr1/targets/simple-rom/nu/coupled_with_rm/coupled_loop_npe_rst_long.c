@@ -135,11 +135,11 @@ int main() {
   
   rumboot_printf("Hello\n");
 
-#if DUT_IS_NPE
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
-  nu_npe_mpe_set_int_mask(NPE_BASE);
-  nu_npe_ppe_set_int_mask(NPE_BASE);
-#endif
+//#if DUT_IS_NPE
+//  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
+//  nu_npe_mpe_set_int_mask(NPE_BASE);
+//  nu_npe_ppe_set_int_mask(NPE_BASE);
+//#endif
   
   heap_id = nu_get_heap_id();
   
@@ -165,6 +165,12 @@ int main() {
   
     // Program The CU To Enable Direct Mode For All Units // Again - If You Want Otherwise - Write Another Program
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
+  
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK);
   
     // Main Loop 
   for(i=0;i<iterations;i++) {
