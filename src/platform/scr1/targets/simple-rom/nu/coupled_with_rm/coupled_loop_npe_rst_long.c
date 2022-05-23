@@ -316,10 +316,12 @@ int main() {
 
 		na_rst(NPE_BASE);		
 		nu_na_mpe_dev_pause_resume(NPE_BASE);
-		nu_na_vpe_dev_pause_resume(NPE_BASE);
-		nu_na_ppe_pause(NPE_BASE); 
-		nu_na_ppe_dev_pause_resume(NPE_BASE);
-		
+		//nu_na_vpe_dev_pause_resume(NPE_BASE);
+		iowrite32( (0<<1),NPE_BASE + NA_CU_REGS_BASE  + NA_PAUSE);
+		//nu_na_ppe_pause(NPE_BASE);
+		iowrite32( (1<<2),NPE_BASE + NA_CU_REGS_BASE + NA_PAUSE); //ppe_pause
+		//nu_na_ppe_dev_pause_resume(NPE_BASE);
+		iowrite32( (0<<2),NPE_BASE + NA_CU_REGS_BASE  + NA_PAUSE);
 		iowrite32(0x0,NPE_BASE+NA_MPE_BASE+MPE_CMD_IRCW);
 
 	if	(nu_mpe_regs_check((MY_MPE_REGS_BASE+MPE_MA_BASE),4,33) != 0){
@@ -346,8 +348,8 @@ int main() {
       return 1;
 	}	
 
-    nu_na_mpe_ppe_wait_int_pause_ext(NPE_BASE);
-	nu_na_ppe_wait_int_pause_ext(NPE_BASE);
+   // nu_na_mpe_ppe_wait_int_pause_ext(NPE_BASE);
+	//nu_na_ppe_wait_int_pause_ext(NPE_BASE);
 	} 	
 	else
       // Wait For The Corresponding DMA Channels To Complete
