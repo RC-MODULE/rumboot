@@ -118,11 +118,10 @@ int main() {
   heap_id = nu_get_heap_id();
   
     
-  #if DUT_IS_NPE
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
-  nu_npe_mpe_set_int_mask(NPE_BASE);
-//nu_npe_vpe_set_int_mask(NPE_BASE, iteration_desc.cfg_vpe);
-  #endif
+ // #if DUT_IS_NPE
+ // na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
+ // nu_npe_mpe_set_int_mask(NPE_BASE);
+ // #endif
   
     // Read The Number Of Test Iterations
   rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
@@ -143,6 +142,14 @@ int main() {
   
     // Make The Iteration Descriptor To Point At The First Test Data
   nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+  
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK); 
+  
+  
   
     // Program The CU To Enable Direct Mode For All Units // Again - If You Want Otherwise - Write Another Program
 //na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
