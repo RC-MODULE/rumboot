@@ -438,7 +438,6 @@ endmacro()
 if(RUMBOOT_PLATFORM STREQUAL "native")
   if(MAKE_NA_DELIVERY)
 
-
         add_custom_target(deliveries    ALL
             COMMENT "--- Delivery Package Generation Complete ---"
         )
@@ -449,7 +448,7 @@ if(RUMBOOT_PLATFORM STREQUAL "native")
           add_custom_command(
             TARGET delivery-${target_name}
             COMMAND rm -Rfv "${CMAKE_BINARY_DIR}/.delivery"
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/delivery.py 
+            COMMAND python3.6 ${CMAKE_SOURCE_DIR}/scripts/delivery.py 
                     --toplevel="${CMAKE_SOURCE_DIR}" 
                     --workdir="${CMAKE_BINARY_DIR}/${archive_dir}" 
                     --config="${CMAKE_SOURCE_DIR}/${config_file}"
@@ -459,7 +458,7 @@ if(RUMBOOT_PLATFORM STREQUAL "native")
         endfunction()    
 
 
-        hdl_add_delivery(${CMAKE_SOURCE_DIR}/.delivery/na_stage3.yaml na_board_func_tests)
+        hdl_add_delivery(.delivery/na_stage3.yaml na_board_func_tests)
 
   endif()
 endif()
