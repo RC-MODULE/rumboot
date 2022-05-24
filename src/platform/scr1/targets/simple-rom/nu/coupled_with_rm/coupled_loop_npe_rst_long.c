@@ -135,11 +135,11 @@ int main() {
   
   rumboot_printf("Hello\n");
 
-#if DUT_IS_NPE
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
-  nu_npe_mpe_set_int_mask(NPE_BASE);
-  nu_npe_ppe_set_int_mask(NPE_BASE);
-#endif
+//#if DUT_IS_NPE
+//  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE,0x00000000);
+//  nu_npe_mpe_set_int_mask(NPE_BASE);
+//  nu_npe_ppe_set_int_mask(NPE_BASE);
+//#endif
   
   heap_id = nu_get_heap_id();
   
@@ -165,6 +165,12 @@ int main() {
   
     // Program The CU To Enable Direct Mode For All Units // Again - If You Want Otherwise - Write Another Program
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
+  
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK);
   
     // Main Loop 
   for(i=0;i<iterations;i++) {
@@ -310,10 +316,12 @@ int main() {
 
 		na_rst(NPE_BASE);		
 		nu_na_mpe_dev_pause_resume(NPE_BASE);
-		nu_na_vpe_dev_pause_resume(NPE_BASE);
-		nu_na_ppe_pause(NPE_BASE); 
-		nu_na_ppe_dev_pause_resume(NPE_BASE);
-		
+		//nu_na_vpe_dev_pause_resume(NPE_BASE);
+		iowrite32( (0<<1),NPE_BASE + NA_CU_REGS_BASE  + NA_PAUSE);
+		//nu_na_ppe_pause(NPE_BASE);
+		iowrite32( (1<<2),NPE_BASE + NA_CU_REGS_BASE + NA_PAUSE); //ppe_pause
+		//nu_na_ppe_dev_pause_resume(NPE_BASE);
+		iowrite32( (0<<2),NPE_BASE + NA_CU_REGS_BASE  + NA_PAUSE);
 		iowrite32(0x0,NPE_BASE+NA_MPE_BASE+MPE_CMD_IRCW);
 
 	if	(nu_mpe_regs_check((MY_MPE_REGS_BASE+MPE_MA_BASE),4,33) != 0){
@@ -340,8 +348,8 @@ int main() {
       return 1;
 	}	
 
-    nu_na_mpe_ppe_wait_int_pause_ext(NPE_BASE);
-	nu_na_ppe_wait_int_pause_ext(NPE_BASE);
+   // nu_na_mpe_ppe_wait_int_pause_ext(NPE_BASE);
+	//nu_na_ppe_wait_int_pause_ext(NPE_BASE);
 	} 	
 	else
       // Wait For The Corresponding DMA Channels To Complete

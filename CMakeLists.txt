@@ -433,6 +433,37 @@ if (NOT _opt STREQUAL "-1")
 endif()
 endmacro()
 
+##########################################################
+## CRUTCH because delivery engine was in CMakeVerilog
+if(RUMBOOT_PLATFORM STREQUAL "native")
+  if(MAKE_NA_DELIVERY)
+
+        add_custom_target(deliveries    ALL
+            COMMENT "--- Delivery Package Generation Complete ---"
+        )
+
+        function(hdl_add_delivery config_file archive_dir)
+          get_filename_component(target_name "${archive_dir}" NAME_WE)
+          add_custom_target(delivery-${target_name})
+          add_custom_command(
+            TARGET delivery-${target_name}
+            COMMAND rm -Rfv "${CMAKE_BINARY_DIR}/.delivery"
+            COMMAND python3.6 ${CMAKE_SOURCE_DIR}/scripts/delivery.py 
+                    --toplevel="${CMAKE_SOURCE_DIR}" 
+                    --workdir="${CMAKE_BINARY_DIR}/${archive_dir}" 
+                    --config="${CMAKE_SOURCE_DIR}/${config_file}"
+                    --name="${target_name}"
+          )
+          add_dependencies(deliveries delivery-${target_name})
+        endfunction()    
+
+
+        hdl_add_delivery(.delivery/na_stage3.yaml na_board_func_tests)
+
+  endif()
+endif()
+###########################################################
+
 macro(check_for_optimization_flags var)
   set(_flags "-Os;-O0;-O1;-O2;-O3;-Og")
   foreach(f ${_flags})

@@ -68,9 +68,9 @@ int main() {
   rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
-  #if DUT_IS_NPE
-    na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, 0x00000000);
-  #endif
+ // #if DUT_IS_NPE
+ //   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, 0x00000000);
+ // #endif
   
 //#if PPE_MARK_CUBE
 //   mark_cube = 1;
@@ -79,12 +79,12 @@ int main() {
 //    mark_cube = 0;
 //  #endif
 		
-  #ifdef PPE_CUBE_CMPL
-  nu_ppe_set_wdma_int_mask(MY_PPE_REGS_BASE);  
-  #else 
-  { rumboot_printf("NPE_BASE= %x\n",NPE_BASE);
-  nu_npe_ppe_set_int_mask(NPE_BASE);}
-  #endif
+//  #ifdef PPE_CUBE_CMPL
+//  nu_ppe_set_wdma_int_mask(MY_PPE_REGS_BASE);  
+ // #else 
+//  { rumboot_printf("NPE_BASE= %x\n",NPE_BASE);
+//  nu_npe_ppe_set_int_mask(NPE_BASE);}
+//  #endif
   
   nu_ppe_init_test_desc(&test_desc);
   
@@ -98,6 +98,13 @@ int main() {
   
   nu_ppe_init_iteration_desc(&test_desc,&iteration_desc);
   
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+  
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK);
+
 
   for (i=0; i<it_nmb; i++) {
     rumboot_printf("Starting Iteration %d\n",i);

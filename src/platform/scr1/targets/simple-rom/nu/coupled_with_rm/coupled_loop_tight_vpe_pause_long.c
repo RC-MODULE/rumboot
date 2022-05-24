@@ -101,9 +101,9 @@ int main() {
   
   nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
   
-#if DUT_IS_NPE
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
-#endif
+//#if DUT_IS_NPE
+//  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
+//#endif
 
   nu_vpe_set_int_mask(MY_VPE_REGS_BASE); 	
       
@@ -158,6 +158,12 @@ int main() {
   
     // Once More Init - This Time For The Main Working Loop
   nu_vpe_init_iteration_desc(&test_desc,&iteration_desc);
+  
+  iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
+  iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+ 
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+  iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_MASK); 
   
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);

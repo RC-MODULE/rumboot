@@ -1621,12 +1621,27 @@ macro(na_testsuite_add_npe_tests CONF)
     endforeach()
   endif()
 
+  macro(ADD_NKBVS_FROM_BINARY_TEST CONF label c_program)
+    set(NKBVS_TEST_DIR /home/nasonov/lava/rm/nkbvs_data)
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME nkbvs_${label}
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/${c_program}
+      PREPCMD 
+        cp ${NKBVS_TEST_DIR}/${label}/*.bin* . &&
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE} &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+        || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS} 
+    )  
+  endmacro()
+
   if(NA_TESTGROUP STREQUAL "NKBVS")
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_1 main_nkbvs_1 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_2 main_nkbvs_2 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_3 main_nkbvs_3 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_4 main_nkbvs_4 NOT_MAKE_TIGHT BITWISE)
-    ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_5 main_nkbvs_5 NOT_MAKE_TIGHT BITWISE)
+    ADD_NKBVS_FROM_BINARY_TEST(${CONF} 5 coupled_loop_npe_long.c)
     ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_6 main_nkbvs_6 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_7 main_nkbvs_7 NOT_MAKE_TIGHT BITWISE)
 
