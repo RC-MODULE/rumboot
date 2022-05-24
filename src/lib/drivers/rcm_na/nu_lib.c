@@ -1352,14 +1352,25 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
 int out_dim_comp(int in_dim, int k_dim, int k_str) {
   int out_dim;
 
-  out_dim = (in_dim-k_dim)/k_str + 1;
+  if (k_str > k_dim) {
 
-  if (k_str>k_dim) {
-    if ((in_dim%k_str != 0) && (in_dim%k_str < k_dim)) rumboot_printf("k_str>k_dim && out_dim is not integer");
+    if (k_str+1 > in_dim) out_dim = 1;
+    else {
+      out_dim = in_dim/k_str;
+
+      if (in_dim%k_str + 1 > k_dim) out_dim = out_dim + 1;
+    }
   }
-  else {
-    if ((in_dim-k_dim)%k_str != 0) rumboot_printf("k_str<=k_dim && out_dim is not integer");
-  }
+  else out_dim = (in_dim-k_dim)/k_str + 1;
+
+//  out_dim = (in_dim-k_dim)/k_str + 1;
+//
+//  if (k_str>k_dim) {
+//    if ((in_dim%k_str != 0) && (in_dim%k_str < k_dim)) rumboot_printf("k_str>k_dim && out_dim is not integer");
+//  }
+//  else {
+//    if ((in_dim-k_dim)%k_str != 0) rumboot_printf("k_str<=k_dim && out_dim is not integer");
+//  }
 
   return out_dim;
 }
