@@ -12,38 +12,13 @@ while [[ $# -gt 0 ]]; do
           shift
          shift
             ;;
-    --in_ameba_file)
-            NA_TEST_in_ameba_file=$2
-          shift
-         shift
-            ;;
-    --in_with_unused_file)
-      NA_TEST_in_with_unused_file=$2
-          shift
-         shift
-            ;;
     --warr_file)
                 NA_TEST_warr_file=$2
           shift
          shift
             ;;
-    --warr_with_unused_file)
-    NA_TEST_warr_with_unused_file=$2
-          shift
-         shift
-            ;;
     --etalon_file)
               NA_TEST_etalon_file=$2
-          shift
-         shift
-            ;;
-    --etalon_ameba_file)
-        NA_TEST_etalon_ameba_file=$2
-          shift
-         shift
-            ;;
-    --etalon_with_unused_file)
-  NA_TEST_etalon_with_unused_file=$2
           shift
          shift
             ;;
@@ -57,16 +32,6 @@ while [[ $# -gt 0 ]]; do
           shift
          shift
             ;;
-    --op0_ameba_file)
-           NA_TEST_op0_ameba_file=$2
-          shift
-         shift
-            ;;
-    --op0_with_unused_file)
-     NA_TEST_op0_with_unused_file=$2
-          shift
-         shift
-            ;;
     --op1_vec_file)
              NA_TEST_op1_vec_file=$2
           shift
@@ -77,16 +42,6 @@ while [[ $# -gt 0 ]]; do
           shift
          shift
             ;;
-    --op1_ameba_file)
-           NA_TEST_op1_ameba_file=$2
-          shift
-         shift
-            ;;
-    --op1_with_unused_file)
-     NA_TEST_op1_with_unused_file=$2
-          shift
-         shift
-            ;;
     --op2_vec_file)
              NA_TEST_op2_vec_file=$2
           shift
@@ -94,16 +49,6 @@ while [[ $# -gt 0 ]]; do
             ;;
     --op2_cube_file)
             NA_TEST_op2_cube_file=$2
-          shift
-         shift
-            ;;
-    --op2_ameba_file)
-           NA_TEST_op2_ameba_file=$2
-          shift
-         shift
-            ;;
-    --op2_with_unused_file)
-     NA_TEST_op2_with_unused_file=$2
           shift
          shift
             ;;
@@ -182,10 +127,6 @@ fi
 # Data
 
 find . -maxdepth 1 -type f -name ${NA_TEST_in_file}.\* | sort -V | xargs cat > merged.${NA_TEST_in_file} && rm ${NA_TEST_in_file}.*
-
-if compgen -G "${NA_TEST_in_ameba_file}.*" > /dev/null ; then
-find . -maxdepth 1 -type f -name ${NA_TEST_in_ameba_file}.\* | sort -V | xargs cat > merged.${NA_TEST_in_ameba_file} && rm ${NA_TEST_in_ameba_file}.*
-fi
 
 if compgen -G "${NA_TEST_warr_file}.*" > /dev/null ; then
 find . -maxdepth 1 -type f -name ${NA_TEST_warr_file}.\* | sort -V | xargs cat > merged.${NA_TEST_warr_file} && rm ${NA_TEST_warr_file}.*
