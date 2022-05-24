@@ -343,27 +343,34 @@ macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
   ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
 endmacro()
 
-macro(ADD_MPE_RNDM_TEST CONF name rm_bin_name)
+macro(ADD_MPE_DLTN_TEST CONF)
 
-  add_rumboot_target(
-    CONFIGURATION ${CONF}
-    NAME ${name}
-    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_long.c
-    CFLAGS -DDONT_USE_PPE=1 ${COMPARER_OPT}
-    PREPCMD 
-      ${NA_RM_BIN_PATH}/${rm_bin_name} 
-      ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB}
-      > ${RM_LOGFILE} &&
+  if(NOT DEFINED NU_SEED)
+    set(NU_SEED 1)
+  endif()
 
-      ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
-      &&
-      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+  set (NA_RM_KEYS_SW ${NA_RM_KEYS})
 
-      || exit 1
+#  foreach(Dy RANGE 1 9)
+#    foreach(Dx RANGE 1 9)
+#
+#      set (NA_RM_KEYS "${NA_RM_KEYS} --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1 --set_Dr 1 --Dr ${Dy} --set_Ds 1 --Ds ${Dx}")
+#
+#      ADD_NPE_MPE_VPE_TEST_SEED(${CONF} npe_mpe_dltn_Dr${Dy}_Ds${Dx} main_mpe_rnd_IN_INT16 NO_TIGHT BITWISE ${NU_SEED})
+#
+#      set (NA_RM_KEYS ${NA_RM_KEYS_SW})
+#
+#    endforeach()
+#  endforeach()
 
-    IRUN_FLAGS ${NA_RM_PLUSARGS}
-    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-  )
+#  set (NA_RM_KEYS "${NA_RM_KEYS} --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1 --set_Dr 1 --Dr 1 --set_Ds 1 --Ds 1")
+
+  set (NA_RM_KEYS "${NA_RM_KEYS} --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 2 --set_Dr 1 --Dr 2 --set_Ds 1 --Ds 1")
+
+  ADD_NPE_MPE_VPE_TEST_SEED(${CONF} npe_mpe_dltn main_mpe_rnd_IN_INT16 NO_TIGHT BITWISE ${NU_SEED})
+
+  set (NA_RM_KEYS ${NA_RM_KEYS_SW})
+
 endmacro()
 
 macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
@@ -1457,6 +1464,9 @@ macro(na_testsuite_add_npe_tests CONF)
       main_mpe_null_column
       NO_TIGHT EPS 
     )
+
+    ADD_MPE_DLTN_TEST(${CONF})
+
   endif()  # NA_TESTGROUP MPE
 
       ################################
@@ -2069,7 +2079,7 @@ macro(na_testsuite_add_ppe_tests CONF)
     ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
   endif() # NA_TESTGROUP PPE_BASE
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")  
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")
     ADD_PPE_PY_TESTS(${CONF})
   endif()
 

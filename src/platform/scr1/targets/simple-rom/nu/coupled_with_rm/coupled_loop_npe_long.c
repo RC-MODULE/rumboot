@@ -149,7 +149,7 @@ int main() {
     if(iteration_desc.cfg_vpe->op2_config.lut_en == Enable_En) {
       nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
     }
-    
+
       // Fill The cfg_mpe Fields That Are Not Loaded From File
     if(nu_mpe_decide_dma_config(
       iteration_desc.cfg_mpe,
@@ -174,7 +174,7 @@ int main() {
       //~ iteration_desc.res_metrics,
       iteration_desc.res_data,
       iteration_desc.PPE_ENABLED );
-    
+
       // Fill The cfg_reg_ppe That Is Not Loaded From File
     if(iteration_desc.PPE_ENABLED==Enable_En)
       nu_ppe_decide_dma_config (

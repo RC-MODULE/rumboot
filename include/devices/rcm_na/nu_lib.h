@@ -266,10 +266,10 @@
     uint32_t Rp       ;
     uint32_t R        ;
     uint32_t S        ;
-    uint32_t Ds       ;
     uint32_t Dr       ;
-    uint32_t Sw       ;
+    uint32_t Ds       ;
     uint32_t Sh       ;
+    uint32_t Sw       ;
     uint32_t K        ;
     DataType dt       ;
     uint32_t batch_size ;

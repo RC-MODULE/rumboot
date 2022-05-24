@@ -125,25 +125,25 @@ void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
 
   ptr = (uint32_t*) cfg_bin;
 
-  cfg-> H        =*ptr;ptr++;
-  cfg-> W        =*ptr;ptr++;
-  cfg-> C        =*ptr;ptr++;
-  cfg-> Tp       =*ptr;ptr++;
-  cfg-> Bp       =*ptr;ptr++;
-  cfg-> Lp       =*ptr;ptr++;
-  cfg-> Rp       =*ptr;ptr++;
-  cfg-> R        =*ptr;ptr++;
-  cfg-> S        =*ptr;ptr++;
-  cfg-> Ds       =*ptr;ptr++;
-  cfg-> Dr       =*ptr;ptr++;
-  cfg-> Sw       =*ptr;ptr++;
-  cfg-> Sh       =*ptr;ptr++;
-  cfg-> K        =*ptr;ptr++;
-  cfg-> dt       =*ptr;ptr++;
-  cfg-> rnd_mode =*ptr;ptr++;
-  cfg-> sat_en   =*ptr;ptr++;
-  cfg-> rnd_size =*ptr;ptr++;
-  cfg-> batch_size =*ptr;ptr++;
+  cfg->H          =*ptr;ptr++;
+  cfg-> W         =*ptr;ptr++;
+  cfg-> C         =*ptr;ptr++;
+  cfg-> Tp        =*ptr;ptr++;
+  cfg-> Bp        =*ptr;ptr++;
+  cfg-> Lp        =*ptr;ptr++;
+  cfg-> Rp        =*ptr;ptr++;
+  cfg-> R         =*ptr;ptr++;
+  cfg-> S         =*ptr;ptr++;
+  cfg-> Dr        =*ptr;ptr++;
+  cfg-> Ds        =*ptr;ptr++;
+  cfg-> Sh        =*ptr;ptr++;
+  cfg-> Sw        =*ptr;ptr++;
+  cfg-> K         =*ptr;ptr++;
+  cfg-> dt        =*ptr;ptr++;
+  cfg-> rnd_mode  =*ptr;ptr++;
+  cfg-> sat_en    =*ptr;ptr++;
+  cfg->rnd_size   =*ptr;ptr++;
+  cfg->batch_size =*ptr;ptr++;
 }
 
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
@@ -668,8 +668,8 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  Rp       = %d \n" , cfg->Rp);
     rumboot_printf("  R        = %d \n" , cfg->R);
     rumboot_printf("  S        = %d \n" , cfg->S);
-    rumboot_printf("  Ds       = %d \n" , cfg->Ds);
     rumboot_printf("  Dr       = %d \n" , cfg->Dr);
+    rumboot_printf("  Ds       = %d \n" , cfg->Ds);
     rumboot_printf("  Sw       = %d \n" , cfg->Sw);
     rumboot_printf("  Sh       = %d \n" , cfg->Sh);
     rumboot_printf("  K        = %d \n" , cfg->K);
@@ -1396,8 +1396,8 @@ void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m) {
     S   = cfg->S  ;
     Dr  = cfg->Dr ;
     Ds  = cfg->Ds ;
-    Sw  = cfg->Sw ;
     Sh  = cfg->Sh ;
+    Sw  = cfg->Sw ;
     K   = cfg->K  ;
 
     DataType dt = cfg->dt ;
@@ -1589,7 +1589,7 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
   int res;
   int in_param_match;
   int cnt;
-  
+
     // Search The Corresponding Row Of The Table
   row_ptr = (uint32_t*) table;
   res =  -1;
@@ -1606,7 +1606,7 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
         in_param_match = *tab_ptr == *cfg_ptr || (*tab_ptr !=0 && *cfg_ptr !=0);
       else
         in_param_match = *tab_ptr == *cfg_ptr;
-      
+
       cnt++;tab_ptr++;cfg_ptr++;
       
     } while(in_param_match && cnt<16); // 15 -> 16 batch_size
@@ -1620,7 +1620,9 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
     nu_mpe_load_dma_config_from_table_row(& (cfg->dma_w_config),&tab_ptr);
     res=0;
   }
-  
+
+  if (res) rumboot_printf("Error:%s: Couldn't find row match\n", __func__);
+
   return res;
 }
 
