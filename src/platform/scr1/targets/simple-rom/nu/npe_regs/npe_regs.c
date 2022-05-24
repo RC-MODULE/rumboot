@@ -134,7 +134,7 @@ int na_cu_rd_regs() {
 			}
 			else
 			{res11= 0;
-		    rumboot_printf("SoftT reset passed after hardware reset\n");
+		    rumboot_printf("SofT reset passed after hardware reset\n");
 			}			
 		}	
 		else 
@@ -239,6 +239,82 @@ int na_cu_rd_regs() {
 
  return 0; 
  } 
+ 
+int nu_cmd_dma_regs_check(uintptr_t base) {
+  int i, res;
+
+  int last_addr = CMD_DMA_PAGE_SIZE;
+ 
+  uint32_t dflt_cmd_cfg_mask= 0x1;
+  uint32_t dflt_cmd_dma_axi_param = 1 << 17;
+  uint32_t dflt_cmd_dma_int_mask = 0x00010171;
+
+
+  for (i=CMD_DMA_CFG; i<last_addr+4  && !res; i+=4) {
+
+   res = ioread32(base+i);		
+
+	if 		   (i == CMD_DMA_CFG)         	res  = !((res & dflt_cmd_cfg_mask) == 0x0);
+	else  if  ((i == CMD_DMA_POINTER) || (i == CMD_DMA_BASE_ADDR))
+											res  =!(res  == 0x0);
+	else  if   (i == CMD_DMA_AXI_PARAM)   	res = !((res & 0x00020000) == dflt_cmd_dma_axi_param);
+	
+	else  if  ((i == CMD_DMA_INT_STATUS) || (i == CMD_DMA_INT_RESET) ||
+			   (i == CMD_DMA_INT_SET)    || (i == CMD_DMA_INT_MASK))
+											res =  !((res & dflt_cmd_dma_int_mask) == 0x0);
+	
+	else  if  (i == CMD_DMA_PAGE_SIZE)   	res =  !((res & 0x0000FFFF) == 0);
+    else  									res = !(res == 0x0); 
+    if (res) rumboot_printf("ERROR: reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+}
+ 
+return res;}
+
+ 
+ int nu_cmd_wr_rd_dma_regs_check(uintptr_t base,uintptr_t  data) {
+  int i, res;
+
+  int last_addr = CMD_DMA_PAGE_SIZE;
+ 
+  uint32_t dflt_cmd_cfg_mask= 0x1;
+  uint32_t dflt_cmd_dma_axi_param = 0x0F07730F & data;  
+  uint32_t dflt_cmd_dma_int_mask  = 0x00010171 & data;
+  uint32_t dflt_cmd_dma_page_size = 0xFFFF & data;
+
+  for (i=CMD_DMA_CFG; i<last_addr+4 && !res; i+=4) {
+		
+  // rumboot_printf("xx: reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));}
+	if 		   (i == CMD_DMA_CFG)
+	         {iowrite32(data,base+i); 
+	         res =!( ioread32(base+i) == 0x0 );} //read zero after write '1'
+	
+    else if   (i == CMD_DMA_AXI_PARAM) 
+         {iowrite32(data,base+i); 
+		res = !(( ioread32(base+i) & 0x0F07730F) == dflt_cmd_dma_axi_param);}
+	
+    else if  (i == CMD_DMA_INT_RESET) 
+       {iowrite32(data,base+i); 		
+       res  = !(( ioread32(base+i) & dflt_cmd_dma_int_mask) == 0x00000000);}
+
+    else if  (i == CMD_DMA_INT_SET)
+       {iowrite32(data,base+i); 		
+       res  = !(( ioread32(base+i) & dflt_cmd_dma_int_mask) == 0x00000000);}
+ 
+  else if  (i == CMD_DMA_INT_MASK)
+	   {iowrite32(data,base+i); 										
+	   res =  !( ioread32(base+i)  == dflt_cmd_dma_int_mask);}
+	 
+ else  if  (i == CMD_DMA_PAGE_SIZE)
+	   {iowrite32(data,base+i); 	 
+	   res =  !(( ioread32(base+i) & dflt_cmd_dma_page_size) == dflt_cmd_dma_page_size);}
+ 
+   else  res = !(res == 0x0); 
+    if (res) rumboot_printf("ERROR: reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+}
+ 
+return res;}
+
+ 
  int na_cu_wr_rd_regs(uint32_t data) {
 
 	 
@@ -317,14 +393,10 @@ int na_cu_rd_regs() {
  } 
 int main() {
   uint32_t temp;
-  int res,res1,res2,res3;
-  //iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
-  //iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
+  int res,res1,res2,res3, res4,res5, res6;
+ 
   rumboot_printf("Hello npe_regs\n");
- // na_rst(NPE_BASE);
-  
- // iowrite32(0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
-  
+ 
   temp = ioread32(NPE_BASE + NA_VPE_BASE + NU_VPE + NU_VPE_DEV_ID);
   if(temp != 0xabcd2021) {
     rumboot_printf("Unexpected NU_VPE_DEV_ID=0x%x\n",temp);
@@ -350,7 +422,28 @@ int main() {
 	return 1;
   }
   {rumboot_printf("Test state write-read ZEROs passed\n");} 
-   res = res1 || res2 || res3;
+ res4 = nu_cmd_dma_regs_check(NPE_BASE + NA_CU_REGS_BASE);
+ if (res4 !=0)
+ {rumboot_printf("Test state CMD_DMA after reset not passed\n");
+	return 1;
+  }
+ {rumboot_printf("Test state CMD_DMA after reset passed\n");}
+  
+  res5 = nu_cmd_wr_rd_dma_regs_check((NPE_BASE + NA_CU_REGS_BASE),0xFFFFFFFF);
+   if (res5 !=0)
+  {rumboot_printf("Test state CMD_DMA after reset not passed\n");
+	return 1;
+ }
+ {rumboot_printf("Test state write-read ONES  CMD_DMA after reset passed\n");}
+  
+  res5 = nu_cmd_wr_rd_dma_regs_check((NPE_BASE + NA_CU_REGS_BASE),0xFFFFFFFF);
+   if (res6 !=0)
+  {rumboot_printf("Test state CMD_DMA after reset not passed\n");
+	return 1;
+ }
+ {rumboot_printf("Test state write-read ZEROs  CMD_DMA after reset passed\n");}
+   
+   res = res1 || res2 || res3 || res4 || res5 || res6;
    
   iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
   iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
