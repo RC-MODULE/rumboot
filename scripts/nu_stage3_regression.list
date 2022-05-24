@@ -143,6 +143,4 @@
   Test #1604: rumboot-native-Production-host-vpe_ppe_w255_255_k16_16_h2_2_BOX_8b
   Test #1645: rumboot-native-Production-host-vpe_ppe_w256_256_k16_16_h1_1_BOX_16b
   Test #1675: rumboot-native-Production-host-vpe_ppe_w256_256_k256_288_h1_1_LIN_16b
-  Test #1713: rumboot-native-Production-host-vpe_ppe_w256_288_k128_128_h2_16_BOX_16b
-  Test #1719: rumboot-native-Production-host-vpe_ppe_w256_288_k256_288_h2_16_LIN_16b
 
