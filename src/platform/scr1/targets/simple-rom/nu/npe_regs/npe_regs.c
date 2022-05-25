@@ -262,7 +262,7 @@ int nu_cmd_dma_regs_check(uintptr_t base) {
 											//rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 											}									
 	else  if   (i == CMD_DMA_AXI_PARAM)   	{res = !((res & 0x00020000) == dflt_cmd_dma_axi_param);
-										    rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+										   // rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 											}	
 	else  if  ((i == CMD_DMA_INT_STATUS) || (i == CMD_DMA_INT_RESET) ||
 			   (i == CMD_DMA_INT_SET)    || (i == CMD_DMA_INT_MASK))
@@ -444,6 +444,7 @@ int main() {
  {rumboot_printf("Test state CMD_DMA after reset not passed\n");
  return 1;
   }
+ /* 
  {rumboot_printf("Test state CMD_DMA after reset passed\n");} 
   res5 = nu_cmd_wr_rd_dma_regs_check((NPE_BASE + NA_CU_REGS_BASE),0xFFFFFFFF);
  
@@ -459,7 +460,7 @@ int main() {
 	return 1;
  }
  {rumboot_printf("Test state write-read ZEROs  CMD_DMA after reset passed\n");}
-   
+   */
    res = res1 || res2 || res3 || res4 /* || res5 || res6 */;
    
   iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
