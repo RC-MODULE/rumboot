@@ -303,7 +303,7 @@ int main() {
     uint32_t cycles_l = cycles & 0xFFFFFFFF;
     uint32_t cycles_h = cycles >> 32;
     rumboot_printf("This iteration worked ");
-    if (cycles_l>0) rumboot_printf("2^32 * %d + ", cycles_h);
+    if (cycles_h>0) rumboot_printf("2^32 * %d + ", cycles_h);
     rumboot_printf("%d cycles\n", cycles_l);
 
       // Point At The Next Iteration Data
