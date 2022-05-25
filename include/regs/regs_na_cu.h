@@ -35,6 +35,7 @@
 #define NA_INT_AXI_MASK        	0x06C
 
 #define CMD_DMA_CFG             0x080
+#define CMD_DMA_POINTER         0x084
 #define CMD_DMA_AXI_PARAM       0x08C
 #define CMD_DMA_INT_STATUS      0x090
 #define CMD_DMA_INT_RESET       0x094
