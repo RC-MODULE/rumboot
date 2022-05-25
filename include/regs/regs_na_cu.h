@@ -33,7 +33,9 @@
 #define NA_INT_AXI_RESET       	0x064
 #define NA_INT_AXI_SET         	0x068
 #define NA_INT_AXI_MASK        	0x06C
-
+#define NA_TIMER_CTRL           0x070
+#define NA_TIMER_L              0x074
+#define NA_TIMER_H              0x078
 #define CMD_DMA_CFG             0x080
 #define CMD_DMA_POINTER         0x084
 #define CMD_DMA_AXI_PARAM       0x08C

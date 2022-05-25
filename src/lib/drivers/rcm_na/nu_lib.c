@@ -3009,6 +3009,25 @@ void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   iowrite32(temp,base + NA_UNITS_MODE);
 }
 
+void na_cu_timer_reset_and_start(uintptr_t base, bool timer_vpe, bool timer_ppe) {
+  iowrite32(1<<1,base + NA_TIMER_CTRL);
+  char *dev;
+  if (timer_vpe) dev = "VPE WDMA";
+  if (timer_ppe) dev = "PPE WDMA";
+  if (timer_vpe & timer_ppe) dev = "VPE WDMA or PPE WDMA";
+  rumboot_printf("NA_CU_TIMER was reset and will enabled");
+  if (timer_vpe | timer_ppe)
+    rumboot_printf(" while %s won't stop it", dev);
+  rumboot_printf("\n");
+  uint32_t temp;
+  temp = (timer_ppe<<3) | (timer_vpe<<2) | (1<<0);
+  iowrite32(temp,base + NA_TIMER_CTRL);
+}
+
+uint64_t na_cu_timer_read(uintptr_t base) {
+   return 0x0000000100000000*ioread32(base + NA_TIMER_H) + ioread32(base + NA_TIMER_L);
+}
+
 NPEReg* nu_mpe_add_diff_reg_map(NPEReg* cfg_diff_ptr,  uint32_t* curr_cfg_ptr, uint32_t* next_cfg_ptr) {
   rumboot_printf("MPE diff reg map..\n");
   // MPE_RDMA_D
