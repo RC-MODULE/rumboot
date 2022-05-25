@@ -13,6 +13,10 @@
 #include <devices/rcm_na/nu_lib.h> 
 #include <devices/rcm_na/nu_test_lib.h> 
 
+#ifdef RUMBOOT_PLATFORM_SCR1
+#include <platform/devices.h>
+#endif
+
 int nu_get_heap_id() {
 #ifdef RUMBOOT_NATIVE
   return 2; 
@@ -25,6 +29,17 @@ int nu_get_add_heap_id() {
   return 2; 
 #else
   return 2; 
+#endif
+}
+
+  // This Should Return Time In Nanoseconds
+uint32_t nu_get_uptime_ns() {
+  // On SCR1 Platform Is Made By Direct Timer Request (Not Through rumboot_platform_get_uptime)
+#ifdef RUMBOOT_PLATFORM_SCR1
+  return ioread32(SCR1_TIMER_BASE + 8) * 10;
+#else
+  // On Other Platforms
+  return rumboot_platform_get_uptime() * 1000;
 #endif
 }
 

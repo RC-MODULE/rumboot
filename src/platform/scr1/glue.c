@@ -15,6 +15,7 @@
 #include <devices/irq-proxy-gic-cdnpcie.h>
 #include <rumboot/irq.h>
 #include <stdbool.h>
+#include <platform/devices.h>
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
@@ -29,12 +30,12 @@ uint32_t rumboot_virt_to_dma(volatile const void *addr)
 }
 
 /* Platform-specific glue */
-#define TIMER_BASE 0x00490000
+#define TIMER_BASE SCR1_TIMER_BASE
 uint32_t rumboot_platform_get_uptime()
 {
         //TODO: Figure out proper clock
         //return (0xFFFFFFFF - sp804_get_value(DIT_Base, 1)) / 8.32;
-        return ioread32(TIMER_BASE + 0x8);
+        return ioread32(TIMER_BASE + 0x8) / 100;
 }
 
 extern char rumboot_IRAM_heap_start;
