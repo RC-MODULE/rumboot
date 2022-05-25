@@ -259,7 +259,7 @@ macro(ADD_MPE_DLTN_TEST CONF)
   foreach(Dy RANGE 1 9)
     foreach(Dx RANGE 1 9)
 
-      set (NA_RM_KEYS "${NA_RM_KEYS} --it_nmb ${NU_IT_NMB} --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1 --set_Dr 1 --Dr ${Dy} --set_Ds 1 --Ds ${Dx}")
+      set (NA_RM_KEYS "${NA_RM_KEYS} --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1 --set_Dr 1 --Dr ${Dy} --set_Ds 1 --Ds ${Dx}")
 
       ADD_NPE_MPE_VPE_TEST_SEED(${CONF} npe_mpe_dltn_Dr${Dy}_Ds${Dx} main_mpe_rnd_IN_INT16 NO_TIGHT BITWISE ${NU_SEED})
 
