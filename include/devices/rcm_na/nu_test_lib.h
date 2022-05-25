@@ -23,6 +23,7 @@
 int nu_get_heap_id();
 int nu_get_add_heap_id();
 uintptr_t nu_virt_to_dma(volatile const void *addr);
+uint32_t nu_get_uptime_ns();
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);
 int nu_vpe_load_array_of_cfg(int heap_id, ConfigVPE* array_of_cfg, int num) ;
 int nu_vpe_load_cfg_by_tag(int heap_id, ConfigVPE* cfg, char* cfg_file_tag);
