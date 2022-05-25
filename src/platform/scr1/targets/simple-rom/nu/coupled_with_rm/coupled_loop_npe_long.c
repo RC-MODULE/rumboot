@@ -272,6 +272,7 @@ int main() {
       nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     }
     
+    na_cu_timer_reset_and_start(NPE_BASE+NA_CU_REGS_BASE,!(iteration_desc.PPE_ENABLED==Enable_En),(iteration_desc.PPE_ENABLED==Enable_En));
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
     
@@ -297,6 +298,13 @@ int main() {
 
       return 1;
     }
+
+    uint64_t cycles = na_cu_timer_read(NPE_BASE+NA_CU_REGS_BASE);
+    uint32_t cycles_l = cycles & 0xFFFFFFFF;
+    uint32_t cycles_h = cycles >> 32;
+    rumboot_printf("This iteration worked ");
+    if (cycles_l>0) rumboot_printf("2^32 * %d + ", cycles_h);
+    rumboot_printf("%d cycles\n", cycles_l);
 
       // Point At The Next Iteration Data
     nu_npe_iterate_desc(&iteration_desc);

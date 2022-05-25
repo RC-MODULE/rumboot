@@ -673,7 +673,8 @@ void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 
 void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask);
-
+void na_cu_timer_reset_and_start(uintptr_t base, bool timer_vpe, bool timer_ppe);
+uint64_t na_cu_timer_read(uintptr_t base);
 
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_wr_main_channel(uintptr_t dma_base);
