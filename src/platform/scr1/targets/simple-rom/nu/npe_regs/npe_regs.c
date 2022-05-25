@@ -255,7 +255,8 @@ int nu_cmd_dma_regs_check(uintptr_t base) {
    res = ioread32(base+i);		
 
 	if 		   (i == CMD_DMA_CFG)         	{res  = !((res & dflt_cmd_cfg_mask) == 0x0);
-										    //rumboot_printf(" reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));}	
+										    //rumboot_printf(" reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+											}	
 	else  if  ((i == CMD_DMA_POINTER) || (i == CMD_DMA_BASE_ADDR))
 											{res  =!(res  == 0x0);
 											//rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
