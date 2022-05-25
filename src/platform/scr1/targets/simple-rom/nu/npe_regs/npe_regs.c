@@ -439,12 +439,12 @@ int main() {
   {rumboot_printf("Test state write-read ZEROs passed\n");} 
 
  res4 = nu_cmd_dma_regs_check(NPE_BASE + NA_CU_REGS_BASE);
- 
+/* 
  if (res4 !=0)
  {rumboot_printf("Test state CMD_DMA after reset not passed\n");
  return 1;
   }
- /* 
+ 
  {rumboot_printf("Test state CMD_DMA after reset passed\n");} 
   res5 = nu_cmd_wr_rd_dma_regs_check((NPE_BASE + NA_CU_REGS_BASE),0xFFFFFFFF);
  
@@ -461,7 +461,7 @@ int main() {
  }
  {rumboot_printf("Test state write-read ZEROs  CMD_DMA after reset passed\n");}
    */
-   res = res1 || res2 || res3 || res4 /* || res5 || res6 */;
+   res = res1 || res2 || res3 /* || res4  || res5 || res6 */;
    
   iowrite32(0xFFEFFFFF,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_RESET);
   iowrite32(0x7F,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
