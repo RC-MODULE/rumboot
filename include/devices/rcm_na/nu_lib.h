@@ -670,6 +670,8 @@ void nu_na_vpe_wait_marked_cube_complete(uintptr_t npe_base);
 
 void nu_mpe_wait_ready(uintptr_t base);
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg);
+void nu_mpe_run_dmas_only(uintptr_t mpe_base, ConfigMPE* cfg);
+void nu_mpe_run_ma_only(uintptr_t mpe_base, ConfigMPE* cfg);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 
 void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask);

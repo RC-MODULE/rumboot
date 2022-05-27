@@ -280,6 +280,8 @@ endmacro()
 macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
   if("${comparer}" STREQUAL "EPS")
     set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+  elseif("${comparer}" STREQUAL "MPE_PERFORMANCE")
+    set(COMPARER_OPT -DMPE_CFG_PERFORMANCE=1)
   else()
     set(COMPARER_OPT)
   endif()
@@ -1330,13 +1332,7 @@ macro(na_testsuite_add_npe_tests CONF)
       #ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
           ## NOT EXPERIMENT_STAGE_2_SUB_2
 
-    add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME MPE_PERFORMANCE
-      FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
-      PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
+    ADD_NPE_MPE_VPE_TEST(${CONF} MPE_PERFORMANCE main_mpe_performance NOT_MAKE_TIGHT MPE_PERFORMANCE)
     
     ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
     ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
