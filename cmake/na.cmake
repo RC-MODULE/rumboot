@@ -1897,6 +1897,56 @@ macro(na_testsuite_add_vpe_tests CONF)
 
 endmacro()
 
+macro(ADD_PPE_RNDM CONF rm_bin_name hwc_min hwc_max)
+
+  if(NOT DEFINED NU_SEED)
+    set(NU_SEED 1)
+  endif()
+
+  if(NOT DEFINED NU_IT_NMB)
+    set(NU_IT_NMB 32)
+  endif()
+
+  if ("${rm_bin_name}" MATCHES "main_vpe_ppe")
+    set (src_c "scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c")
+  elseif("${rm_bin_name}" MATCHES "main_ppe")
+    set (src_c "scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c")
+  else()
+    message(FATAL_ERROR "Undefined source file name ${rm_bin_name}")
+  endif()
+
+  if ("${rm_bin_name}" MATCHES "BOX")
+    set (LBS "BOX")
+  elseif ("${rm_bin_name}" MATCHES "SPL")
+    set (LBS "LINorSPL")
+  else()
+    set (LBS "LIN")
+  endif()
+
+  set (name "${rm_bin_name}_${hwc_min}_${hwc_max}_${NU_SEED}")
+
+  set (h_min_max "--h_min ${hwc_min} --h_max ${hwc_max}")
+  set (w_min_max "--w_min ${hwc_min} --w_max ${hwc_max}")
+  set (c_min_max "--c_min ${hwc_min} --c_max ${hwc_max}")
+
+  set (RM_CFG_PARAM "${h_min_max} ${w_min_max} ${c_min_max}")
+
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}
+    FILES ${src_c}
+
+    PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
+
+    CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
+endmacro()
+
 macro(na_testsuite_add_ppe_tests CONF)
 
   if(NOT DEFINED NU_SEED)
@@ -2024,5 +2074,19 @@ macro(na_testsuite_add_ppe_tests CONF)
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
     ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_var 0)
   endif() # NA_TESTGROUP VPE_PPE
+
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_RNDM")
+    set (hwc_min 1)
+    set (hwc_max 512)
+
+    foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
+      ADD_PPE_RNDM(${CONF} main_ppe_${in_macro} ${hwc_min} ${hwc_max})
+      #ADD_PPE_RNDM(${CONF} main_ppe_${in_macro}_SPL ${hwc_min} ${hwc_max})
+
+      ADD_PPE_RNDM(${CONF} main_vpe_ppe_${in_macro} ${hwc_min} ${hwc_max})
+      ADD_PPE_RNDM(${CONF} main_vpe_ppe_${in_macro}_BOX ${hwc_min} ${hwc_max})
+    endforeach()
+
+  endif() # NA_TESTGROUP PPE_RNDM
 
 endmacro()
