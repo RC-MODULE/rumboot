@@ -1941,6 +1941,17 @@ void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICMW);
 }
 
+void nu_mpe_run_dmas_only(uintptr_t mpe_base, ConfigMPE* cfg) {
+  rumboot_printf("Start MPE_DMAs...\n");
+  iowrite32(cfg->dma_d_config.depend_mask | (1<<0), mpe_base + MPE_RDMA_D_BASE + DMA_START);
+  iowrite32(cfg->dma_w_config.depend_mask | (1<<0), mpe_base + MPE_RDMA_W_BASE + DMA_START);
+}
+
+void nu_mpe_run_ma_only(uintptr_t mpe_base, ConfigMPE* cfg) {
+  rumboot_printf("Start MPE_MA...\n");
+  iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICMW);
+}
+
 int  nu_mpe_run_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
   uint32_t offset;
   uint32_t data;

@@ -280,6 +280,8 @@ endmacro()
 macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_value)
   if("${comparer}" STREQUAL "EPS")
     set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
+  elseif("${comparer}" STREQUAL "MPE_PERFORMANCE")
+    set(COMPARER_OPT -DMPE_CFG_PERFORMANCE=1)
   else()
     set(COMPARER_OPT)
   endif()
@@ -1338,13 +1340,7 @@ macro(na_testsuite_add_npe_tests CONF)
       #ADD_MPE_CONV_TEST(${CONF} MPE_2 TRUNC16)
           ## NOT EXPERIMENT_STAGE_2_SUB_2
 
-    add_rumboot_target(
-      CONFIGURATION ${CONF}
-      NAME MPE_PERFORMANCE
-      FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_performance.c
-      PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/MPE_PERFORMANCE/mpe_arrays.txt
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
+    ADD_NPE_MPE_VPE_TEST(${CONF} MPE_PERFORMANCE main_mpe_performance NOT_MAKE_TIGHT MPE_PERFORMANCE)
     
     ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
     ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
@@ -1536,12 +1532,18 @@ macro(na_testsuite_add_npe_tests CONF)
     endforeach()
   endif()
 
-  macro(ADD_NKBVS_FROM_BINARY_TEST CONF label c_program)
-    set(NKBVS_TEST_DIR /home/nasonov/lava/rm/nkbvs_data)
+  macro(ADD_NKBVS_FROM_BINARY_TEST CONF label c_program comparer)
+    if("${comparer}" STREQUAL "WITH_PPE")
+      set(COMPARER_OPT)
+    else()
+      set(COMPARER_OPT -DDONT_USE_PPE=1)
+    endif()
+    set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME nkbvs_${label}
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/${c_program}
+      CFLAGS ${COMPARER_OPT}
       PREPCMD 
         cp ${NKBVS_TEST_DIR}/${label}/*.bin* . &&
         ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE} &&
@@ -1556,10 +1558,12 @@ macro(na_testsuite_add_npe_tests CONF)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_2 main_nkbvs_2 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_3 main_nkbvs_3 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_4 main_nkbvs_4 NOT_MAKE_TIGHT BITWISE)
-    #ADD_NKBVS_FROM_BINARY_TEST(${CONF} 5 coupled_loop_npe_long.c)
-    ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_5 main_nkbvs_5 NOT_MAKE_TIGHT BITWISE)
-    ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_6 main_nkbvs_6 NOT_MAKE_TIGHT BITWISE)
-    ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_7 main_nkbvs_7 NOT_MAKE_TIGHT BITWISE)
+    ADD_NKBVS_FROM_BINARY_TEST(${CONF} 5 coupled_loop_npe_long.c WITH_PPE)
+    #ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_5 main_nkbvs_5 NOT_MAKE_TIGHT BITWISE)
+    ADD_NKBVS_FROM_BINARY_TEST(${CONF} 6 coupled_loop_npe_long.c WITH_PPE)
+    #ADD_NPE_COMPLEX_TEST(${CONF} nkbvs_6 main_nkbvs_6 NOT_MAKE_TIGHT BITWISE)
+    ADD_NKBVS_FROM_BINARY_TEST(${CONF} 7 coupled_loop_npe_long.c WO_PPE)
+    #ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_7 main_nkbvs_7 NOT_MAKE_TIGHT BITWISE)
 
     ADD_NKBVS_TEST(${CONF} 2d_deconv_1 /home/v.gordeev/na_arrays/nkbvs_2d_deconv_1 No 32 421 419)
 
