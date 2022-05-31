@@ -386,8 +386,8 @@ return res;}
 		{rumboot_printf("Unexpected NA_INT_UNITS_SET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_SET));
 		return 1;}
 	
-	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
-	if ((data & 0xFFEFFFFF)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK)& 0xFFEFFFFF))	
+	iowrite32(/*data*/0x00000000,NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);
+	if ((/*data & 0xFFEFFFFF*/0x00000000)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK)& 0xFFEFFFFF))	
 		{rumboot_printf("Unexpected NA_INT_UNITS_MASK =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 		return 1;}
 	
