@@ -119,7 +119,7 @@ file(GLOB PLATFORM_SOURCES
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(RUMBOOT_COMMON_FLAGS "-D__RVE_EXT -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las -march=rv32imc -mabi=ilp32")
-    SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8 -DRUMBOOT_PLATFORM_SCR1=1")
+    SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -Wno-array-bounds -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8 -DRUMBOOT_PLATFORM_SCR1=1")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0x00 --pad-to 16384)
     SET(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections")
