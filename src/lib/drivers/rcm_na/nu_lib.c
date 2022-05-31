@@ -2065,7 +2065,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   int Wout_splt, Win_splt, Wout_splt_st, Win_splt_st, Win_offset;
 
-  if (fm==0x4 || fm==0x5) {
+  if (fm==0x4) {
     Wout_splt = Buffer_md/(rndup_Kh_d_Sh*rdctn);
 
     Win_splt = Kw>Sw ? (Wout_splt - 1)*Sw + Kw : Wout_splt*Sw;
@@ -2195,7 +2195,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->wBffY  = 0x0;
     cfg_reg->wBffZ  = 0x0;
   }
-  else if (fm&0x2 && !(fm&0x4)) { // boxed limitated
+  else if (fm&0x2 && !(fm&0x4)) { // boxed
     cfg_reg->wIstX  = 0x80-1;
     cfg_reg->wIxtX  = 0x80-1;
     cfg_reg->wIffX  = 0x0   ;

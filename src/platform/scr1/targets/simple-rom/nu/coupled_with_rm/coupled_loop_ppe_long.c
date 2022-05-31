@@ -26,7 +26,7 @@ void nu_ppe_decide_dma_config(
   cfg_reg->wOpM = flying_mode << 8;
 
   // OP_MODE[29] reserved bit is used
-  if (max_red) cfg_reg->wOpM = cfg_reg->wOpM | 1<<29 | max_red << 28;
+  if (max_red) cfg_reg->wOpM = cfg_reg->wOpM | max_red << 28;
 
   nu_ppe_decide_dma_config_trivial(cfg, res_metrics, cfg_reg);
 }
@@ -60,10 +60,6 @@ int main() {
   #endif
   #ifdef BOX
     lbs = 0x1;
-  #endif
-  #ifdef LBS_NOT_SUPPORTED
-  rumboot_printf("ERROR: Not supported path mode for this test choosen\n");
-  return -1;
   #endif
   #ifdef SPL
     lbs = 0x2;

@@ -663,6 +663,14 @@ endmacro()
 
 macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
 
+  if(NOT DEFINED NU_SEED)
+    set(NU_SEED 1)
+  endif()
+
+  if(NOT DEFINED NU_IT_NMB)
+    set(NU_IT_NMB 32)
+  endif()
+
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
@@ -1979,13 +1987,17 @@ macro(na_testsuite_add_ppe_tests CONF)
     endforeach()
   endforeach()
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
-
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_LA")
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME PPE_1
       FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
     )
+
+    ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
+  endif() # NA_TESTGROUP PPE_LA
+
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
 
     ADD_PPE_TESTS(${CONF} ppe_i8_max_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_max})
     ADD_PPE_TESTS(${CONF} ppe_i16_max_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_max})
@@ -1999,7 +2011,6 @@ macro(na_testsuite_add_ppe_tests CONF)
     ADD_PPE_TESTS(${CONF} ppe_i16_avg_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_avg})
     ADD_PPE_TESTS(${CONF} ppe_fp16_avg_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-    ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
   endif() # NA_TESTGROUP PPE_BASE
 
   if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")
