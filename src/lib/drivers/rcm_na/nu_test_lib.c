@@ -19,7 +19,7 @@
 
 int nu_get_heap_id() {
 #ifdef RUMBOOT_NATIVE
-  return 2; 
+  return 1; 
 #else
   return 1; 
 #endif
