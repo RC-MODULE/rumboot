@@ -298,31 +298,32 @@ return res;}
     else if   (i == CMD_DMA_AXI_PARAM) 
          {iowrite32(data,base+i); 
 		res = !(( ioread32(base+i) & 0x0F07730F) == dflt_cmd_dma_axi_param);
-		 // rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+		//  rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 		  }
 	
     else if  (i == CMD_DMA_INT_RESET) 
        {iowrite32(data,base+i); 		
        res  = !(( ioread32(base+i) & dflt_cmd_dma_int_mask) == 0x00000000);
-	   // rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+	  //  rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 		}
 
-    else if  (i == CMD_DMA_INT_SET)
-       {iowrite32(data,base+i); 		
-       res  = !(( ioread32(base+i) & dflt_cmd_dma_int_mask) == 0x00000000);
-	   // rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+   else if  (i == CMD_DMA_INT_MASK)
+       {iowrite32(0x00000000,base+i);
+ 		
+      res  = !(( ioread32(base+i) & dflt_cmd_dma_int_mask) == 0x00000000);	  
+		//rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 		}
  
-  else if  (i == CMD_DMA_INT_MASK)
+  else if  (i == CMD_DMA_INT_SET)
 	   {iowrite32(data,base+i); 										
-	   res =  !( ioread32(base+i)  == dflt_cmd_dma_int_mask);
-	  //  rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+	   res =  !( ioread32(base+i)  == /*dflt_cmd_dma_int_mask*/0x00000000);
+	   // rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 		}
 	 
  else  if  (i == CMD_DMA_PAGE_SIZE)
 	   {iowrite32(data,base+i); 	 
 	   res =  !(( ioread32(base+i) & dflt_cmd_dma_page_size) == dflt_cmd_dma_page_size);
-	  //  rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
+	    rumboot_printf("reg_addr 0x%x reg_val 0x%x\n", i, ioread32(base+i));
 		}
  
   // else  res = !(res == 0x0); 
