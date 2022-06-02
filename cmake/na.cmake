@@ -1466,7 +1466,7 @@ macro(na_testsuite_add_npe_tests CONF)
       ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE NO_TIGHT BITWISE) #BITWISE - Because it passes Yet
     endforeach()
 
-    ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
+    ADD_NPE_MPE_VPE_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
 
     ADD_NPE_COMPLEX_TEST_TIGHT(${CONF} npe_tight_complex main_npe_tight_complex MAKE_TIGHT BITWISE)
 	ADD_NPE_COMPLEX_TEST_RST (${CONF} npe_mpe_direct_ex_MPE_CFG_24_WITH_PPE main_mpe_direct_ex_MPE_CFG_24_WITH_PPE NO_TIGHT BITWISE)
