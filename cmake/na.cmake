@@ -1487,7 +1487,7 @@ macro(na_testsuite_add_npe_tests CONF)
   endif()
 
   if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY2")
-    foreach(iter_start RANGE 0 10800 100)
+    foreach(iter_start RANGE 0 10700 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP2_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP2_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
