@@ -1904,10 +1904,13 @@ macro(ADD_PPE_RNDM CONF rm_bin_name hwc_min hwc_max)
     set(NU_IT_NMB 32)
   endif()
 
+
   if ("${rm_bin_name}" MATCHES "main_vpe_ppe")
     set (src_c "scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c")
+    set (DataSrc "VPEtoPPE")
   elseif("${rm_bin_name}" MATCHES "main_ppe")
     set (src_c "scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_long.c")
+    set (DataSrc "MEMtoPPE")
   else()
     message(FATAL_ERROR "Undefined source file name ${rm_bin_name}")
   endif()
@@ -1935,7 +1938,7 @@ macro(ADD_PPE_RNDM CONF rm_bin_name hwc_min hwc_max)
 
     PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
 
-    CFLAGS -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+    CFLAGS -D${LBS} -D${DataSrc} -DDUT=${DUT_LETTER_QUOTED}
 
     IRUN_FLAGS ${NA_RM_PLUSARGS}
 

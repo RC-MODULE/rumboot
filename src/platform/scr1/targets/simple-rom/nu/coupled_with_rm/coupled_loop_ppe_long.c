@@ -41,12 +41,12 @@ int main() {
   int res;
   int skip;
 
-  uint32_t flying_mode, lbs, mv, max_red, ppe_clk_f;
+  uint32_t flying_mode, lbs, vpe_mem, max_red, ppe_clk_f;
   uint32_t ppe_swrst_en, setup_reg, mark_cube, resperr;
 
   flying_mode = 0x0;
   lbs         = 0x0;
-  mv          = 0x0;
+  vpe_mem     = 0x0;
   max_red     = 0x0;
 
   ppe_swrst_en= 0;
@@ -66,10 +66,10 @@ int main() {
   #endif
 
   #ifdef MEMtoPPE
-    mv = 0x0;
+    vpe_mem = 0x0;
   #endif
   #ifdef VPEtoPPE
-    mv = 0x1;
+    vpe_mem = 0x1;
   #endif
 
   #ifdef MAX_RED_0
@@ -79,7 +79,13 @@ int main() {
     max_red = 0x1<<1 | 0x1;
   #endif
 
-  flying_mode = ((lbs&0x3)<<1) | (mv&0x1);
+//  #ifdef LIN_SPL
+//    lbs = ;
+//    vpe_mem = ;
+//    max_red = ;
+//  #endif
+
+  flying_mode = ((lbs&0x3)<<1) | (vpe_mem&0x1);
 
   heap_id = nu_get_heap_id();
 
@@ -172,10 +178,10 @@ int main() {
 
     clk_cnt = rumboot_platform_get_uptime();
 
-    #ifdef MEMtoPPE
+    if (!vpe_mem) {
       iteration_desc.cfg_reg->rOpEn  = iteration_desc.cfg_reg->rOpEn | 0x1;
       nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg); // rdma start
-    #endif
+    }
 
     #ifdef PPE_PAUSE
       nu_na_ppe_pause_set(NPE_BASE+NA_CU_REGS_BASE);
@@ -207,9 +213,7 @@ int main() {
 
       clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 
-      #ifdef MEMtoPPE
-        nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // wait rdma complete
-      #endif
+      if (!vpe_mem) nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // rdma finish
 
       nu_ppe_wait_complete(MY_PPE_REGS_BASE);
 
