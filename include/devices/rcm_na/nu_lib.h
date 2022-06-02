@@ -617,6 +617,9 @@ void nu_ppe_print_config(ConfigPPE* cfg);
 
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
 void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg);
+
+int rndup_Kh_d_Sh_calc (int Kh, int Sh);
+int Wout_splt_calc (int Kh, int Sh, int rdctn);
 void nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg);
 
 uint32_t nu_ppe_status_done (uintptr_t wbase);

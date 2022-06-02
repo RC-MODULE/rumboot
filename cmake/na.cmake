@@ -2083,7 +2083,7 @@ macro(na_testsuite_add_ppe_tests CONF)
 
     foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
       ADD_PPE_RNDM(${CONF} main_ppe_${in_macro} ${hwc_min} ${hwc_max})
-      #ADD_PPE_RNDM(${CONF} main_ppe_${in_macro}_SPL ${hwc_min} ${hwc_max})
+      ADD_PPE_RNDM(${CONF} main_ppe_${in_macro}_SPL ${hwc_min} ${hwc_max})
 
       ADD_PPE_RNDM(${CONF} main_vpe_ppe_${in_macro} ${hwc_min} ${hwc_max})
       ADD_PPE_RNDM(${CONF} main_vpe_ppe_${in_macro}_BOX ${hwc_min} ${hwc_max})

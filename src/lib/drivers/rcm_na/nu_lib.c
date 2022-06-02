@@ -2018,6 +2018,36 @@ void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
   nu_cpdmac_rcv512_wait_complete(dma_base);
 }
 
+int rndup_Kh_d_Sh_calc (int Kh, int Sh) {
+  int Kh_d_Sh = 0;
+  int rndup_Kh_d_Sh = 0;
+
+  if (Sh>0 && Kh>0) {
+    Kh_d_Sh = (Kh-1)%Sh == 0 ? (Kh-1)/Sh : (Kh-1)/Sh + 1; // Kh/Sh
+
+    rndup_Kh_d_Sh = Kh_d_Sh == 0 || Kh_d_Sh == 1 ? 1 :
+                    Kh_d_Sh == 2 ? 2 :
+                    Kh_d_Sh == 3 || Kh_d_Sh == 4 ? 4 :
+                    Kh_d_Sh > 4 ? 8 : 8
+    ;
+  }
+  else rumboot_printf("Error:%s: Kh<=0 || Sh<=0\n", __func__);
+
+  return rndup_Kh_d_Sh;
+}
+
+int Wout_splt_calc (int Kh, int Sh, int rdctn) {
+  int Wout_splt, rndup_Kh_d_Sh;
+  int Buffer_md = 2048;
+
+  rndup_Kh_d_Sh = rndup_Kh_d_Sh_calc(Kh, Sh);
+
+  if (rndup_Kh_d_Sh>0 && rdctn>0) Wout_splt = Buffer_md/(rndup_Kh_d_Sh*rdctn);
+  else rumboot_printf("Error:%s: rndup_Kh_d_Sh<=0 || rdctn<=0\n", __func__);
+
+  return Wout_splt;
+}
+
 void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
 
   uint32_t dt   = cfg->dt   ;
@@ -2060,24 +2090,12 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   int frgli = Ci_s % frgs; // input fragment last size
   int frglo = Co_s % frgs; // output fragment last size
 
-  int Kh_d_Sh, rndup_Kh_d_Sh;
-
-  int Buffer_md = 2048;
   int HWC_MAX = 0x1fff;
-
-  if (Sh>0 && Kh>0) Kh_d_Sh = (Kh-1)%Sh == 0 ? (Kh-1)/Sh : (Kh-1)/Sh + 1; // Kh/Sh
-  else rumboot_printf("Error:nu_ppe_decide_dma_config_trivial: cfg->Sh<=0 || cfg->Kh<=0\n");
-
-  rndup_Kh_d_Sh = Kh_d_Sh == 0 || Kh_d_Sh == 1 ? 1 :
-                  Kh_d_Sh == 2 ? 2 :
-                  Kh_d_Sh == 3 || Kh_d_Sh == 4 ? 4 :
-                  Kh_d_Sh > 4 ? 8 : 8
-  ;
 
   int Wout_splt, Win_splt, Wout_splt_st, Win_splt_st, Win_offset;
 
   if (fm==0x4) {
-    Wout_splt = Buffer_md/(rndup_Kh_d_Sh*rdctn);
+    Wout_splt = Wout_splt_calc(Kh, Sh, rdctn);
 
     Win_splt = Kw>Sw ? (Wout_splt - 1)*Sw + Kw : Wout_splt*Sw;
 

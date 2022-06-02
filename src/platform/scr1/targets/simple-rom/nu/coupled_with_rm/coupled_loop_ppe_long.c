@@ -79,14 +79,6 @@ int main() {
     max_red = 0x1<<1 | 0x1;
   #endif
 
-//  #ifdef LIN_SPL
-//    lbs = ;
-//    vpe_mem = ;
-//    max_red = ;
-//  #endif
-
-  flying_mode = ((lbs&0x3)<<1) | (vpe_mem&0x1);
-
   heap_id = nu_get_heap_id();
 
   rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
@@ -101,6 +93,37 @@ int main() {
   res = nu_ppe_place_arrays(heap_id,&test_desc,it_nmb);
 
   if (!res) nu_ppe_init_iteration_desc(&test_desc,&iteration_desc);
+
+  #ifdef LIN_SPL
+    int Wout = iteration_desc.res_metrics->W;
+    int Wout_splt_1 = Wout_splt_calc(iteration_desc.cfg->Kh, iteration_desc.cfg->Sh, 0x1);
+    int Wout_splt_2 = Wout_splt_calc(iteration_desc.cfg->Kh, iteration_desc.cfg->Sh, 0x2);
+
+    //perf 128b/clk; rdata 128b
+    //8*rdctn*16b; 16*rdctn*8b
+    //iteration_desc.cfg->C
+
+    if (Wout > Wout_splt_1) { // SPL
+      lbs = 0x2;
+      max_red = 0x1<<1 | 0x0; // rdctn 1 || rdctn 2
+
+      rumboot_printf("LIN_SPL SPL rdctn 1\n");
+    }
+    else if (Wout > Wout_splt_2) {  // LIN
+      lbs = 0x0;
+      max_red = 0x1<<1 | 0x0; // rdctn 1
+
+      rumboot_printf("LIN_SPL LIN rdctn 1\n");
+    }
+    else {  // LIN
+      lbs = 0x0;
+      max_red = 0x1<<1 | 0x1; // rdctn 1 || rdctn 2
+
+      rumboot_printf("LIN_SPL LIN rdctn 2\n");
+    }
+
+    vpe_mem = 0x0;
+  #endif
 
   #ifndef SKIP_ITERATIONS
     skip=0;
@@ -140,6 +163,8 @@ int main() {
 
   nu_ppe_wdma_err_mask(MY_PPE_REGS_BASE);
   nu_ppe_rdma_err_mask(MY_PPE_REGS_BASE);
+
+  flying_mode = ((lbs&0x3)<<1) | (vpe_mem&0x1);
 
   for (perf_avg=0, i=skip; i<it_nmb && !res; i++) {
     //rumboot_malloc_update_heaps(1);
