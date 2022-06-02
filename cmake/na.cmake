@@ -1320,7 +1320,9 @@ macro(na_testsuite_add_npe_tests CONF)
     
     foreach(geometry IN ITEMS GEOMETRY_1 GEOMETRY_2 GEOMETRY_3 GEOMETRY_4 GEOMETRY_5 GEOMETRY_6 GEOMETRY_7)
      foreach(data IN ITEMS INT8 INT16 FP16)
-      ADD_NPE_MPE_BATCH_TEST(${CONF} MPE_VPE_LONG_BATCH ${data}_${geometry} main_npe_batch_${data}_${geometry})
+      foreach(batch_size RANGE 1 31)
+       ADD_NPE_MPE_BATCH_TEST(${CONF} MPE_VPE_LONG_BATCH ${batch_size}_${data}_${geometry} main_npe_batch_${batch_size}_${data}_${geometry})
+      endforeach()
      endforeach()
     endforeach()
     
@@ -1466,7 +1468,7 @@ macro(na_testsuite_add_npe_tests CONF)
       ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE NO_TIGHT BITWISE) #BITWISE - Because it passes Yet
     endforeach()
 
-    ADD_NPE_COMPLEX_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
+    ADD_NPE_MPE_VPE_TEST(${CONF} npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16 MAKE_TIGHT BITWISE)
 
     ADD_NPE_COMPLEX_TEST_TIGHT(${CONF} npe_tight_complex main_npe_tight_complex MAKE_TIGHT BITWISE)
 	ADD_NPE_COMPLEX_TEST_RST (${CONF} npe_mpe_direct_ex_MPE_CFG_24_WITH_PPE main_mpe_direct_ex_MPE_CFG_24_WITH_PPE NO_TIGHT BITWISE)
@@ -1487,7 +1489,7 @@ macro(na_testsuite_add_npe_tests CONF)
   endif()
 
   if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY2")
-    foreach(iter_start RANGE 0 10800 100)
+    foreach(iter_start RANGE 0 10700 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP2_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP2_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
