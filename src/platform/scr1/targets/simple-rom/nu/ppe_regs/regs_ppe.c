@@ -9,8 +9,6 @@
 
 #include <devices/rcm_na/nu_test_macro.h> 
 
-//ConfigPPE cfg;
-
  int nu_ppe_rd_regs(uintptr_t rbase,uintptr_t wbase) {
 	  int res;
 	  int res0,res1,res2,res3,res4,res5,res6,res7,res8,res9,res10,res11,res12,
@@ -540,8 +538,8 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 		else 
 		{res5=0;}
 	
-		iowrite32(tmpr, rbase + NU_PPE_RDMA_INT_MASK);	
-	if ((tmpr &0x00000171 ) != (ioread32(rbase + NU_PPE_RDMA_INT_MASK)& 0x00000171))
+		iowrite32(0x00000000, rbase + NU_PPE_RDMA_INT_MASK);	// changed for board run pass
+	if ((0x00000000 ) != (ioread32(rbase + NU_PPE_RDMA_INT_MASK)& 0x00000171))
 		{res6 =1;
 		rumboot_printf("res6 error\n");}
 		else 

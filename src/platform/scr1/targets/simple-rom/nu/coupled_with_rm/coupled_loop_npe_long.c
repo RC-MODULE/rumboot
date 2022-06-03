@@ -255,8 +255,8 @@ int main() {
 #endif
 
     //nu_mpe_print_config(iteration_desc.cfg_mpe);
+    //nu_print_cube_metrics(&iteration_desc.mpe_out_metrics);
     //nu_vpe_print_config(iteration_desc.cfg_vpe);
-    // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
     //if(iteration_desc.PPE_ENABLED==Enable_En) {
     //  nu_ppe_print_config(iteration_desc.cfg_ppe);
     //  nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);

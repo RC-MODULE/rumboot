@@ -1376,6 +1376,7 @@ int out_dim_comp(int in_dim, int k_dim, int k_str) {
 }
 
 void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m) {
+  out_m->role = CubeRole_LastInBatch; // Just Init, Not Used
 
   int H ;
   int W ;
@@ -3363,6 +3364,39 @@ void print_part_of_memory(uint32_t* base, uint32_t start_shift, uint32_t end_shi
     rumboot_printf("  Address = %x, Value = %x\n", (cur_mem_ptr - base)<<2, *cur_mem_ptr);
   }
 }
+
+void nu_print_cube_role(CubeRole role, char* name) {
+  static char* RoleNames[] = {
+    "NotLastInBatch", 
+    "LastInBatch" 
+  };
+  
+  rumboot_printf("  %s = %s\n",name,RoleNames[(int) role]);
+}
+
+void nu_print_cube_metrics(CubeMetrics* metrics) {
+  rumboot_printf("CubeMetrics @ 0x%x\n",metrics);
+  rumboot_printf("  s = %d\n",metrics->s);
+  rumboot_printf("  H = %d\n",metrics->H);
+  rumboot_printf("  W = %d\n",metrics->W);
+  rumboot_printf("  C = %d\n",metrics->C);
+  nu_print_cube_role(metrics->role,"role");
+}
+void nu_print_warr_metrics(WarrMetrics* metrics) {
+  rumboot_printf("WarrMetrics @ 0x%x\n",metrics);
+  rumboot_printf("  s = %d\n",metrics->s);
+  rumboot_printf("  H = %d\n",metrics->H);
+  rumboot_printf("  W = %d\n",metrics->W);
+  rumboot_printf("  C = %d\n",metrics->C);
+  rumboot_printf("  K = %d\n",metrics->K);
+}
+void nu_print_vec_metrics(VectorMetrics* metrics) {
+  rumboot_printf("VectorMetrics @ 0x%x\n",metrics);
+  rumboot_printf("  s        = %d\n", metrics->s);
+  rumboot_printf("  vec_size = %d\n", metrics->vec_size);
+}
+
+
 
 void nu_npe_run(uintptr_t npe_base, NPEReg* cfg_diff_start_ptr, NPEReg* cfg_diff_end_ptr) {
   rumboot_printf("NA run..\n");
