@@ -1896,7 +1896,7 @@ macro(na_testsuite_add_vpe_tests CONF)
 
 endmacro()
 
-macro(ADD_PPE_RNDM CONF rm_bin_name hwc_min hwc_max)
+macro(ADD_PPE_RNDM CONF sfx rm_bin_name RM_CFG_PARAM)
 
   if(NOT DEFINED NU_SEED)
     set(NU_SEED 1)
@@ -1905,7 +1905,6 @@ macro(ADD_PPE_RNDM CONF rm_bin_name hwc_min hwc_max)
   if(NOT DEFINED NU_IT_NMB)
     set(NU_IT_NMB 32)
   endif()
-
 
   if ("${rm_bin_name}" MATCHES "main_vpe_ppe")
     set (src_c "scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe_long.c")
@@ -1925,13 +1924,7 @@ macro(ADD_PPE_RNDM CONF rm_bin_name hwc_min hwc_max)
     set (LBS "LIN")
   endif()
 
-  set (name "${rm_bin_name}_${hwc_min}_${hwc_max}_${NU_SEED}")
-
-  set (h_min_max "--h_min ${hwc_min} --h_max ${hwc_max}")
-  set (w_min_max "--w_min ${hwc_min} --w_max ${hwc_max}")
-  set (c_min_max "--c_min ${hwc_min} --c_max ${hwc_max}")
-
-  set (RM_CFG_PARAM "${h_min_max} ${w_min_max} ${c_min_max}")
+  set (name "${rm_bin_name}_${sfx}_${NU_SEED}")
 
   add_rumboot_target(
     CONFIGURATION ${CONF}
@@ -2081,12 +2074,46 @@ macro(na_testsuite_add_ppe_tests CONF)
     set (hwc_min 1)
     set (hwc_max 512)
 
-    foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
-      ADD_PPE_RNDM(${CONF} main_ppe_${in_macro} ${hwc_min} ${hwc_max})
-      ADD_PPE_RNDM(${CONF} main_ppe_${in_macro}_SPL ${hwc_min} ${hwc_max})
+    set (h_min_max "--h_min ${hwc_min} --h_max ${hwc_max}")
+    set (w_min_max "--w_min ${hwc_min} --w_max ${hwc_max}")
+    set (c_min_max "--c_min ${hwc_min} --c_max ${hwc_max}")
 
-      ADD_PPE_RNDM(${CONF} main_vpe_ppe_${in_macro} ${hwc_min} ${hwc_max})
-      ADD_PPE_RNDM(${CONF} main_vpe_ppe_${in_macro}_BOX ${hwc_min} ${hwc_max})
+    set (RM_CFG_PARAM "h_min_max w_min_max c_min_max")
+
+    set (sfx "${hwc_min}_${hwc_max}")
+
+    foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
+      ADD_PPE_RNDM(${CONF} ${sfx} main_ppe_${in_macro} RM_CFG_PARAM)
+      ADD_PPE_RNDM(${CONF} ${sfx} main_ppe_${in_macro}_SPL RM_CFG_PARAM)
+      ADD_PPE_RNDM(${CONF} ${sfx} main_vpe_ppe_${in_macro} RM_CFG_PARAM)
+      ADD_PPE_RNDM(${CONF} ${sfx} main_vpe_ppe_${in_macro}_BOX RM_CFG_PARAM)
+    endforeach()
+
+  endif() # NA_TESTGROUP PPE_RNDM
+
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_KRNL")
+    set (hwc_min 1)
+    set (hwc_max 512)
+
+    set (h_min_max "--h_min ${hwc_min} --h_max ${hwc_max}")
+    set (w_min_max "--w_min ${hwc_min} --w_max ${hwc_max}")
+    set (c_min_max "--c_min ${hwc_min} --c_max ${hwc_max}")
+
+    foreach(Kh RANGE 1 8)
+      foreach(Kw RANGE 1 8)
+
+        set (RM_CFG_PARAM "${h_min_max} ${w_min_max} ${c_min_max} --set_Kh 1 --Kh ${Kh} --set_Kw 1 --Kw ${Kw}")
+
+        set (sfx "${hwc_min}_${hwc_max}_Kh_${Kh}_Kw_${Kw}")
+
+        foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
+          ADD_PPE_RNDM(${CONF} ${sfx} main_ppe_${in_macro} RM_CFG_PARAM)
+          ADD_PPE_RNDM(${CONF} ${sfx} main_ppe_${in_macro}_SPL RM_CFG_PARAM)
+          ADD_PPE_RNDM(${CONF} ${sfx} main_vpe_ppe_${in_macro} RM_CFG_PARAM)
+          ADD_PPE_RNDM(${CONF} ${sfx} main_vpe_ppe_${in_macro}_BOX RM_CFG_PARAM)
+        endforeach()
+
+      endforeach()
     endforeach()
 
   endif() # NA_TESTGROUP PPE_RNDM
