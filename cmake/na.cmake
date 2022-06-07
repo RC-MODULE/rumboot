@@ -1620,6 +1620,25 @@ macro(na_testsuite_add_npe_tests CONF)
     endforeach()
   endif()
 
+  if(NA_TESTGROUP STREQUAL "MICRO_TESTS")
+  SET (MICRO_TESTS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/mpe_micro)
+    add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME MICRO_TESTS
+        FILES scr1/targets/simple-rom/nu/mpe_micro/mpe_micro.c
+        CFLAGS -Wno-unused-variable
+        PREPCMD 
+            #cp ${MICRO_TESTS}/cmd.bin ${MICRO_TESTS}/cmd.bin.metrics -t . && 
+            ${NA_RM_BIN_PATH}/main_mpe_batch_micro ${NA_RM_KEYS} > ${RM_LOGFILE} && 
+            ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} 
+            ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE} &&
+            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} &&
+            ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/macro_comm/macro_microgen F || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:main_mpe_batch_micro
+    )
+  endif()
+
   macro(ADD_NKBVS_FROM_BINARY_TEST CONF label c_program comparer)
     if("${comparer}" STREQUAL "WITH_PPE")
       set(COMPARER_OPT)
