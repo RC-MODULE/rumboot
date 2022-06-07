@@ -244,7 +244,7 @@ macro(ADD_NPE_MPE_VPE_TEST CONF name rm_bin_name make_tight comparer)
   ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} ${make_tight} ${comparer} 64)  
 endmacro()
 
-macro(ADD_MPE_DLTN_TEST CONF)
+macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
 
   if(NOT DEFINED NU_SEED)
     set(NU_SEED 1)
@@ -254,23 +254,56 @@ macro(ADD_MPE_DLTN_TEST CONF)
     set(NU_IT_NMB 1)
   endif()
 
-  set (NA_RM_KEYS_SW ${NA_RM_KEYS})
+  if("${sfx}" MATCHES "krnl")
+    set (set_PyPx "--set_R 1 --set_S 1")
+    set (Py_n "R")
+    set (Px_n "S")
+  elseif("${sfx}" MATCHES "strd")
+    set (set_PyPx "--set_Sh 1 --set_Sw 1")
+    set (Py_n "Sh")
+    set (Px_n "Sw")
+  elseif ("${sfx}" MATCHES "dltn")
+    set (set_PyPx "--set_Dr 1 --set_Ds 1")
+    set (Py_n "Dr")
+    set (Px_n "Ds")
+  else()
+    message(FATAL_ERROR "Undefined test type ${sfx}")
+  endif()
 
-  foreach(Dy RANGE 1 9)
-    foreach(Dx RANGE 1 9)
+  if ("${sfx}" MATCHES "IN_INT8" OR "${sfx}" MATCHES "IN_INT16" OR "${sfx}" MATCHES "IN_FP16")
+    string(REGEX MATCH "IN_.+[0-9]+" in_dt ${sfx})
+    set (rm_bin_name "main_mpe_rnd_${in_dt}")
 
-      set (NA_RM_KEYS "${NA_RM_KEYS} --h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1 --set_Dr 1 --Dr ${Dy} --set_Ds 1 --Ds ${Dx}")
+    if ("${in_dt}" MATCHES "IN_FP16")
+      set (bitwise "EPS")
+    else()
+      set (bitwise "BITWISE")
+    endif()
+  else()
+    message(FATAL_ERROR "Undefined DataType ${sfx}")
+  endif()
+
+  set (hwck_min_max "--h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1")
+
+  set (NA_RM_KEYS_SWP ${NA_RM_KEYS})
+
+  foreach(Py RANGE ${prm_min} ${prm_max})
+    foreach(Px RANGE ${prm_min} ${prm_max})
+      set (RM_CFG_PARAM "${set_PyPx} --${Py_n} ${Py} --${Px_n} ${Px}")
+
+      set (NA_RM_KEYS "${NA_RM_KEYS} ${RM_CFG_PARAM} ${hwck_min_max}")
 
       set (first "${NU_SEED}")
       math (EXPR last "${NU_SEED} + ${NU_IT_NMB} - 1")
 
       foreach(NU_SEED_LCL RANGE ${first} ${last})
+        set (name "${sfx}_${Py_n}_${Py}_${Px_n}_${Px}_${NU_SEED_LCL}")
 
-        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} npe_mpe_dltn_Dr${Dy}_Ds${Dx}_${NU_SEED_LCL} main_mpe_rnd_IN_INT16 NO_TIGHT BITWISE ${NU_SEED_LCL})
+        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} NO_TIGHT ${bitwise} ${NU_SEED_LCL})
 
       endforeach()
 
-      set (NA_RM_KEYS ${NA_RM_KEYS_SW})
+      set (NA_RM_KEYS ${NA_RM_KEYS_SWP})
 
     endforeach()
   endforeach()
@@ -285,6 +318,7 @@ macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_v
   else()
     set(COMPARER_OPT)
   endif()
+
   add_rumboot_target(
     CONFIGURATION ${CONF}
     NAME ${name}
@@ -1373,10 +1407,66 @@ macro(na_testsuite_add_npe_tests CONF)
 
   endif()  # NA_TESTGROUP MPE
 
-  ### MPE DILATION NA_TESTGROUP MPE_DLTN
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "MPE_DLTN")
-    ADD_MPE_DLTN_TEST(${CONF})
-  endif() # NA_TESTGROUP MPE_DLTN
+  ### MPE KERNEL STRIDE DILATION NA_TESTGROUP MPE_KRNL MPE_STRD MPE_DLTN
+  if(NOT DEFINED NA_TESTGROUP OR
+    "${NA_TESTGROUP}" STREQUAL "MPE_KRNL" OR
+    "${NA_TESTGROUP}" STREQUAL "MPE_STRD" OR
+    "${NA_TESTGROUP}" STREQUAL "MPE_DLTN"
+  )
+
+    set (krnl_min "1")
+    set (krnl_max "16")
+    set (strd_min "1")
+    set (strd_max "16")
+    set (dltn_min "1")
+    set (dltn_max "8")
+
+    if(NOT DEFINED NA_TESTGROUP)
+      set(prm_list krnl strd dltn)
+    elseif ("${NA_TESTGROUP}" STREQUAL "MPE_KRNL")
+      set(prm_list "krnl")
+    elseif ("${NA_TESTGROUP}" STREQUAL "MPE_STRD")
+      set(prm_list "strd")
+    elseif ("${NA_TESTGROUP}" STREQUAL "MPE_DLTN")
+      set(prm_list "dltn")
+    endif()
+
+    if (NOT DEFINED NA_IN_DATATYPE)
+      set (dt_list IN_INT8 IN_INT16 IN_FP16)
+    elseif ("${NA_IN_DATATYPE}" STREQUAL "IN_INT8")
+      set (dt_list "IN_INT8")
+    elseif ("${NA_IN_DATATYPE}" STREQUAL "IN_INT16")
+      set (dt_list "IN_INT16")
+    elseif ("${NA_IN_DATATYPE}" STREQUAL "IN_FP16")
+      set (dt_list "IN_FP16")
+    else()
+      message(FATAL_ERROR "Undefined NA_IN_DATATYPE: ${NA_IN_DATATYPE}")
+    endif()
+
+    foreach (prm IN ITEMS ${prm_list})
+      foreach (in_dt IN ITEMS ${dt_list})
+
+        set (sfx "npe_mpe_${prm}_${in_dt}")
+
+        if (prm STREQUAL "krnl")
+          set (prm_min "${krnl_min}")
+          set (prm_max "${krnl_max}")
+        elseif (prm STREQUAL "strd")
+          set (prm_min "${strd_min}")
+          set (prm_max "${strd_max}")
+        elseif (prm STREQUAL "dltn")
+          set (prm_min "${dltn_min}")
+          set (prm_max "${dltn_max}")
+        else()
+          message(FATAL_ERROR "Undefined prm: ${prm}")
+        endif()
+
+        ADD_MPE_PRM(${CONF} ${sfx} ${prm_min} ${prm_max})
+
+      endforeach()
+    endforeach()
+
+  endif() # NA_TESTGROUP MPE_KRNL MPE_STRD MPE_DLTN
 
       ################################
       ### Control Unit Tests
