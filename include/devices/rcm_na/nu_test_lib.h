@@ -95,10 +95,22 @@ typedef struct OpArrayDescriptor {
   int num_luts;
 }OpArrayDescriptor;
 void nu_vpe_init_op_array_desc(OpArrayDescriptor* desc);
-int nu_vpe_load_arrays_of_op_metrics(int heap_id,OpArrayDescriptor* op0_array_desc,OpArrayDescriptor* op1_array_desc,OpArrayDescriptor* op2_array_desc,ConfigVPE* array_of_cfg, int num);
+int nu_vpe_load_arrays_of_op_metrics(
+  int heap_id_op0,int heap_id_op1,int heap_id_op2,int heap_id_lut,
+  OpArrayDescriptor* op0_array_desc,
+  OpArrayDescriptor* op1_array_desc,
+  OpArrayDescriptor* op2_array_desc,
+  ConfigVPE* array_of_cfg, 
+  int num
+);
 int nu_vpe_load_array_of_op_cubes(int heap_id, OpArrayDescriptor* op_array_desc,char* file_tag);
 int nu_vpe_load_array_of_op_vecs(int heap_id, OpArrayDescriptor* op_array_desc,char* file_tag);
-int nu_vpe_load_arrays_of_ops(int heap_id,OpArrayDescriptor* op0_array_desc,OpArrayDescriptor* op1_array_desc,OpArrayDescriptor* op2_array_desc);
+int nu_vpe_load_arrays_of_ops(
+  int heap_id_op0,int heap_id_op1, int heap_id_op2, int heap_id_lut,
+  OpArrayDescriptor* op0_array_desc,
+  OpArrayDescriptor* op1_array_desc,
+  OpArrayDescriptor* op2_array_desc
+);
 StatusRegs* nu_load_array_of_status_regs(int heap_id,int num);
 
 int nu_vpe_load_status_regs_by_tag(int heap_id, StatusRegs* status_regs, char* status_regs_tag);
@@ -239,6 +251,35 @@ void nu_ppe_iterate_desc(PPEIterationDescriptor* desc);
 
 int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations);
 
+typedef struct NAHeapMap {
+  int in_data;
+  int warr;
+  int op0;
+  int op1;
+  int op2;
+  int lut;
+  int mpe_cfg;
+  int mpe_cfg_lut;
+  int vpe_cfg;
+  int ppe_cfg;
+  int res;
+  int etalon;
+  
+  int metrics_in_data;
+  int metrics_warr;
+  int metrics_op0;
+  int metrics_op1;
+  int metrics_op2;
+  int metrics_lut;
+  int metrics_mpe_cfg;
+  int metrics_mpe_cfg_lut;
+  int metrics_vpe_cfg;
+  int metrics_ppe_cfg;
+  // int metrics_res;
+  int metrics_etalon;
+} NAHeapMap;
+
+void nu_get_rather_fair_heap_map(NAHeapMap* heap_map);
 
 typedef struct NARegDump {
   uint32_t mpe[NU_MPE_REG_MAP_SIZE/sizeof(uint32_t)];
@@ -355,6 +396,7 @@ typedef struct NPEIterationDescriptor {
 void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc);
 void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc);
 void nu_npe_iterate_desc(NPEIterationDescriptor* desc) ;
+int nu_npe_place_arrays_by_heap_map(NAHeapMap* heap_map, NPETestDescriptor* test_desc,int iterations);
 int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations);
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg);
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration);

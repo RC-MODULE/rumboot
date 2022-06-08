@@ -103,17 +103,16 @@ void nu_ppe_decide_dma_config(
 
 NPETestDescriptor test_desc;
 NPEIterationDescriptor iteration_desc;
-
+NAHeapMap heap_map;
 
 int main() {
-  int heap_id;
   int i;
   int iterations;
   uint8_t  axi_len;
   
   rumboot_printf("Hellooooooo\n");
 
-  heap_id = nu_get_heap_id();
+  nu_get_rather_fair_heap_map(&heap_map);
   
     // Read The Number Of Test Iterations
   rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
@@ -130,7 +129,7 @@ int main() {
   axi_len = 15; // 15 - Most Performance-Friendly Option
   
     // Load All The Test Data Into Memory
-  if(nu_npe_place_arrays(heap_id,&test_desc,iterations) !=0) return -1;
+  if(nu_npe_place_arrays_by_heap_map(&heap_map,&test_desc,iterations) !=0) return -1;
   
     // Make The Iteration Descriptor To Point At The First Test Data
   nu_npe_init_iteration_desc(&test_desc,&iteration_desc);

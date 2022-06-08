@@ -32,6 +32,33 @@ int nu_get_add_heap_id() {
 #endif
 }
 
+void nu_get_rather_fair_heap_map(NAHeapMap* heap_map) {
+  heap_map->in_data            =nu_get_heap_id();
+  heap_map->warr               =nu_get_add_heap_id();
+  heap_map->op0                =nu_get_heap_id();
+  heap_map->op1                =nu_get_add_heap_id();
+  heap_map->op2                =nu_get_heap_id();
+  heap_map->lut                =nu_get_heap_id();
+  heap_map->mpe_cfg            =nu_get_heap_id();
+  heap_map->mpe_cfg_lut        =nu_get_heap_id();
+  heap_map->vpe_cfg            =nu_get_heap_id();
+  heap_map->ppe_cfg            =nu_get_heap_id();
+  heap_map->res                =nu_get_add_heap_id();
+  heap_map->etalon             =nu_get_heap_id();
+  heap_map->metrics_in_data    =nu_get_heap_id();
+  heap_map->metrics_warr       =nu_get_heap_id();
+  heap_map->metrics_op0        =nu_get_heap_id();
+  heap_map->metrics_op1        =nu_get_heap_id();
+  heap_map->metrics_op2        =nu_get_heap_id();
+  heap_map->metrics_lut        =nu_get_heap_id();
+  heap_map->metrics_mpe_cfg    =nu_get_heap_id();
+  heap_map->metrics_mpe_cfg_lut=nu_get_heap_id();
+  heap_map->metrics_vpe_cfg    =nu_get_heap_id();
+  heap_map->metrics_ppe_cfg    =nu_get_heap_id();
+  // heap_map->metrics_res        =nu_get_heap_id();
+  heap_map->metrics_etalon     =nu_get_heap_id();
+}
+
   // This Should Return Time In Nanoseconds
 uint32_t nu_get_uptime_ns() {
   // On SCR1 Platform Is Made By Direct Timer Request (Not Through rumboot_platform_get_uptime)
@@ -812,7 +839,7 @@ void* nu_vpe_load_op2_misaligned_by_tags(int heap_id, ConfigOp2* cfg, char* metr
 }
 
 int nu_vpe_load_arrays_of_op_metrics(
-  int heap_id, 
+  int heap_id_op0, int heap_id_op1, int heap_id_op2, int heap_id_lut,
   OpArrayDescriptor* op0_array_desc,
   OpArrayDescriptor* op1_array_desc,
   OpArrayDescriptor* op2_array_desc,
@@ -891,41 +918,41 @@ int nu_vpe_load_arrays_of_op_metrics(
     // Allocate The OPx Metrics Arrays
   if(op0_array_desc->num_cubes != 0) {
     size_op0_cubes = op0_array_desc->num_cubes * sizeof(CubeMetrics);
-    op0_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id, size_op0_cubes, sizeof(uint32_t));
+    op0_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id_op0, size_op0_cubes, sizeof(uint32_t));
     if(op0_array_desc->array_of_cube_metrics==NULL) return -1;
   }
   if(op1_array_desc->num_cubes != 0) {
     size_op1_cubes = op1_array_desc->num_cubes * sizeof(CubeMetrics);
-    op1_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id, size_op1_cubes, sizeof(uint32_t));
+    op1_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id_op1, size_op1_cubes, sizeof(uint32_t));
     if(op1_array_desc->array_of_cube_metrics==NULL) return -1;
   }
   if(op2_array_desc->num_cubes != 0) {
     size_op2_cubes = op2_array_desc->num_cubes * sizeof(CubeMetrics);
-    op2_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id, size_op2_cubes, sizeof(uint32_t));
+    op2_array_desc->array_of_cube_metrics = rumboot_malloc_from_heap_aligned(heap_id_op2, size_op2_cubes, sizeof(uint32_t));
     if(op2_array_desc->array_of_cube_metrics==NULL) return -1;
   }
   
   if(op0_array_desc->num_vecs != 0) {
     size_op0_vecs = op0_array_desc->num_vecs * sizeof(VectorMetrics);
-    op0_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id, size_op0_vecs, sizeof(uint32_t));
+    op0_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id_op0, size_op0_vecs, sizeof(uint32_t));
     if(op0_array_desc->array_of_vec_metrics==NULL) return -1;
   }
   if(op1_array_desc->num_vecs != 0) {
     size_op1_vecs = op1_array_desc->num_vecs * sizeof(VectorMetrics);
-    op1_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id, size_op1_vecs, sizeof(uint32_t));
+    op1_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id_op1, size_op1_vecs, sizeof(uint32_t));
     if(op1_array_desc->array_of_vec_metrics==NULL) return -1;
   }
   if(op2_array_desc->num_vecs != 0) {
     size_op2_vecs = op2_array_desc->num_vecs * sizeof(VectorMetrics);
-    op2_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id, size_op2_vecs, sizeof(uint32_t));
+    op2_array_desc->array_of_vec_metrics = rumboot_malloc_from_heap_aligned(heap_id_op2, size_op2_vecs, sizeof(uint32_t));
     if(op2_array_desc->array_of_vec_metrics==NULL) return -1;
   }
   
   if(op2_array_desc->num_luts != 0) {
     size_lut1 = op2_array_desc->num_luts * sizeof(VectorMetrics);
     size_lut2 = op2_array_desc->num_luts * sizeof(VectorMetrics);
-    op2_array_desc->array_of_lut1_metrics= rumboot_malloc_from_heap_aligned(heap_id, size_lut1, sizeof(uint32_t));
-    op2_array_desc->array_of_lut2_metrics= rumboot_malloc_from_heap_aligned(heap_id, size_lut2, sizeof(uint32_t));
+    op2_array_desc->array_of_lut1_metrics= rumboot_malloc_from_heap_aligned(heap_id_lut, size_lut1, sizeof(uint32_t));
+    op2_array_desc->array_of_lut2_metrics= rumboot_malloc_from_heap_aligned(heap_id_lut, size_lut2, sizeof(uint32_t));
     if(op2_array_desc->array_of_lut1_metrics==NULL || 
        op2_array_desc->array_of_lut2_metrics==NULL) return -1;
   }
@@ -995,20 +1022,25 @@ int nu_vpe_load_array_of_op_vecs(int heap_id, OpArrayDescriptor* op_array_desc,c
   return 0;
 }
 
-int nu_vpe_load_arrays_of_ops(int heap_id, OpArrayDescriptor* op0_array_desc,OpArrayDescriptor* op1_array_desc,OpArrayDescriptor* op2_array_desc){
+int nu_vpe_load_arrays_of_ops(
+  int heap_id_op0,int heap_id_op1, int heap_id_op2, int heap_id_lut, 
+  OpArrayDescriptor* op0_array_desc,
+  OpArrayDescriptor* op1_array_desc,
+  OpArrayDescriptor* op2_array_desc
+){
   
-  if(nu_vpe_load_array_of_op_cubes(heap_id,op0_array_desc,"op0_cube_file_tag") != 0) return -1;
-  if(nu_vpe_load_array_of_op_cubes(heap_id,op1_array_desc,"op1_cube_file_tag") != 0) return -1;
-  if(nu_vpe_load_array_of_op_cubes(heap_id,op2_array_desc,"op2_cube_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_cubes(heap_id_op0,op0_array_desc,"op0_cube_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_cubes(heap_id_op1,op1_array_desc,"op1_cube_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_cubes(heap_id_op2,op2_array_desc,"op2_cube_file_tag") != 0) return -1;
   
-  if(nu_vpe_load_array_of_op_vecs(heap_id,op0_array_desc,"op0_vec_file_tag") != 0) return -1;
-  if(nu_vpe_load_array_of_op_vecs(heap_id,op1_array_desc,"op1_vec_file_tag") != 0) return -1;
-  if(nu_vpe_load_array_of_op_vecs(heap_id,op2_array_desc,"op2_vec_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_vecs(heap_id_op0,op0_array_desc,"op0_vec_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_vecs(heap_id_op1,op1_array_desc,"op1_vec_file_tag") != 0) return -1;
+  if(nu_vpe_load_array_of_op_vecs(heap_id_op2,op2_array_desc,"op2_vec_file_tag") != 0) return -1;
   
   if(op2_array_desc->num_luts !=0 ) {
-    op2_array_desc->array_of_lut1=nu_load_array_of_vecs(heap_id,"lut1_file_tag",op2_array_desc->array_of_lut1_metrics,op2_array_desc->num_luts);
+    op2_array_desc->array_of_lut1=nu_load_array_of_vecs(heap_id_lut,"lut1_file_tag",op2_array_desc->array_of_lut1_metrics,op2_array_desc->num_luts);
     if(op2_array_desc->array_of_lut1==NULL) return -1;
-    op2_array_desc->array_of_lut2=nu_load_array_of_vecs(heap_id,"lut2_file_tag",op2_array_desc->array_of_lut2_metrics,op2_array_desc->num_luts);
+    op2_array_desc->array_of_lut2=nu_load_array_of_vecs(heap_id_lut,"lut2_file_tag",op2_array_desc->array_of_lut2_metrics,op2_array_desc->num_luts);
     if(op2_array_desc->array_of_lut2==NULL) return -1;
   }
   
@@ -1608,7 +1640,7 @@ int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations
   
   
   if(nu_vpe_load_arrays_of_op_metrics(
-    heap_id,
+    heap_id,heap_id,heap_id,heap_id,
     &(test_desc->op0_array_desc),
     &(test_desc->op1_array_desc),
     &(test_desc->op2_array_desc),
@@ -1623,7 +1655,12 @@ int nu_vpe_place_arrays(int heap_id, VPETestDescriptor* test_desc,int iterations
     test_desc->invocations
   );
   
-  if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
+  if(nu_vpe_load_arrays_of_ops(
+    heap_id,heap_id,heap_id,heap_id,
+    &(test_desc->op0_array_desc),
+    &(test_desc->op1_array_desc),
+    &(test_desc->op2_array_desc)
+    ) !=0) return -1;
   
   test_desc->array_of_status_regs_etalon = nu_load_array_of_status_regs(heap_id,iterations);
   if(test_desc->array_of_status_regs_etalon==NULL)return -1;
@@ -2020,27 +2057,26 @@ int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc) {
   return 0;
 }
 
-int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
-  
-  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_id, "metrics_in_tag", iterations);
-  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_id, "metrics_etalon_tag", iterations);
+int nu_npe_place_arrays_by_heap_map(NAHeapMap* heap_map, NPETestDescriptor* test_desc,int iterations) {
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_map->metrics_in_data, "metrics_in_tag", iterations);
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_map->metrics_etalon, "metrics_etalon_tag", iterations);
   
   if(test_desc->array_of_in_metrics  ==NULL || test_desc->array_of_res_metrics ==NULL  ) return -1;
     
   test_desc->invocations = nu_vpe_invocations_cnt(test_desc->array_of_res_metrics,iterations);
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-      test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_id, "metrics_warr_tag", test_desc->invocations);
+      test_desc->array_of_warr_metrics=nu_load_array_of_warr_metrics(heap_map->metrics_warr, "metrics_warr_tag", test_desc->invocations);
   }
   
   if((test_desc->array_of_warr_metrics==NULL && test_desc->MPE_ENABLED==Enable_En) ) return -1;
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->array_of_warr    = nu_load_array_of_warr (heap_id,       "warr_file_tag",test_desc->array_of_warr_metrics,test_desc->invocations);
+    test_desc->array_of_warr    = nu_load_array_of_warr (heap_map->warr,       "warr_file_tag",test_desc->array_of_warr_metrics,test_desc->invocations);
   }
-  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_id,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
-  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_id,     "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
-  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_id,                       test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_map->in_data,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_map->etalon,      "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_map->res,                           test_desc->array_of_res_metrics,iterations);
     
   if(test_desc->array_of_in_data ==NULL || 
     (test_desc->array_of_warr    ==NULL && test_desc->MPE_ENABLED==Enable_En) ||
@@ -2049,12 +2085,12 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigMPE)*(test_desc->invocations),sizeof(uint32_t));
+    test_desc->array_of_cfg_mpe = rumboot_malloc_from_heap_aligned(heap_map->mpe_cfg,sizeof(ConfigMPE)*(test_desc->invocations),sizeof(uint32_t));
   }
-  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigVPE)*(test_desc->invocations),sizeof(uint32_t));
+  test_desc->array_of_cfg_vpe = rumboot_malloc_from_heap_aligned(heap_map->vpe_cfg,sizeof(ConfigVPE)*(test_desc->invocations),sizeof(uint32_t));
   if(test_desc->PPE_ENABLED==Enable_En) {
-    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigPPE)*(test_desc->invocations),sizeof(uint32_t));
-    test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_id,sizeof(ConfigREGPPE)*(test_desc->invocations),sizeof(uint32_t));
+    test_desc->array_of_cfg_ppe = rumboot_malloc_from_heap_aligned(heap_map->ppe_cfg,sizeof(ConfigPPE)*(test_desc->invocations),sizeof(uint32_t));
+    test_desc->array_of_cfg_reg_ppe = rumboot_malloc_from_heap_aligned(heap_map->ppe_cfg,sizeof(ConfigREGPPE)*(test_desc->invocations),sizeof(uint32_t));
   }
 
   if((test_desc->array_of_cfg_mpe==NULL && test_desc->MPE_ENABLED==Enable_En) ||
@@ -2063,23 +2099,16 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     ) return -1;
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-    if(nu_mpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_mpe,test_desc->invocations) !=0) return -1;
+    if(nu_mpe_load_array_of_cfg(heap_map->mpe_cfg,test_desc->array_of_cfg_mpe,test_desc->invocations) !=0) return -1;
   }
-  if(nu_vpe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_vpe,test_desc->invocations) !=0) return -1;
+  if(nu_vpe_load_array_of_cfg(heap_map->vpe_cfg,test_desc->array_of_cfg_vpe,test_desc->invocations) !=0) return -1;
   if(test_desc->PPE_ENABLED==Enable_En)
-    if(nu_ppe_load_array_of_cfg(heap_id,test_desc->array_of_cfg_ppe,test_desc->invocations) !=0) return -1;
+    if(nu_ppe_load_array_of_cfg(heap_map->ppe_cfg,test_desc->array_of_cfg_ppe,test_desc->invocations) !=0) return -1;
   
   nu_vpe_batch_size_stride_cnt(test_desc->array_of_res_metrics,test_desc->array_of_cfg_vpe,iterations);
   
- /*   // Temporary CRUTCH - We Do Not Support Batches Yet
-    //                    But We Need src_rdma_config.dma_bsize For nu_vpe_load_arrays_of_op_metrics
-  for(int i=0;i<iterations;i++) {
-    test_desc->array_of_cfg_vpe[i].src_rdma_config.dma_bsize=0;
-  }
-    // */
-  
   if(nu_vpe_load_arrays_of_op_metrics(
-    heap_id,
+    heap_map->metrics_op0,heap_map->metrics_op1,heap_map->metrics_op2,heap_map->metrics_lut,
     &(test_desc->op0_array_desc),
     &(test_desc->op1_array_desc),
     &(test_desc->op2_array_desc),
@@ -2094,10 +2123,15 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
     test_desc->invocations
   );
   
-  if(nu_vpe_load_arrays_of_ops(heap_id,&(test_desc->op0_array_desc),&(test_desc->op1_array_desc),&(test_desc->op2_array_desc)) !=0) return -1;
+  if(nu_vpe_load_arrays_of_ops(
+    heap_map->op0,heap_map->op1,heap_map->op2,heap_map->lut,
+    &(test_desc->op0_array_desc),
+    &(test_desc->op1_array_desc),
+    &(test_desc->op2_array_desc)
+    ) !=0) return -1;
   
   if(test_desc->MPE_ENABLED==Enable_En) {
-    test_desc->mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
+    test_desc->mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_map->mpe_cfg_lut);
     if(test_desc->mpe_cfg_lut==NULL)
       return -1;
   }
@@ -2105,6 +2139,38 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   return 0;
 
 }
+int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations) {
+  NAHeapMap heap_map;
+  
+  heap_map.in_data=heap_id;
+  heap_map.warr=heap_id;
+  heap_map.op0=heap_id;
+  heap_map.op1=heap_id;
+  heap_map.op2=heap_id;
+  heap_map.lut=heap_id;
+  heap_map.mpe_cfg=heap_id;
+  heap_map.mpe_cfg_lut=heap_id;
+  heap_map.vpe_cfg=heap_id;
+  heap_map.ppe_cfg=heap_id;
+  heap_map.res=heap_id;
+  heap_map.etalon=heap_id;
+  heap_map.metrics_in_data=heap_id;
+  heap_map.metrics_warr=heap_id;
+  heap_map.metrics_op0=heap_id;
+  heap_map.metrics_op1=heap_id;
+  heap_map.metrics_op2=heap_id;
+  heap_map.metrics_lut=heap_id;
+  heap_map.metrics_mpe_cfg=heap_id;
+  heap_map.metrics_mpe_cfg_lut=heap_id;
+  heap_map.metrics_vpe_cfg=heap_id;
+  heap_map.metrics_ppe_cfg=heap_id;
+  // heap_map.metrics_res=heap_id;
+  heap_map.metrics_etalon=heap_id;
+  
+  return nu_npe_place_arrays_by_heap_map(&heap_map,test_desc,iterations);
+}
+  
+
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Prepare for Stop VPE begin...\n");
 	while( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) == 0x00000041) !=1) {}
