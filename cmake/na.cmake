@@ -251,7 +251,7 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
   endif()
 
   if(NOT DEFINED NU_IT_NMB)
-    set(NU_IT_NMB 1)
+    set(NU_IT_NMB 32)
   endif()
 
   if("${sfx}" MATCHES "krnl")
@@ -285,23 +285,29 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
 
   set (hwck_min_max "--h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1")
 
+  set (set_it_nmb "--it_nmb ${NU_IT_NMB}")
+
   set (NA_RM_KEYS_SWP ${NA_RM_KEYS})
 
   foreach(Py RANGE ${prm_min} ${prm_max})
     foreach(Px RANGE ${prm_min} ${prm_max})
       set (RM_CFG_PARAM "${set_PyPx} --${Py_n} ${Py} --${Px_n} ${Px}")
 
-      set (NA_RM_KEYS "${NA_RM_KEYS} ${RM_CFG_PARAM} ${hwck_min_max}")
+      set (NA_RM_KEYS "${NA_RM_KEYS} ${set_it_nmb} ${RM_CFG_PARAM} ${hwck_min_max}")
 
-      set (first "${NU_SEED}")
-      math (EXPR last "${NU_SEED} + ${NU_IT_NMB} - 1")
+#      set (first "${NU_SEED}")
+#      math (EXPR last "${NU_SEED} + ${NU_IT_NMB} - 1")
+#
+#      foreach(NU_SEED_LCL RANGE ${first} ${last})
+#        set (name "${sfx}_${Py_n}_${Py}_${Px_n}_${Px}_${NU_SEED_LCL}")
+#
+#        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} NO_TIGHT ${bitwise} ${NU_SEED_LCL})
+#
+#      endforeach()
 
-      foreach(NU_SEED_LCL RANGE ${first} ${last})
-        set (name "${sfx}_${Py_n}_${Py}_${Px_n}_${Px}_${NU_SEED_LCL}")
+      set (name "${sfx}_${Py_n}_${Py}_${Px_n}_${Px}_${NU_SEED}")
 
-        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} NO_TIGHT ${bitwise} ${NU_SEED_LCL})
-
-      endforeach()
+      ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} NO_TIGHT ${bitwise} ${NU_SEED})
 
       set (NA_RM_KEYS ${NA_RM_KEYS_SWP})
 
