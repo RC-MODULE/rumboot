@@ -1638,39 +1638,35 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
   return res;
 }
 
-int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics) {
-  
+int nu_mpe_decide_dma_config_super_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics) {
+
   uint32_t sizeof_C;
-  // uint32_t sizeof_C_div128;
-  
-  // uint32_t Hp;
-  // uint32_t Wp;
-  // uint32_t Rd;
-  // uint32_t Sd;
-  // uint32_t Ho;
-  // uint32_t Wo;
-  
-  // Hp  = cfg->H+cfg->Tp+cfg->Bp; // H after null padding
-  // Wp  = cfg->W+cfg->Lp+cfg->Rp; // W after null padding
+  uint32_t sizeof_C_div128;
 
-  // Rd  = (cfg->R-1)*cfg->Dr + 1; // R kernel size after dilation
-  // Sd  = (cfg->S-1)*cfg->Ds + 1; // S kernel size after dilation
-
-  // Ho  = (Hp-Rd)/cfg->Sh + 1; // Hout with respect to striding, dilation, null padding, conv
-  // Wo  = (Wp-Sd)/cfg->Sw + 1; // Wout with respect to striding, dilation, null padding, conv
-
+  uint32_t Hp;
+  uint32_t Wp;
+  uint32_t Rd;
+  uint32_t Sd;
+  uint32_t Ho;
+  uint32_t Wo;
   
-  
-    // [C/128] - it is a size in bytes, division with rounding up
+  Hp  = cfg->H+cfg->Tp+cfg->Bp; // H after null padding
+  Wp  = cfg->W+cfg->Lp+cfg->Rp; // W after null padding
+
+  Rd  = (cfg->R-1)*cfg->Dr + 1; // R kernel size after dilation
+  Sd  = (cfg->S-1)*cfg->Ds + 1; // S kernel size after dilation
+
+  Ho  = (Hp-Rd)/cfg->Sh + 1; // Hout with respect to striding, dilation, null padding, conv
+  Wo  = (Wp-Sd)/cfg->Sw + 1; // Wout with respect to striding, dilation, null padding, conv
+
+  // [C/128] - it is a size in bytes, division with rounding up
   sizeof_C = cfg->C << (cfg->dt == DataType_Int16 || cfg->dt == DataType_Fp16 ? 1 : 0);
 
-  /*
   if (sizeof_C > 127) {
     if ((sizeof_C & 0x7F) > 0)  sizeof_C_div128 = (sizeof_C >> 7) + 1;
     else                        sizeof_C_div128 = sizeof_C >> 7;
   }
   else sizeof_C_div128 = 1;
-
 
   cfg->ma_config. ADD_CountI0 = 16;
   cfg->ma_config. CMP_CountI0 = cfg->K;
@@ -1698,20 +1694,18 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->ma_config. NR    = 0x7F;
   cfg->ma_config. D_BIAS= 1;
   cfg->ma_config. D_NULL= 0xFF;
-  */
-  
-  //////////////////////////////
+
   cfg->dma_d_config.rdma.LPXEn = (cfg->Lp) ? Enable_En : Enable_NotEn;
   cfg->dma_d_config.rdma.RPXEn = (cfg->Rp) ? Enable_En : Enable_NotEn;
   cfg->dma_d_config.rdma.TPYEn = (cfg->Tp) ? Enable_En : Enable_NotEn;
   cfg->dma_d_config.rdma.BPYEn = (cfg->Bp) ? Enable_En : Enable_NotEn;
   
-  //cfg->dma_d_config.rdma.AOffset = -(cfg->W * sizeof_C * cfg->Tp + sizeof_C * cfg->Lp);
-  //cfg->dma_d_config.rdma.LPXOffset=-(cfg->W * sizeof_C * cfg->Tp);
-  //cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
-  //cfg->dma_d_config.rdma.TPYOffset= 0 ;
-  //cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
-  //cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
+  cfg->dma_d_config.rdma.AOffset = -(cfg->W * sizeof_C * cfg->Tp + sizeof_C * cfg->Lp);
+  cfg->dma_d_config.rdma.LPXOffset=-(cfg->W * sizeof_C * cfg->Tp);
+  cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
+  cfg->dma_d_config.rdma.TPYOffset= 0 ;
+  cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
+  cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
   
   for(int i=0;i<7;i++)
  
@@ -1720,7 +1714,6 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.TPYData=0;
   cfg->dma_d_config.rdma.BPYData=0;
   
-  /*
   cfg->dma_d_config.rdma.Bias[6].BiasEn = Enable_NotEn;
   cfg->dma_d_config.rdma.Bias[6].ThreCtrl = 0;
   cfg->dma_d_config.rdma.Bias[6].DecCtrl = 0;
@@ -1732,27 +1725,49 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.Bias[6].CntOffset = 0;
   cfg->dma_d_config.rdma.Bias[6].CntThresholdSha = 0;
   cfg->dma_d_config.rdma.Bias[6].CntCmp = 0;
-  */
-  
-  ////////////////////////////
+
   cfg->dma_w_config.rdma.LPXEn = Enable_NotEn;
   cfg->dma_w_config.rdma.RPXEn = Enable_NotEn;
   cfg->dma_w_config.rdma.TPYEn = Enable_NotEn;
   cfg->dma_w_config.rdma.BPYEn = Enable_NotEn;
   
-  //cfg->dma_w_config.rdma.AOffset =0;
-  //cfg->dma_w_config.rdma.LPXOffset=0;
-  //cfg->dma_w_config.rdma.RPXOffset=0;
-  //cfg->dma_w_config.rdma.TPYOffset= 0;
-  //cfg->dma_w_config.rdma.BPYOffset= 0;
-  //cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;
+  cfg->dma_w_config.rdma.AOffset =0;
+  cfg->dma_w_config.rdma.LPXOffset=0;
+  cfg->dma_w_config.rdma.RPXOffset=0;
+  cfg->dma_w_config.rdma.TPYOffset= 0;
+  cfg->dma_w_config.rdma.BPYOffset= 0;
+  cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;
    
   cfg->dma_w_config.rdma.LPXData=0;
   cfg->dma_w_config.rdma.RPXData=0;
   cfg->dma_w_config.rdma.TPYData=0;
   cfg->dma_w_config.rdma.BPYData=0;
+
+  return 0;
+}
+
+int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics) {
   
+  cfg->dma_d_config.rdma.LPXEn = (cfg->Lp) ? Enable_En : Enable_NotEn;
+  cfg->dma_d_config.rdma.RPXEn = (cfg->Rp) ? Enable_En : Enable_NotEn;
+  cfg->dma_d_config.rdma.TPYEn = (cfg->Tp) ? Enable_En : Enable_NotEn;
+  cfg->dma_d_config.rdma.BPYEn = (cfg->Bp) ? Enable_En : Enable_NotEn;
+
+  cfg->dma_d_config.rdma.LPXData=0;
+  cfg->dma_d_config.rdma.RPXData=0;
+  cfg->dma_d_config.rdma.TPYData=0;
+  cfg->dma_d_config.rdma.BPYData=0;
   
+  cfg->dma_w_config.rdma.LPXEn = Enable_NotEn;
+  cfg->dma_w_config.rdma.RPXEn = Enable_NotEn;
+  cfg->dma_w_config.rdma.TPYEn = Enable_NotEn;
+  cfg->dma_w_config.rdma.BPYEn = Enable_NotEn;
+  
+  cfg->dma_w_config.rdma.LPXData=0;
+  cfg->dma_w_config.rdma.RPXData=0;
+  cfg->dma_w_config.rdma.TPYData=0;
+  cfg->dma_w_config.rdma.BPYData=0;
+
   return 0;
 }
 

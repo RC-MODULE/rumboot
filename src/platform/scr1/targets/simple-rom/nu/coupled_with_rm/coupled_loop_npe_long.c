@@ -20,10 +20,16 @@ int nu_mpe_decide_dma_config(
 ) {
   cfg->dma_d_config.rdma.BFCA  = nu_virt_to_dma(cube); // Data Base Address
   cfg->dma_w_config.rdma.BFCA  = nu_virt_to_dma(warr); // Weights Base Address
+
   cfg->dma_d_config.depend_mask = 0; // Does Not Depend On Any Other Channel Run
   cfg->dma_w_config.depend_mask = 0;
-  if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1; // Search For The MPE DMA Configuration (That Is Predefined In cfg_lut Table)
-  if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1; // Fill Other Fields
+
+  // Search For The MPE DMA Configuration (That Is Predefined In cfg_lut Table)
+  if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1;
+
+  // Fill Other Fields
+  if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1;
+
   return 0;
 }
 

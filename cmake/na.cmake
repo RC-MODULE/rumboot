@@ -295,16 +295,6 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
 
       set (NA_RM_KEYS "${NA_RM_KEYS} ${set_it_nmb} ${RM_CFG_PARAM} ${hwck_min_max}")
 
-#      set (first "${NU_SEED}")
-#      math (EXPR last "${NU_SEED} + ${NU_IT_NMB} - 1")
-#
-#      foreach(NU_SEED_LCL RANGE ${first} ${last})
-#        set (name "${sfx}_${Py_n}_${Py}_${Px_n}_${Px}_${NU_SEED_LCL}")
-#
-#        ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} NO_TIGHT ${bitwise} ${NU_SEED_LCL})
-#
-#      endforeach()
-
       set (name "${sfx}_${Py_n}_${Py}_${Px_n}_${Px}_${NU_SEED}")
 
       ADD_NPE_MPE_VPE_TEST_SEED(${CONF} ${name} ${rm_bin_name} NO_TIGHT ${bitwise} ${NU_SEED})
