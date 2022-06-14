@@ -562,8 +562,8 @@ void* nu_malloc_array_of_cubes(int heap_id,CubeMetrics* array_of_metrics,int num
     *size += array_of_metrics[i].s;
   }
   
-  aoc = rumboot_malloc_from_heap(heap_id,*size);
-  //aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,16/*Dont Know*/);
+  //aoc = rumboot_malloc_from_heap(heap_id,*size);
+  aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,8/*For Best Performance In Performance Tests*/);
   if(aoc==NULL)
     return NULL;
   
