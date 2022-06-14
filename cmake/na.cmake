@@ -311,6 +311,8 @@ macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_v
     set(COMPARER_OPT -DUSE_NU_HALF_COMPARE_EPS=1)
   elseif("${comparer}" STREQUAL "MPE_PERFORMANCE")
     set(COMPARER_OPT -DMPE_CFG_PERFORMANCE=1)
+  elseif("${comparer}" STREQUAL "MPE_PERFORMANCE_DO")
+    set(COMPARER_OPT -DMPE_CFG_PERFORMANCE_DO=1)
   else()
     set(COMPARER_OPT)
   endif()
@@ -1369,6 +1371,7 @@ macro(na_testsuite_add_npe_tests CONF)
           ## NOT EXPERIMENT_STAGE_2_SUB_2
 
     ADD_NPE_MPE_VPE_TEST(${CONF} MPE_PERFORMANCE main_mpe_performance NOT_MAKE_TIGHT MPE_PERFORMANCE)
+    ADD_NPE_MPE_VPE_TEST(${CONF} MPE_PERFORMANCE_DO main_mpe_performance_do NOT_MAKE_TIGHT MPE_PERFORMANCE_DO)
     
     ADD_MPE_VPE_BATCH_TEST(${CONF} 2 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY
     ADD_MPE_VPE_BATCH_TEST(${CONF} 3 66 274 7 1 1 1 1 130 3 3 3 3) # B C W H LP RP BP TP K S R SX SY

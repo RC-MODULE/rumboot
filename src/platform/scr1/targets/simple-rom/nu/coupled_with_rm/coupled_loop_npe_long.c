@@ -118,8 +118,12 @@ int main() {
   
   rumboot_printf("Hellooooooo\n");
 
+#ifdef MPE_CFG_PERFORMANCE_DO
+  nu_get_rather_fair_heap_map_perf_do(&heap_map);
+#else
   nu_get_rather_fair_heap_map(&heap_map);
-  
+#endif
+
     // Read The Number Of Test Iterations
   rumboot_platform_request_file_ex("num_iterations_file_tag",(uintptr_t) &iterations,sizeof(iterations));
   rumboot_printf("Number of iterations %d\n",iterations);
@@ -277,14 +281,33 @@ int main() {
       nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
     }
     
-#ifndef MPE_CFG_PERFORMANCE
+#if !defined(MPE_CFG_PERFORMANCE) && !defined(MPE_CFG_PERFORMANCE_DO)
     na_cu_timer_reset_and_start(NPE_BASE+NA_CU_REGS_BASE,!(iteration_desc.PPE_ENABLED==Enable_En),(iteration_desc.PPE_ENABLED==Enable_En));
 #endif
 
     nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
 #ifndef MPE_CFG_PERFORMANCE
+#ifndef MPE_CFG_PERFORMANCE_DO
     nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
-#else
+#else // DO
+    iowrite32(1<<1,NPE_BASE + NA_CU_REGS_BASE + NA_TIMER_CTRL); // Reset timer
+
+    nu_mpe_run_dmas_only(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
+
+    while (ioread32(NPE_BASE + NA_MPE_BASE + MPE_MA_BASE + MPE_COMMON_BUF_FULL_SET)<0xFFFF01FF) {}; // Wait until the INBUFF is full
+
+    iowrite32((1<<2) | 1,NPE_BASE + NA_CU_REGS_BASE + NA_TIMER_CTRL); // Run timer
+    iowrite32(0, NPE_BASE + NA_MPE_BASE + MPE_MA_BASE + MPE_CMD_ICMW); // Run MPE_MA
+    //nu_mpe_run_ma_only(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
+
+    while (((ioread32(NPE_BASE + NA_MPE_BASE + MPE_MA_BASE + MPE_STATUS)>>8) & 0x1)!=0) {}; // Wait until the MPE_MA is finish
+    uint64_t cycles = na_cu_timer_read(NPE_BASE+NA_CU_REGS_BASE);
+    uint32_t cycles_l = cycles & 0xFFFFFFFF;
+    //uint32_t cycles_h = cycles >> 32;
+    uint32_t macs = iteration_desc.cfg_mpe->C * iteration_desc.mpe_out_metrics.W * iteration_desc.mpe_out_metrics.H * iteration_desc.cfg_mpe->R * iteration_desc.cfg_mpe->S * iteration_desc.cfg_mpe->K;
+    uint32_t performance = macs/cycles_l;
+#endif
+#else // RTL
     nu_mpe_run_dmas_only(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
 
     while (ioread32(NPE_BASE + NA_MPE_BASE + MPE_MA_BASE + MPE_COMMON_BUF_FULL_SET)!=0xFFFFFFFF) {}; // Wait until the INBUFF is full
@@ -299,7 +322,6 @@ int main() {
                             iteration_desc.cfg_mpe->K/16 * iteration_desc.mpe_out_metrics.W * iteration_desc.cfg_mpe->S) / // for H = R = 1
                             delta /
                             4; // TB freq is 4GHz
-    rumboot_printf("Performance = %d MAC/cycle\n",performance);
 #endif
     
     
@@ -325,13 +347,15 @@ int main() {
       return 1;
     }
 
-#ifndef MPE_CFG_PERFORMANCE
+#if !defined(MPE_CFG_PERFORMANCE) && !defined(MPE_CFG_PERFORMANCE_DO)
     uint64_t cycles = na_cu_timer_read(NPE_BASE+NA_CU_REGS_BASE);
     uint32_t cycles_l = cycles & 0xFFFFFFFF;
     uint32_t cycles_h = cycles >> 32;
     rumboot_printf("This iteration worked ");
     if (cycles_h>0) rumboot_printf("2^32 * %d + ", cycles_h);
     rumboot_printf("%d cycles\n", cycles_l);
+#else
+    rumboot_printf("Performance = %d MAC/cycle\n",performance);
 #endif
 
       // Point At The Next Iteration Data

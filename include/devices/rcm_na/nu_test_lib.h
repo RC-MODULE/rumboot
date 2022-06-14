@@ -280,6 +280,7 @@ typedef struct NAHeapMap {
 } NAHeapMap;
 
 void nu_get_rather_fair_heap_map(NAHeapMap* heap_map);
+void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map);
 
 typedef struct NARegDump {
   uint32_t mpe[NU_MPE_REG_MAP_SIZE/sizeof(uint32_t)];
