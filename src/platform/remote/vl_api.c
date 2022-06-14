@@ -1,20 +1,42 @@
 #define _GNU_SOURCE 1 
 
 #include <sys/types.h>
+
+#ifdef __linux__
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+#include <sys/mman.h>
+
+#include <netdb.h>	
+#include <sys/ucontext.h>
+#include <arpa/inet.h>
+#endif //__linux__
+
+
+
+#ifdef WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#include <mman_win.h>
+#endif //WIN32
+
+
+
+
 #include <string.h>
 
 #include <stdio.h>
-#include <sys/mman.h>
+
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <netdb.h>	
-#include <sys/ucontext.h>
+
+
 #include <signal.h>
-#include <arpa/inet.h>
+
 #include <errno.h>
 
 #ifndef RUMBOOT_PLATFORM
@@ -130,11 +152,11 @@ int vl_recv(struct vl_instance *vl, struct vl_message* in_message)
 {
  	memset(in_message,0,sizeof(struct vl_message));
 	int header_len = (char*)(in_message->data)-(char*)(in_message);
-	int bytes_read = recv(vl->sockfd, in_message, header_len, 0);
+	int bytes_read = recv(vl->sockfd, (char*)in_message, header_len, 0);
 	if (bytes_read!= header_len) {
 		printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, header_len);
 		if (vl->error_handler) 
-			vl->error_handler(-1);
+			vl->error_handler(VL_SOCKET_ERROR);
 		return -1;
 	}
     if (in_message->data_len){
@@ -142,12 +164,12 @@ int vl_recv(struct vl_instance *vl, struct vl_message* in_message)
     	if (data_read!= in_message->data_len) {
 			printf("VLAPI: sock recv error. read %d of %d\n", bytes_read, in_message->data_len);
 			if (vl->error_handler) 
-				vl->error_handler(-1);
+				vl->error_handler(VL_SOCKET_ERROR);
 			return -1;
 		}
 		bytes_read+=data_read;
     }
-    if (vl->debug){
+    if (vl->verbose&VL_EVENT_RECV){
     	printf("  in:");
 		vl_print_message(in_message);
     }
@@ -158,15 +180,15 @@ int vl_recv(struct vl_instance *vl, struct vl_message* in_message)
 int vl_send(struct vl_instance *vl, const struct vl_message* out_message){
 	int header_len = (char*)out_message->data-(char*)out_message;
 	int msg_len  = header_len+out_message->data_len;
-	if (vl->debug){
+	if (vl->verbose&VL_EVENT_SEND){
 		printf(" out:");
 		vl_print_message(out_message);
 	} 
-	int res=send(vl->sockfd, out_message,msg_len , 0);
+	int res=send(vl->sockfd, (char*)out_message,msg_len , 0);
 	if (res!=msg_len){
 		printf("VLAPI: sock send error. send %d of %d\n", res,msg_len);
 		if (vl->error_handler) 
-			vl->error_handler(-1);
+			vl->error_handler(VL_SOCKET_ERROR);
 		return -1;
 	}
 	return res;
@@ -254,6 +276,11 @@ uint32_t vl_wait(struct vl_instance *vl, uint32_t irq_mask, const uint64_t clock
 	int res=vl_send(vl,&cmd);
 	do {
 		vl_recv(vl,&ans); 
+		if (ans.op==VL_OP_TERMINATED){
+			vl_print_message(&ans);
+			if (vl->error_handler)
+				vl->error_handler(VL_OP_TERMINATED);
+		}
 	} while (ans.op!=VL_OP_FINISHED);
 	return ans.value;
 }
@@ -273,7 +300,8 @@ uint64_t vl_get_uptime(struct vl_instance *vl)
 	return ans.value;
 }
 
-struct vl_shmem* vl_shmem_list(struct vl_instance *vl, bool automap)
+struct vl_shmem* vl_shmem_list(struct vl_instance *vl)
+//;, bool automap)
 {
 	if (vl->shared_mem_list!=0) 
 		return vl->shared_mem_list;
@@ -297,16 +325,16 @@ struct vl_shmem* vl_shmem_list(struct vl_instance *vl, bool automap)
 	struct vl_shmem* shmem=vl->shared_mem_list;
 
 	memcpy(shmem,ans.data,ans.data_len);
-	if (automap) 
-		vl_shmem_map(shmem);
+	//if (automap) 
+	//	vl_shmem_map(shmem);
 	shmem++;
 
 	int i;
 	for (i=1; i< ans.value; i++, shmem++){
 		vl_recv(vl,&ans); 
 		memcpy(shmem,ans.data,ans.data_len);
-		if (automap) 
-			vl_shmem_map(shmem);
+		//if (automap) 
+		//	vl_shmem_map(shmem);
 	}
 	shmem->size=0; 	// last terminating shem must have size=0 
 	if (ans.op!=VL_OP_FINISHED){
@@ -328,9 +356,14 @@ void *vl_shmem_create(struct vl_shmem* shmem)
         perror(shmem->ipc_key);
         return (void*)-1;
     }
+#ifdef __linux__
     char tmp[256];
     sprintf(tmp,"/proc/self/fd/%d",fd);
     readlink(tmp,shmem->ipc_key,sizeof(shmem->ipc_key));
+#endif
+#ifdef WIN32
+	GetFullPathName(shmem->ipc_key, sizeof(shmem->ipc_key), shmem->ipc_key, NULL);
+#endif
     printf("shmem_key:%s\n",shmem->ipc_key);
     
     int ok = lseek(fd, shmem->size - 1, SEEK_SET);
@@ -349,9 +382,9 @@ void *vl_shmem_create(struct vl_shmem* shmem)
     }
 
     
-    void *result = mmap(NULL, shmem->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    shmem->ptr = mmap(NULL, shmem->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     close(fd);
-    return result;
+    return shmem->ptr;
 }
 
 void *vl_shmem_map(struct vl_shmem* shmem){
@@ -537,6 +570,19 @@ struct vl_instance *vl_create(const char *host, uint16_t port){
 	struct hostent *he;
 	//struct vl_instance* vl = (struct vl_instance*) malloc(sizeof(*vl));
 	struct vl_instance* vl = (struct vl_instance*) calloc(1,sizeof(*vl));
+
+#ifdef WIN32
+    // Initialize Winsock
+    int iResult;
+    WSADATA wsaData;
+    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if (iResult != 0) {
+    	perror("WSAStartup");
+	    goto err_free_inst;
+        //printf("WSAStartup failed: %d\n", iResult);
+        //exit(1);
+    }
+#endif
 	
 
 	vl->sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -583,6 +629,7 @@ err_free_inst:
 
 int vl_destroy(struct vl_instance *vl){
 	close(vl->sockfd);
+	//shutdown(vl->sockfd,SHUT_RDWR);
 	struct vl_shmem* shmem=vl->shared_mem_list;
 	while (shmem->size){
 		vl_shmem_unmap(shmem);
@@ -652,7 +699,7 @@ uint64_t  			vl_virt_to_phys  (struct vl_instance *vl,volatile void *addr){
 	struct vl_shmem* shmem=vl->shared_mem_list;
 	while (shmem->size){
 		if (addr>=(void*)shmem->ptr && addr<(void*)(shmem->ptr+shmem->size)){
-			return shmem->sys_addr+(uint8_t*)addr-shmem->ptr;
+			return shmem->sys_addr+(uint8_t*)addr-(uint8_t*)shmem->ptr;
 		}
 		shmem++;
 	}
@@ -681,10 +728,10 @@ void vl_set_error_handler(struct vl_instance *vl, void (*error_handler)(int)){
 	vl->error_handler=error_handler;
 }
 
-void vl_exit(struct vl_instance *vl){
+void vl_shutdown(struct vl_instance *vl){
 	struct vl_message cmd;
 	struct vl_message answer;
-	cmd.op=VL_OP_EXIT;
+	cmd.op=VL_OP_SHUTDOWN;
 	vl_transaction(vl,&cmd,&answer);
 }
 void vl_soft_reset(struct vl_instance *vl){
@@ -705,5 +752,24 @@ int	vl_get_api_version(struct vl_instance *vl){
 	cmd.op=VL_OP_GET_API_VERSION;
 	vl_transaction(vl,&cmd,&answer);	
 	return answer.value;
+}
+
+int vl_trace(struct vl_instance *vl, int trace_id, const char* path){
+	struct vl_message cmd;
+	struct vl_message answer;
+	cmd.op=VL_OP_TRACE;
+	cmd.addr=trace_id;
+	if (path==0)
+		cmd.value=false;
+	else{
+		cmd.value=true;
+		strcpy(cmd.data,path);
+		cmd.data_len=strlen(path)+1;
+
+	}
+
+	printf("*********** %s\n",path);
+	vl_transaction(vl,&cmd,&answer);	
+	return answer.value;	
 }
 ; /* 0.0.0.0, localhost, /tmp/my.sock */
