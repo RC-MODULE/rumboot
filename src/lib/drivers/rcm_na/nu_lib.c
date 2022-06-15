@@ -144,6 +144,10 @@ void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
   cfg-> sat_en    =*ptr;ptr++;
   cfg->rnd_size   =*ptr;ptr++;
   cfg->batch_size =*ptr;ptr++;
+  cfg->TpData     =*ptr;ptr++;
+  cfg->BpData     =*ptr;ptr++;
+  cfg->LpData     =*ptr;ptr++;
+  cfg->RpData     =*ptr;ptr++;
 }
 
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
@@ -678,6 +682,11 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     nu_vpe_print_Enable(cfg->sat_en, "sat_en  ");
     rumboot_printf("  rnd_size = %d \n" , cfg->rnd_size);
     rumboot_printf("  batch_size = %d \n" , cfg->batch_size);
+
+    rumboot_printf("  TpData  = %d\n", cfg->TpData);
+    rumboot_printf("  BpData  = %d\n", cfg->BpData);
+    rumboot_printf("  LpData  = %d\n", cfg->LpData);
+    rumboot_printf("  RpData  = %d\n", cfg->RpData);
 
   rumboot_printf("ConfigMAMPE:\n");
   
@@ -1753,16 +1762,16 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.TPYEn = (cfg->Tp) ? Enable_En : Enable_NotEn;
   cfg->dma_d_config.rdma.BPYEn = (cfg->Bp) ? Enable_En : Enable_NotEn;
 
-  cfg->dma_d_config.rdma.LPXData=0;
-  cfg->dma_d_config.rdma.RPXData=0;
-  cfg->dma_d_config.rdma.TPYData=0;
-  cfg->dma_d_config.rdma.BPYData=0;
-  
+  cfg->dma_d_config.rdma.LPXData=cfg->LpData;
+  cfg->dma_d_config.rdma.RPXData=cfg->RpData;
+  cfg->dma_d_config.rdma.TPYData=cfg->TpData;
+  cfg->dma_d_config.rdma.BPYData=cfg->BpData;
+
   cfg->dma_w_config.rdma.LPXEn = Enable_NotEn;
   cfg->dma_w_config.rdma.RPXEn = Enable_NotEn;
   cfg->dma_w_config.rdma.TPYEn = Enable_NotEn;
   cfg->dma_w_config.rdma.BPYEn = Enable_NotEn;
-  
+
   cfg->dma_w_config.rdma.LPXData=0;
   cfg->dma_w_config.rdma.RPXData=0;
   cfg->dma_w_config.rdma.TPYData=0;
@@ -2053,8 +2062,7 @@ int rndup_Kh_d_Sh_calc (int Kh, int Sh) {
 }
 
 int Wout_splt_calc (int Kh, int Sh, int rdctn) {
-  int Wout_splt, rndup_Kh_d_Sh;
-  int Buffer_md = 2048;
+  int Wout_splt = 0, rndup_Kh_d_Sh = 0, Buffer_md = 2048;
 
   rndup_Kh_d_Sh = rndup_Kh_d_Sh_calc(Kh, Sh);
 

@@ -250,7 +250,7 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
     set(NU_SEED 1)
   endif()
 
-  if(NOT DEFINED NU_IT_NMB)
+  if(NOT DEFINED NU_IT_NMB OR NU_IT_NMB EQUAL 1)
     set(NU_IT_NMB 32)
   endif()
 
@@ -699,7 +699,7 @@ macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
     set(NU_SEED 1)
   endif()
 
-  if(NOT DEFINED NU_IT_NMB)
+  if(NOT DEFINED NU_IT_NMB OR NU_IT_NMB EQUAL 1)
     set(NU_IT_NMB 32)
   endif()
 
@@ -2009,7 +2009,7 @@ macro(ADD_PPE_RNDM CONF sfx rm_bin_name RM_CFG_PARAM)
     set(NU_SEED 1)
   endif()
 
-  if(NOT DEFINED NU_IT_NMB)
+  if(NOT DEFINED NU_IT_NMB OR NU_IT_NMB EQUAL 1)
     set(NU_IT_NMB 32)
   endif()
 
@@ -2055,7 +2055,7 @@ macro(na_testsuite_add_ppe_tests CONF)
     set(NU_SEED 1)
   endif()
 
-  if(NOT DEFINED NU_IT_NMB)
+  if(NOT DEFINED NU_IT_NMB OR NU_IT_NMB EQUAL 1)
     set(NU_IT_NMB 32)
   endif()
 

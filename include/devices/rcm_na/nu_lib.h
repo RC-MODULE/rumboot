@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #define NU_VPE_CFG_PARAMS_NUM 83
-#define NU_MPE_CFG_PARAMS_NUM 19
+#define NU_MPE_CFG_PARAMS_NUM 23
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 62
 
@@ -257,28 +257,33 @@
   }ConfigDMAMPE;
 
   typedef struct ConfigMPE {
-    uint32_t H        ;
-    uint32_t W        ;
-    uint32_t C        ;
-    uint32_t Tp       ;
-    uint32_t Bp       ;
-    uint32_t Lp       ;
-    uint32_t Rp       ;
-    uint32_t R        ;
-    uint32_t S        ;
-    uint32_t Dr       ;
-    uint32_t Ds       ;
-    uint32_t Sh       ;
-    uint32_t Sw       ;
-    uint32_t K        ;
-    DataType dt       ;
-    uint32_t batch_size ;
-    RoundMode rnd_mode;
-    Enable   sat_en   ;
-    uint32_t rnd_size ;    
-    ConfigDMAMPE dma_d_config;
-    ConfigDMAMPE dma_w_config;
-    ConfigMAMPE ma_config;
+    uint32_t  H         ;
+    uint32_t  W         ;
+    uint32_t  C         ;
+    uint32_t  Tp        ;
+    uint32_t  Bp        ;
+    uint32_t  Lp        ;
+    uint32_t  Rp        ;
+    uint32_t  R         ;
+    uint32_t  S         ;
+    uint32_t  Dr        ;
+    uint32_t  Ds        ;
+    uint32_t  Sh        ;
+    uint32_t  Sw        ;
+    uint32_t  K         ;
+    DataType  dt        ;
+    uint32_t  batch_size;
+    RoundMode rnd_mode  ;
+    Enable    sat_en    ;
+    uint32_t  rnd_size  ;
+    uint32_t  TpData    ;
+    uint32_t  BpData    ;
+    uint32_t  LpData    ;
+    uint32_t  RpData    ;
+
+    ConfigDMAMPE  dma_d_config;
+    ConfigDMAMPE  dma_w_config;
+    ConfigMAMPE   ma_config   ;
   }ConfigMPE;
 
 

@@ -2330,7 +2330,7 @@ int nu_ppe_regs_swrst_check (uintptr_t base) {
   uint32_t dflt_wdma_axi_param= 0x2 << 16;
   uint32_t dflt_wdma_xyz_drct = 0x2;
 
-  for (i=0; i<last_reg_addr+4 && !res; i+=4) {
+  for (i=0, res=0; i<last_reg_addr+4 && !res; i+=4) {
 
     res = ioread32(base+i);
 
