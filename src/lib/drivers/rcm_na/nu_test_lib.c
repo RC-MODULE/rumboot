@@ -59,6 +59,34 @@ void nu_get_rather_fair_heap_map(NAHeapMap* heap_map) {
   heap_map->metrics_etalon     =nu_get_heap_id();
 }
 
+void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map) {
+  heap_map->in_data            =nu_get_heap_id();
+  heap_map->warr               =nu_get_add_heap_id();
+  heap_map->op0                =nu_get_heap_id();
+  heap_map->op1                =nu_get_heap_id();
+  heap_map->op2                =nu_get_heap_id();
+  heap_map->lut                =nu_get_heap_id();
+  heap_map->mpe_cfg            =nu_get_heap_id();
+  heap_map->mpe_cfg_lut        =nu_get_heap_id();
+  heap_map->vpe_cfg            =nu_get_heap_id();
+  heap_map->ppe_cfg            =nu_get_heap_id();
+  heap_map->res                =nu_get_heap_id();
+  heap_map->etalon             =nu_get_heap_id();
+  heap_map->metrics_in_data    =nu_get_heap_id();
+  heap_map->metrics_warr       =nu_get_heap_id();
+  heap_map->metrics_op0        =nu_get_heap_id();
+  heap_map->metrics_op1        =nu_get_heap_id();
+  heap_map->metrics_op2        =nu_get_heap_id();
+  heap_map->metrics_lut        =nu_get_heap_id();
+  heap_map->metrics_mpe_cfg    =nu_get_heap_id();
+  heap_map->metrics_mpe_cfg_lut=nu_get_heap_id();
+  heap_map->metrics_vpe_cfg    =nu_get_heap_id();
+  heap_map->metrics_ppe_cfg    =nu_get_heap_id();
+  // heap_map->metrics_res        =nu_get_heap_id();
+  heap_map->metrics_etalon     =nu_get_heap_id();
+}
+
+
   // This Should Return Time In Nanoseconds
 uint32_t nu_get_uptime_ns() {
   // On SCR1 Platform Is Made By Direct Timer Request (Not Through rumboot_platform_get_uptime)
@@ -562,8 +590,8 @@ void* nu_malloc_array_of_cubes(int heap_id,CubeMetrics* array_of_metrics,int num
     *size += array_of_metrics[i].s;
   }
   
-  aoc = rumboot_malloc_from_heap(heap_id,*size);
-  //aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,16/*Dont Know*/);
+  //aoc = rumboot_malloc_from_heap(heap_id,*size);
+  aoc = rumboot_malloc_from_heap_aligned(heap_id,*size,8/*For Best Performance In Performance Tests*/);
   if(aoc==NULL)
     return NULL;
   
@@ -846,14 +874,14 @@ int nu_vpe_load_arrays_of_op_metrics(
   ConfigVPE* array_of_cfg, 
   int num
 ) {
-  uint32_t size_op0_cubes;
-  uint32_t size_op1_cubes;
-  uint32_t size_op2_cubes;
-  uint32_t size_op0_vecs;
-  uint32_t size_op1_vecs;
-  uint32_t size_op2_vecs;
-  uint32_t size_lut1;
-  uint32_t size_lut2;
+  uint32_t size_op0_cubes=0;
+  uint32_t size_op1_cubes=0;
+  uint32_t size_op2_cubes=0;
+  uint32_t size_op0_vecs=0;
+  uint32_t size_op1_vecs=0;
+  uint32_t size_op2_vecs=0;
+  uint32_t size_lut1=0;
+  uint32_t size_lut2=0;
   
   op0_array_desc->num_cubes=0;
   op0_array_desc->num_vecs=0;

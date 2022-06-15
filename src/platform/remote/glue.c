@@ -183,7 +183,7 @@ void rumboot_platform_setup()
         rumboot_printf("VL_API: Simulation timescale: %u ticks per us\n", (uint32_t) g_ticks_per_us);
 
 
-        struct vl_shmem* shm = vl_shmem_list(g_vl_instance, 0);
+        struct vl_shmem* shm = vl_shmem_list(g_vl_instance);
         while (shm->size) {
                 printf("VL_API: shmem #%d name: %s size: %llx start: %llx\n", shm->id, shm->name, shm->size, shm->sys_addr);
                 uint8_t *ptr = vl_shmem_map(shm);
