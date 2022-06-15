@@ -874,14 +874,14 @@ int nu_vpe_load_arrays_of_op_metrics(
   ConfigVPE* array_of_cfg, 
   int num
 ) {
-  uint32_t size_op0_cubes;
-  uint32_t size_op1_cubes;
-  uint32_t size_op2_cubes;
-  uint32_t size_op0_vecs;
-  uint32_t size_op1_vecs;
-  uint32_t size_op2_vecs;
-  uint32_t size_lut1;
-  uint32_t size_lut2;
+  uint32_t size_op0_cubes=0;
+  uint32_t size_op1_cubes=0;
+  uint32_t size_op2_cubes=0;
+  uint32_t size_op0_vecs=0;
+  uint32_t size_op1_vecs=0;
+  uint32_t size_op2_vecs=0;
+  uint32_t size_lut1=0;
+  uint32_t size_lut2=0;
   
   op0_array_desc->num_cubes=0;
   op0_array_desc->num_vecs=0;
