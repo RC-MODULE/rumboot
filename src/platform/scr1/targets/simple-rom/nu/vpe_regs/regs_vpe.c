@@ -1840,7 +1840,7 @@ void nu_vpe_pause_next_contx(uintptr_t vpe_base){
 	while(( (ioread32(vpe_base +  NU_VPE  + NU_VPE_INT_STATUS) >> 6) & 1) !=1) {}
 	iowrite32((1<<6),vpe_base + NU_VPE + NU_VPE_INT_RESET);
 	//rumboot_printf("Stop check2...\n");
-	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	iowrite32((1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}
 	//rumboot_printf("Stop check5...\n");	
 	iowrite32((1<<5),vpe_base + NU_VPE + NU_VPE_INT_RESET);
@@ -1850,7 +1850,7 @@ void nu_vpe_pause_next_contx(uintptr_t vpe_base){
 void nu_vpe_pause_next_contex(uintptr_t vpe_base){
   uint32_t temp;
     rumboot_printf("Stop VPE begin...\n");
-	iowrite32(temp | (1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+	iowrite32((1<<16),vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 	while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 5) & 1) !=1) {}
 	//rumboot_printf("Stop check5...\n");	
 	iowrite32((1<<5),vpe_base + NU_VPE + NU_VPE_INT_RESET);
