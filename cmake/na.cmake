@@ -1658,7 +1658,6 @@ macro(na_testsuite_add_npe_tests CONF)
     else()
       set(COMPARER_OPT -DDONT_USE_PPE=1)
     endif()
-    set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME nkbvs_${label}
@@ -1674,6 +1673,9 @@ macro(na_testsuite_add_npe_tests CONF)
   endmacro()
 
   if(NA_TESTGROUP STREQUAL "NKBVS")
+    if(NOT DEFINED NKBVS_TEST_DIR)
+      set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
+    endif()
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_1 main_nkbvs_1 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_2 main_nkbvs_2 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_3 main_nkbvs_3 NOT_MAKE_TIGHT BITWISE)
