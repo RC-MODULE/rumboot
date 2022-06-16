@@ -35,7 +35,7 @@ contr_result : word[90] = (
  													 100h, 0h dup 7,
  													 1h, 0h dup 2, 0h,
  													 3000400h, 06_0000h, 0h, 0h, 
- 													 0h, 0C001_0890h, 8h, 07FFh, 1h, 0h dup 3,
+ 													 0h, 0C001_08b8h, 8h, 07FFh, 1h, 0h dup 3,
  													 100h, 0h dup 7, 		
  													 21h, 1h,	0h dup 2, 		
  													 100h, 0h dup 7, 													 										  

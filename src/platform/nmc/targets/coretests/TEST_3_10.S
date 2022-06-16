@@ -31,7 +31,7 @@ data data_test1
 test_result_1 : long[28] = ( -1l dup 28);
 // The control value dimension 
 contr_result_1 : long[28] = (                 
-                 00000000_00000156hl,  00000000_03000400hl,
+                 00000000_0000015Chl,  00000000_03000400hl,
                  03000400_03000500hl,  03000580_03000500hl, 
                  03000580_03000500hl,  03000580_03000500hl,
                  03000580_03000500hl,  03000580_03000500hl,
@@ -40,11 +40,11 @@ contr_result_1 : long[28] = (
                  03000580_03000500hl,  03000580_03000500hl,
                  03000580_03000500hl,  03000580_030005cahl, 
                  03000580_030005cbhl,  00000005_030005cahl, 
-                 00000001_000003e8hl,  00000060_00000500hl,
+                 00000001_000003f2hl,  00000060_0000050ahl,
                  00000000_00000000hl, 0fffffff1_fffffff1hl,
                 0fffffff2_fffffff2hl, 0fffffff3_fffffff3hl,
                 0fffffff5_fffffff5hl,  7fffffff_00010000hl,
-                 00001004_00000334hl,  00000000_03000400hl
+                 00001004_0000033ahl,  00000000_03000400hl
            ) ;
 end data_test1;
 
@@ -53,11 +53,11 @@ data data_test2
 test_result_2 : long[102] = ( -1l dup 102);
 // The control value dimension 
 contr_result_2: long[102] = (
- 000011e4_00000392hl,  0000100b_030004cahl,  0fffffff1_fffffff1hl,
- 000011e4_0000039chl,  0000100b_0300044ahl,  0fffffff2_fffffff2hl, 
- 000011e4_000003b0hl,  0000100b_0300044bhl,  0fffffff4_fffffff4hl,
- 000011e4_000003bahl,  0000100b_03000400hl,  0fffffff5_fffffff5hl,
-(000011e4_000003a6hl,  0000100b_03000400hl,  0fffffff3_fffffff3hl) dup 30
+ 000011e4_0000039chl,  0000100b_030004cahl,  0fffffff1_fffffff1hl,
+ 000011e4_000003a6hl,  0000100b_0300044ahl,  0fffffff2_fffffff2hl, 
+ 000011e4_000003bahl,  0000100b_0300044bhl,  0fffffff4_fffffff4hl,
+ 000011e4_000003c4hl,  0000100b_03000400hl,  0fffffff5_fffffff5hl,
+(000011e4_000003b0hl,  0000100b_03000400hl,  0fffffff3_fffffff3hl) dup 30
            ) ;
 end data_test2;
 

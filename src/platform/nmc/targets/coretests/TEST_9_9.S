@@ -30,10 +30,10 @@ contr_result : word[48] = (
                            0h dup 2, 100h, 2_0000h, 0h dup 4,
                            0h dup 8, 
                            8000h, 2h, 0h dup 4,
-                           8000h, 0300_0400h, 0h, 0c00107b8h, 8h, 1FFFh, 1h, 0h,
+                           8000h, 0300_0400h, 0h, 0c00107e0h, 8h, 1FFFh, 1h, 0h,
                            0h, 0c0078000h, 8h, 1FFFh, 1h, 0h dup 3,
                            0ffffffffh, 0h,
-                           0h, 0h, 8000h, 6h, 0h dup 3, 909h
+                           0h, 0h, 8000h, 6h, 0h dup 3, 0c0ch
                             );
 end data_test_res;
 

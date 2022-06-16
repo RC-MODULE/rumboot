@@ -16,7 +16,7 @@ test_result : long[34] = ( -1l dup 34);
 
 // The control value dimension 
 contr_res : long[34] = (
-         0000fff7_0000035chl,
+         0000fff7_00000366hl,
          0000fff6_0000fff1hl,
          0000fff5_0000fff2hl,
          0000fff4_0000fff3hl,
@@ -24,7 +24,7 @@ contr_res : long[34] = (
          0000fff2_0000fff5hl,
          0000fff1_0000fff6hl,
          0000fff0_0000fff7hl, 
-        0ffff000f_0000036chl,
+        0ffff000f_00000376hl,
         0ffff000e_ffff0008hl,
         0ffff000d_ffff0009hl,         
         0ffff000c_ffff000ahl,         
@@ -32,12 +32,12 @@ contr_res : long[34] = (
         0ffff000a_ffff000chl,         
         0ffff0009_ffff000dhl,         
         0ffff0008_ffff000ehl,                                       
-         000000a4_000000a6hl,
-        0FFFF00D8_000000CAhl, 
+         000000aa_000000achl,
+        0FFFF00DE_000000d0hl, 
          00000030_00000030hl,
         0FFFF000C_00000040hl,
-         00000134_00000136hl,         
-        0FFFF0162_00000158hl,         
+         0000013a_0000013chl,         
+        0FFFF0168_0000015ehl,         
          00000070_00000070hl,         
         0FFFF0008_00000080hl,
          00000FF0_00000FF0hl,
@@ -48,7 +48,7 @@ contr_res : long[34] = (
          0000FF0B_0000FF0Bhl,
          0000FF0B_0000FF0Bhl,
          0000FF0C_0000FF0Chl, 
-         0000001f_000002a2hl,
+         0000001f_000002a8hl,
          03000400_03000500hl	
            ) ;
 end data_test;
