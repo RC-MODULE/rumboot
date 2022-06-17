@@ -377,9 +377,9 @@ rumboot_runtime_init(016800h);
 				if <>0 goto Error;
 
 // Check the result    	
-       ar0 = test_result;
-	     ar1 = contr_result;
-       gr0 = 48;
+       ar0 = test_result + 16;
+	     ar1 = contr_result + 16;
+       gr0 = 32;
 
 <Loop_Check>
 	gr1 = [ar0++];
