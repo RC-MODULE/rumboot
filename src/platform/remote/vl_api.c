@@ -43,6 +43,7 @@
 #include "vl_api.h"
 #else
 #include <platform/vl_api.h>
+#define printf rumboot_printf
 #endif
 
 #ifdef __cplusplus
@@ -691,14 +692,34 @@ uint32_t vl_fwrite(struct vl_instance *vl, const char* path, const uint64_t addr
 	return 0;
 }
 
-uint64_t  			vl_virt_to_phys  (struct vl_instance *vl,volatile void *addr){
+int vl_virt_to_phys_valid (struct vl_instance *vl,volatile void *addr){
 	if (vl->shared_mem_list==0){
 		printf("ERROR: vl->shared_mem_list=0\n");
 		return 0;
 	}
 	struct vl_shmem* shmem=vl->shared_mem_list;
 	while (shmem->size){
+		printf ("VL_API: shmem [%x-%x]\n", (int*)shmem->ptr ,(int*)(shmem->ptr+shmem->size));
 		if (addr>=(void*)shmem->ptr && addr<(void*)(shmem->ptr+shmem->size)){
+			//printf ("VL_API: sysaddrshmem [%x-%x]\n", (int*)shmem->ptr ,(int*)(shmem->ptr+shmem->size));
+			return 1;
+		}
+		shmem++;
+	}
+	return 0;
+}
+
+uint64_t  			vl_virt_to_phys  (struct vl_instance *vl,volatile void *addr){
+	//printf ("VL_API: vl_virt_to_phys [%x]\n",(int*)addr );
+	if (vl->shared_mem_list==0){
+		printf("ERROR: vl->shared_mem_list=0\n");
+		return 0;
+	}
+	struct vl_shmem* shmem=vl->shared_mem_list;
+	while (shmem->size){
+		//printf ("VL_API: shmem [%x-%x]\n", (int*)shmem->ptr ,(int*)(shmem->ptr+shmem->size));
+		if (addr>=(void*)shmem->ptr && addr<(void*)(shmem->ptr+shmem->size)){
+			//printf ("VL_API: sysaddrshmem [%x-%x]\n", (int*)shmem->ptr ,(int*)(shmem->ptr+shmem->size));
 			return shmem->sys_addr+(uint8_t*)addr-(uint8_t*)shmem->ptr;
 		}
 		shmem++;
@@ -709,6 +730,7 @@ uint64_t  			vl_virt_to_phys  (struct vl_instance *vl,volatile void *addr){
 
 void*				vl_phys_to_virt (struct vl_instance *vl,uint64_t base_addr)
 {
+	printf ("VL_API:vl_phys_to_virt [%x]\n",base_addr );
 	if (vl->shared_mem_list==0){
 		printf("ERROR: vl->shared_mem_list=0\n");
 		return 0;

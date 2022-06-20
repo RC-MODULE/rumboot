@@ -349,8 +349,11 @@ uint32_t rumboot_virt_to_dma(volatile const void *addr)
         if (id == -1 ) {
                 rumboot_platform_panic("rumboot_virt_to_dma: can't find heap id for addr %x\n", addr);
         }
-        uint32_t ret = (uint32_t) (vl_virt_to_phys(g_vl_instance, addr) & 0xffffffff);
-        if (ret == 0) {
+        uint32_t ret=0xFFFFFFFF;
+        if (vl_virt_to_phys_valid(g_vl_instance, addr)){
+                ret = (uint32_t) (vl_virt_to_phys(g_vl_instance, addr) & 0xffffffff);
+        }
+        else {
                 rumboot_platform_panic("rumboot_virt_to_dma: No dma mapping for heap %s", rumboot_malloc_heap_name(id));
         }
         return ret;
