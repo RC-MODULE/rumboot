@@ -1523,6 +1523,14 @@ macro(na_testsuite_add_npe_tests CONF)
         NAME MPE_1
         FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
     )
+     ##########################################       
+	   ## NPE CMD DMA MPE Test
+	add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME NPE_CU_CMD_DMA_MPE
+      FILES scr1/targets/simple-rom/nu/na_cu/cu_cmd_dma_mpe.c
+    )	   	
+	
   endif()
   
       ##########################################
