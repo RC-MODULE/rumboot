@@ -25,22 +25,13 @@ end text_dma;
 
 // The test result dimension
 data data_test_res
-test_result : word[90] = (-1 dup 90);
+test_result : word[26] = (-1 dup 26);
 // The control value dimension
-contr_result : word[90] = (
- 													 3000400h, 0h dup 3, 100h, 0h dup 7,
- 													 100h, 0h dup 7,
- 													 1h, 0h dup 2, 0h,
- 													 100h, 0h dup 7,
- 													 100h, 0h dup 7,
- 													 1h, 0h dup 2, 0h,
- 													 3000400h, 09_0000h, 0h, 0h, 
- 													 100h, 0h dup 7, 													  
- 													 0h, 0C007_8000h, 8h, 0FFFh, 1h, 0h dup 3,
- 													 31h, 0h dup 2, 	0h,	
- 													 0h, 0C001_0878h, 8h, 0FFFh, 1h, 0h dup 3,
- 													 100h, 0h dup 7,
- 													 31h, 0h dup 2, 0h, 
+contr_result : word[26] = (
+													 03000400h, 0h dup 3,
+ 													 3000400h, 09_0000h, 0h, 0h, 													  
+ 													 0h, 0C007_8000h, 8h, 0FFFh, 1h, 0h dup 3,	
+ 													 0h, 0C001_0630h, 8h, 0FFFh, 1h, 0h dup 3, 
  													 0h, 0ffffffffh
                             );
 end data_test_res;
@@ -145,81 +136,9 @@ rumboot_runtime_init(016800h);
 				gr1 = [IRRL_ADDRESS];
 				ar2 = [IRRH_ADDRESS];
 				gr2 = [IMRL_ADDRESS];
-				ar3 = [CP0TR_MainCounter_ADDRESS];
-				gr3 = [CP0TR_ADDRESS_REGISTER_ADDRESS];				
-				ar4 = [CP0TR_BIAS_ADDRESS];
-				gr4 = [CP0TR_RowCounter_ADDRESS];
-				ar5 = [CP0TR_AddressMode_ADDRESS];
-				gr5 = [CP0TR_ControlRegister_ADDRESS];
-				ar6 = [CP0TR_InterruptMask_ADDRESS];
-				gr6 = [CP0TR_StateRegister_ADDRESS];
 								
 				[ar0++] = ar1,gr1;										// Read  irrl, intr
 				[ar0++] = ar2,gr2;										// Read cp rate, imrl	
-// Com. Port 0 State (Transmit Part)		
-				[ar0++] = ar3,gr3;										// Read ADDRESS_REGISTER, MainCounter				
-				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
-				[ar0++] = ar5,gr5;										// Read ControlRegister, addressMode						
-				[ar0++] = ar6,gr6;										// Read StateRegister, InterruptMask					
-				
-				ar3 = [CP0RC_MainCounter_ADDRESS];
-				gr3 = [CP0RC_ADDRESS_REGISTER_ADDRESS];				
-				ar4 = [CP0RC_BIAS_ADDRESS];
-				gr4 = [CP0RC_RowCounter_ADDRESS];
-				ar5 = [CP0RC_AddressMode_ADDRESS];
-				gr5 = [CP0RC_ControlRegister_ADDRESS];
-				ar6 = [CP0RC_InterruptMask_ADDRESS];
-				gr6 = [CP0RC_StateRegister_ADDRESS];				
-// Com. Port 0 State (Receive Part)		
-				[ar0++] = ar3,gr3;										// Read ADDRESS_REGISTER, MainCounter				
-				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
-				[ar0++] = ar5,gr5;										// Read ControlRegister, ddressMode						
-				[ar0++] = ar6,gr6;					          // Read StateRegister, InterruptMask	
-
-				ar1 = [CP0_PHY_CONFIG_ADDRESS];							
-				gr1 = [CP0_HEM_EN_ADDRESS];
-				ar2 = [CP0_ERR1_CNT_ADDRESS];
-				gr2 = [CP0_ERR2_CNT_ADDRESS];
-// Com. Port 0 Configuration	
-				[ar0++] = ar1,gr1;										// Read CP0_HEM_EN, CP0_PHY_CONFIG
-				[ar0++] = ar2,gr2;										// Read CP0_ERR2_CNT, CP0_ERR1_CNT
-								
-				ar3 = [CP1TR_MainCounter_ADDRESS];
-				gr3 = [CP1TR_ADDRESS_REGISTER_ADDRESS];				
-				ar4 = [CP1TR_BIAS_ADDRESS];
-				gr4 = [CP1TR_RowCounter_ADDRESS];
-				ar5 = [CP1TR_AddressMode_ADDRESS];
-				gr5 = [CP1TR_ControlRegister_ADDRESS];
-				ar6 = [CP1TR_InterruptMask_ADDRESS];
-				gr6 = [CP1TR_StateRegister_ADDRESS];
-								
-// Com. Port 1 State (Transmit Part)		
-				[ar0++] = ar3,gr3;										// Read ADDRESS_REGISTER, MainCounter				
-				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
-				[ar0++] = ar5,gr5;										// Read ControlRegister, ddressMode						
-				[ar0++] = ar6,gr6;										// Read StateRegister, InterruptMask					
-				
-				ar3 = [CP1RC_MainCounter_ADDRESS];
-				gr3 = [CP1RC_ADDRESS_REGISTER_ADDRESS];				
-				ar4 = [CP1RC_BIAS_ADDRESS];
-				gr4 = [CP1RC_RowCounter_ADDRESS];
-				ar5 = [CP1RC_AddressMode_ADDRESS];
-				gr5 = [CP1RC_ControlRegister_ADDRESS];
-				ar6 = [CP1RC_InterruptMask_ADDRESS];
-				gr6 = [CP1RC_StateRegister_ADDRESS];				
-// Com. Port 1 State (Receive Part)		
-				[ar0++] = ar3,gr3;										// Read ADDRESS_REGISTER, MainCounter				
-				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
-				[ar0++] = ar5,gr5;										// Read ControlRegister, ddressMode						
-				[ar0++] = ar6,gr6;					          // Read StateRegister, InterruptMask									
-
-				ar1 = [CP1_PHY_CONFIG_ADDRESS];							
-				gr1 = [CP1_HEM_EN_ADDRESS];
-				ar2 = [CP1_ERR1_CNT_ADDRESS];
-				gr2 = [CP1_ERR2_CNT_ADDRESS];
-// Com. Port 1 Configuration	
-				[ar0++] = ar1,gr1;										// Read CP1_HEM_EN, CP1_PHY_CONFIG
-				[ar0++] = ar2,gr2;										// Read CP1_ERR2_CNT, CP1_ERR1_CNT
 
 // Com. Port 0 Initialization (Receive Mode)
         gr7 = ARRAY2_CP_ADDRESS;
@@ -365,23 +284,10 @@ rumboot_runtime_init(016800h);
 				gr1 = [IRRL_ADDRESS];
 				ar2 = [IRRH_ADDRESS];
 				gr2 = [IMRL_ADDRESS];
-				ar3 = [CP0TR_MainCounter_ADDRESS];
-				gr3 = [CP0TR_ADDRESS_REGISTER_ADDRESS];				
-				ar4 = [CP0TR_BIAS_ADDRESS];
-				gr4 = [CP0TR_RowCounter_ADDRESS];
-				ar5 = [CP0TR_AddressMode_ADDRESS];
-				gr5 = [CP0TR_ControlRegister_ADDRESS];
-				ar6 = [CP0TR_InterruptMask_ADDRESS];
-				gr6 = [CP0TR_StateRegister_ADDRESS];
 								
 				[ar0++] = ar1,gr1;										// Read  irrl, intr
 				[ar0++] = ar2,gr2;										// Read cp rate, imrl	
-// Com. Port 0 State (Transmit Part)		
-				[ar0++] = ar3,gr3;										// Read ADDRESS_REGISTER, MainCounter				
-				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
-				[ar0++] = ar5,gr5;										// Read ControlRegister, addressMode						
-				[ar0++] = ar6,gr6;										// Read StateRegister, InterruptMask					
-				
+	
 				ar3 = [CP0RC_MainCounter_ADDRESS];
 				gr3 = [CP0RC_ADDRESS_REGISTER_ADDRESS];				
 				ar4 = [CP0RC_BIAS_ADDRESS];
@@ -395,15 +301,7 @@ rumboot_runtime_init(016800h);
 				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
 				[ar0++] = ar5,gr5;										// Read ControlRegister, addressMode						
 				[ar0++] = ar6,gr6;					          // Read StateRegister, InterruptMask	
-				
-				ar1 = [CP0_PHY_CONFIG_ADDRESS];							
-				gr1 = [CP0_HEM_EN_ADDRESS];
-				ar2 = [CP0_ERR1_CNT_ADDRESS];
-				gr2 = [CP0_ERR2_CNT_ADDRESS];
-// Com. Port 0 Configuration	
-				[ar0++] = ar1,gr1;										// Read CP0_HEM_EN, CP0_PHY_CONFIG
-				[ar0++] = ar2,gr2;										// Read CP0_ERR2_CNT, CP0_ERR1_CNT				
-								
+
 				ar3 = [CP1TR_MainCounter_ADDRESS];
 				gr3 = [CP1TR_ADDRESS_REGISTER_ADDRESS];				
 				ar4 = [CP1TR_BIAS_ADDRESS];
@@ -418,41 +316,25 @@ rumboot_runtime_init(016800h);
 				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
 				[ar0++] = ar5,gr5;										// Read ControlRegister, ddressMode						
 				[ar0++] = ar6,gr6;										// Read StateRegister, InterruptMask					
+				gr1 = 09_0000h;
+				[IRRL_RESET_ADDRESS] = gr1;           // Reset IRRL
 				
-				ar3 = [CP1RC_MainCounter_ADDRESS];
-				gr3 = [CP1RC_ADDRESS_REGISTER_ADDRESS];				
-				ar4 = [CP1RC_BIAS_ADDRESS];
-				gr4 = [CP1RC_RowCounter_ADDRESS];
-				ar5 = [CP1RC_AddressMode_ADDRESS];
-				gr5 = [CP1RC_ControlRegister_ADDRESS];
-				ar6 = [CP1RC_InterruptMask_ADDRESS];
-				gr6 = [CP1RC_StateRegister_ADDRESS];
-								
-// Com. Port 1 State (Receive Part)		
-				[ar0++] = ar3,gr3;										// Read ADDRESS_REGISTER, MainCounter				
-				[ar0++] = ar4,gr4;										// Read RowCounter, BIAS				
-				[ar0++] = ar5,gr5;										// Read ControlRegister, ddressMode						
-				[ar0++] = ar6,gr6;					          // Read StateRegister, InterruptMask	
-
-				ar1 = [CP1_PHY_CONFIG_ADDRESS];							
-				gr1 = [CP1_HEM_EN_ADDRESS];
-				ar2 = [CP1_ERR1_CNT_ADDRESS];
-				gr2 = [CP1_ERR2_CNT_ADDRESS];
-// Com. Port 1 Configuration	
-				[ar0++] = ar1,gr1;										// Read CP1_HEM_EN, CP1_PHY_CONFIG
-				[ar0++] = ar2,gr2;										// Read CP1_ERR2_CNT, CP1_ERR1_CNT	
-								
-							
-        gr1 = [IMRL_ADDRESS];                 // Read IMRL
+				gr1 = 0h;				
+				[CP0RC_BIAS_ADDRESS] = gr1;           // Reset Biases and Row Counters
+				[CP0RC_RowCounter_ADDRESS] = gr1;
+				[CP1TR_BIAS_ADDRESS] = gr1;
+				[CP1TR_RowCounter_ADDRESS] = gr1;
+															
+        gr1 = [IRRL_ADDRESS];                 // Read IRRL = 0
         [ar0++] = gr1;
         [ar0++] = gr0;        	              // Read check sum = FFFF_FFFFh, if test is correct 
 				with not gr0;
 				if <>0 goto Error;
 				
 // Check the result    	
-       ar0 = test_result + 44;
-	     ar1 = contr_result + 44;
-       gr0 = 46;
+       ar0 = test_result;
+	     ar1 = contr_result;
+       gr0 = 26;
 
 <Loop_Check>
 	gr1 = [ar0++];
