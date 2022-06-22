@@ -356,10 +356,10 @@ rumboot_runtime_init(016800h);
 				if <>0 goto Error;
 				
 				gr1 = 0h;				
-				[CP0RC_BIAS_ADDRESS] = gr1;           // Reset Biases and Row Counters
-				[CP0RC_RowCounter_ADDRESS] = gr1;
-				[CP1TR_BIAS_ADDRESS] = gr1;
-				[CP1TR_RowCounter_ADDRESS] = gr1;
+				[CP1RC_BIAS_ADDRESS] = gr1;           // Reset Biases and Row Counters
+				[CP1RC_RowCounter_ADDRESS] = gr1;
+				[CP0TR_BIAS_ADDRESS] = gr1;
+				[CP0TR_RowCounter_ADDRESS] = gr1;
 																			
 // Check the result    	
        ar0 = test_result;
