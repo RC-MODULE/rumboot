@@ -37,6 +37,8 @@ int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag);
 int nu_ppe_load_cfg_reg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg_file_tag);
 int nu_ppe_load_array_of_cfg(int heap_id, ConfigPPE* array_of_cfg, int num) ;
 
+uint32_t mask_N_M (int N, int M);
+
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag);
 WarrMetrics* nu_load_warr_metrics(int heap_id, char* file_tag);
 VectorMetrics* nu_load_vec_metrics(int heap_id, char* file_tag);
@@ -440,7 +442,6 @@ int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc);
 int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc,int iterations);
 NADependTable* nu_load_array_of_depend_table(int heap_id, char* file_tag, int iterations);
 void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations);
-
 
 int nu_ppe_rdma_regs_swrst_check (uintptr_t base);
 int nu_ppe_regs_swrst_check (uintptr_t base);

@@ -680,13 +680,13 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     nu_vpe_print_DataType(cfg->dt,"dt      ");
     nu_vpe_print_RoundMode(cfg->rnd_mode,"rnd_mode");
     nu_vpe_print_Enable(cfg->sat_en, "sat_en  ");
-    rumboot_printf("  rnd_size = %d \n" , cfg->rnd_size);
-    rumboot_printf("  batch_size = %d \n" , cfg->batch_size);
+    rumboot_printf("  rnd_size    = %d \n" , cfg->rnd_size);
+    rumboot_printf("  batch_size  = %d \n" , cfg->batch_size);
 
-    rumboot_printf("  TpData  = %d\n", cfg->TpData);
-    rumboot_printf("  BpData  = %d\n", cfg->BpData);
-    rumboot_printf("  LpData  = %d\n", cfg->LpData);
-    rumboot_printf("  RpData  = %d\n", cfg->RpData);
+    rumboot_printf("  TpData    = 0x%x\n", cfg->TpData);
+    rumboot_printf("  BpData    = 0x%x\n", cfg->BpData);
+    rumboot_printf("  LpData    = 0x%x\n", cfg->LpData);
+    rumboot_printf("  RpData    = 0x%x\n", cfg->RpData);
 
   rumboot_printf("ConfigMAMPE:\n");
   
@@ -1710,9 +1710,7 @@ int nu_mpe_decide_dma_config_super_trivial(ConfigMPE* cfg, CubeMetrics* cube_met
   cfg->dma_d_config.rdma.TPYOffset= 0 ;
   cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
   cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
-  
-  for(int i=0;i<7;i++)
- 
+
   cfg->dma_d_config.rdma.LPXData=0;
   cfg->dma_d_config.rdma.RPXData=0;
   cfg->dma_d_config.rdma.TPYData=0;
@@ -1757,10 +1755,18 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.TPYEn = (cfg->Tp) ? Enable_En : Enable_NotEn;
   cfg->dma_d_config.rdma.BPYEn = (cfg->Bp) ? Enable_En : Enable_NotEn;
 
-  cfg->dma_d_config.rdma.LPXData=cfg->LpData;
-  cfg->dma_d_config.rdma.RPXData=cfg->RpData;
-  cfg->dma_d_config.rdma.TPYData=cfg->TpData;
-  cfg->dma_d_config.rdma.BPYData=cfg->BpData;
+  if (cfg->dt == DataType_Int8) {
+    cfg->dma_d_config.rdma.LPXData = cfg->LpData<<8 | cfg->LpData;
+    cfg->dma_d_config.rdma.RPXData = cfg->RpData<<8 | cfg->RpData;
+    cfg->dma_d_config.rdma.TPYData = cfg->TpData<<8 | cfg->TpData;
+    cfg->dma_d_config.rdma.BPYData = cfg->BpData<<8 | cfg->BpData;
+  }
+  else {
+    cfg->dma_d_config.rdma.LPXData = cfg->LpData;
+    cfg->dma_d_config.rdma.RPXData = cfg->RpData;
+    cfg->dma_d_config.rdma.TPYData = cfg->TpData;
+    cfg->dma_d_config.rdma.BPYData = cfg->BpData;
+  }
 
   cfg->dma_w_config.rdma.LPXEn = Enable_NotEn;
   cfg->dma_w_config.rdma.RPXEn = Enable_NotEn;
@@ -2111,7 +2117,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   int HWC_MAX = 0x1fff;
 
-  int Wout_splt, Win_splt, Wout_splt_st, Win_splt_st, Win_offset;
+  int Wout_splt=0, Win_splt=0, Wout_splt_st=0, Win_splt_st=0, Win_offset=0;
 
   if (fm==0x4) {
     Wout_splt = Wout_splt_calc(Kh, Sh, rdctn);
@@ -2127,7 +2133,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   int Win_box_st = 128;
   int Win_box = 128;
-  int Wout_box_st, Wout_box, rem_Wout_box_st, rem_Wout_box;
+  int Wout_box_st=0, Wout_box=0, rem_Wout_box_st=0;
 
   if (fm&0x2) {
     Wout_box_st = Wi>Win_box ? (Win_box_st + Lp - Kw)/Sw + 1 :

@@ -99,7 +99,7 @@ uint32_t nu_get_uptime_ns() {
 }
 
 uint32_t mask_N_M (int N, int M) {
-  uint32_t mask_n_0   = (uint32_t)(0xFFFFFFFF) >> (32-1)-N;
+  uint32_t mask_n_0   = (uint32_t)(0xFFFFFFFF) >> (32-1-N);
   uint32_t mask_31_m  = (uint32_t)(0xFFFFFFFF) << M;
 
   return mask_n_0 & mask_31_m;
