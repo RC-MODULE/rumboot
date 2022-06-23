@@ -28,7 +28,7 @@
 #include <platform/vl_api.h>
 
 int g_argc = 0;
-static int   vl_port = 3425;
+static int   vl_port = 3525;
 static char *vl_host = "localhost";
 struct vl_instance *g_vl_instance; 
 uint64_t g_ticks_per_us = 5;
@@ -95,6 +95,12 @@ void cleanup()
         vl_disconnect(g_vl_instance);
 }
 
+
+static void the_vl_error_handler(int err)
+{
+        rumboot_platform_panic("VL_API: server reported error %d\n");
+}
+
 void rumboot_platform_setup()
 {
         rumboot_platform_runtime_info = malloc(sizeof(*rumboot_platform_runtime_info));
@@ -130,6 +136,7 @@ void rumboot_platform_setup()
                 switch (c) {
                 case 'p':
                         vl_port = atoi(optarg);
+                        rumboot_printf("PORT IS %d\n", vl_port);
                         break;
                 case 'H':
                         vl_host = strdup(optarg);
@@ -171,6 +178,8 @@ void rumboot_platform_setup()
                 rumboot_platform_panic("VL_API: Failed to connect to %s:%d\n", vl_host, vl_port);
         }
 
+        vl_set_error_handler(g_vl_instance, the_vl_error_handler);
+
         if (wdelay || rdelay) {
                 rumboot_printf("VL_API: Adjusting io delays: wdelay: %d rdelay: %d\n", wdelay, rdelay);
                 vl_set_io_delay(g_vl_instance, rdelay, wdelay);
@@ -193,6 +202,7 @@ void rumboot_platform_setup()
                 rumboot_malloc_register_heap(shm->name, &ptr[0], &ptr[shm->size]);
                 shm++;
         }
+        
         atexit(cleanup);
 }
 
