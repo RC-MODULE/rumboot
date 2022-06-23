@@ -1478,7 +1478,6 @@ int nu_vpe_check_status_regs(uintptr_t base, StatusRegs* status_regs) {
   return 0;
 }
 
-
 int nu_mpe_get_size_in_partitions(int size_in_bytes) {
   int res;
   res = size_in_bytes / (NU_MPE_BUF01 - NU_MPE_BUF00);
@@ -1487,10 +1486,6 @@ int nu_mpe_get_size_in_partitions(int size_in_bytes) {
 
   return res;
 }
-
-
-
-
 
 void nu_mpe_load_ma_config_from_table_row(ConfigMAMPE* cfg, uint32_t** ptr_) {
   uint32_t* ptr;
