@@ -7,6 +7,7 @@ macro(_na_init_variables DUT)
 
   # files transfered from RM to simulation environment
   set(NA_TEST_num_iterations_file num_iterations.bin)
+  set(NA_TEST_dep_table_file dep_table.bin)
   set(NA_TEST_in_file cube.bin)
   set(NA_TEST_warr_file warr.bin)
   set(NA_TEST_etalon_file etalon.bin)
@@ -37,6 +38,8 @@ macro(_na_init_variables DUT)
   set(NA_TEST_metrics_lut2 ${NA_TEST_lut2_file}.metrics)
   set(NA_TEST_metrics_mpe_cmd ${NA_TEST_mpe_cmd_file}.metrics)
 
+  set(NA_TEST_metrics_dep_table ${NA_TEST_dep_table_file}.metrics)
+
   set(NA_TEST_status_regs_file status_regs.bin)
   #set(NA_TEST_mpe_cfg_lut_file ${CMAKE_SOURCE_DIR}/src/lib/drivers/rcm_na/mpe_regs_table_macro.bin)
   set(NA_TEST_mpe_cfg_lut_file mpe_regs_table_macro.bin)
@@ -46,6 +49,7 @@ macro(_na_init_variables DUT)
 
   set(NA_RM_KEYS
     --num_iterations_file      ${NA_TEST_num_iterations_file}
+    --dep_table_file           ${NA_TEST_dep_table_file}      
     --in_file                  ${NA_TEST_in_file}
     --warr_file                ${NA_TEST_warr_file}
     --etalon_file              ${NA_TEST_etalon_file}
@@ -65,6 +69,7 @@ macro(_na_init_variables DUT)
   )
 
   set(PLUSARG_num_iterations_file_tag num_iterations_file_tag)
+  set(PLUSARG_dep_table_file_tag dep_table_file_tag)
   set(PLUSARG_in_file_tag in_file_tag)
   set(PLUSARG_warr_file_tag warr_file_tag)
   set(PLUSARG_etalon_file_tag etalon_file_tag)
@@ -94,6 +99,8 @@ macro(_na_init_variables DUT)
   set(PLUSARG_metrics_lut1_tag metrics_lut1_file_tag)
   set(PLUSARG_metrics_lut2_tag metrics_lut2_file_tag)
   set(PLUSARG_metrics_mpe_cmd_tag metrics_mpe_cmd_tag)
+
+  set(PLUSARG_metrics_dep_table_tag metrics_dep_table_tag)
 
   set(PLUSARG_status_regs_file_tag status_regs_file_tag)
   set(PLUSARG_mpe_cfg_lut_file_tag mpe_cfg_lut_file_tag)
@@ -130,14 +137,19 @@ macro(_na_init_variables DUT)
                      +${PLUSARG_metrics_lut2_tag}=${NA_TEST_metrics_lut2}
                      +${PLUSARG_metrics_mpe_cmd_tag}=${NA_TEST_metrics_mpe_cmd}
 
+                     +${PLUSARG_metrics_dep_table_tag}=${NA_TEST_metrics_dep_table}
+
                      +${PLUSARG_status_regs_file_tag}=${NA_TEST_status_regs_file}
                      +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
                      +${PLUSARG_metrics_mpe_cfg_lut_tag}=${NA_TEST_metrics_mpe_cfg_lut}
 
                      +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file}
+                     +${PLUSARG_dep_table_file_tag}=${NA_TEST_dep_table_file}
   )
   set(NA_RM_PLUSARGS_LOOP 
     +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file}
+    +${PLUSARG_dep_table_file_tag}=${NA_TEST_dep_table_file}
+    +${PLUSARG_metrics_dep_table_tag}=${NA_TEST_metrics_dep_table}
     +${PLUSARG_mpe_cfg_lut_file_tag}=${NA_TEST_mpe_cfg_lut_file}
     +${PLUSARG_metrics_mpe_cfg_lut_tag}=${NA_TEST_metrics_mpe_cfg_lut}
   )
@@ -1500,6 +1512,13 @@ macro(na_testsuite_add_npe_tests CONF)
       FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
     )	  
   # ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)    	  
+      ##########################################       
+	   ## NPE CMD DMA MPE Test
+	add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME NPE_CU_CMD_DMA_MPE
+      FILES scr1/targets/simple-rom/nu/na_cu/cu_cmd_dma_mpe.c
+    )	   	
   endif() # NA_TESTGROUP CU
   
   
@@ -1510,7 +1529,7 @@ macro(na_testsuite_add_npe_tests CONF)
         CONFIGURATION ${CONF}
         NAME MPE_1
         FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
-    )
+    )	
   endif()
   
       ##########################################
@@ -1646,7 +1665,6 @@ macro(na_testsuite_add_npe_tests CONF)
     else()
       set(COMPARER_OPT -DDONT_USE_PPE=1)
     endif()
-    set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
     add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME nkbvs_${label}
@@ -1661,7 +1679,10 @@ macro(na_testsuite_add_npe_tests CONF)
     )  
   endmacro()
 
-  if(NA_TESTGROUP STREQUAL "NKBVS")
+  if(NOT DEFINED NA_TESTGROUP OR NA_TESTGROUP STREQUAL "NKBVS")
+    if(NOT DEFINED NKBVS_TEST_DIR)
+      set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
+    endif()
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_1 main_nkbvs_1 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_2 main_nkbvs_2 NOT_MAKE_TIGHT BITWISE)
     ADD_NPE_MPE_VPE_TEST(${CONF} nkbvs_3 main_nkbvs_3 NOT_MAKE_TIGHT BITWISE)

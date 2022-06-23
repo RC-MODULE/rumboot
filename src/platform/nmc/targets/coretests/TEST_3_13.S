@@ -29,16 +29,16 @@ test_result : word[104] = ( -1 dup 104);
 // The control value dimension 
 
 contr_result : word[104] = (
-                            0h, 0h, 154h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 1h, 158h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 2h, 15Ch, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 3h, 160h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,    
-    												0h, 4h, 164h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 5h, 168h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 6h, 16Ch, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 7h, 170h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 8h, 174h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
-    												0h, 9h, 178h, 1040h, 0300_0400h, 1CCh, 0300_0400h, 100bh, 0fffffff5h dup 2,
+                            0h, 0h, 15ah, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 1h, 15eh, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 2h, 162h, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 3h, 166h, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,    
+    												0h, 4h, 16ah, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 5h, 16eh, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 6h, 172h, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 7h, 176h, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 8h, 17ah, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
+    												0h, 9h, 17eh, 1040h, 0300_0400h, 1d6h, 0300_0400h, 100bh, 0fffffff5h dup 2,
     												0300_0400h, 0ah, 0ffff_ffd8h, 0000_01c3h);
 
 save_stack : long = 0l;

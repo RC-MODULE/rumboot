@@ -436,6 +436,20 @@ void*				vl_phys_to_virt(struct vl_instance *vl, uint64_t base_addr);
 	
 
  */
+
+int vl_virt_to_phys_valid (struct vl_instance *vl,volatile void *addr);
+/*!
+	\ingroup vlapi
+	\brief проверяет валидность виртуального адреса  
+	 
+	\param [in] vl экземпляр соединения
+	\param [in] addr виртуальный адрес  
+	\return 0 - если адрес невалидный. 1 - валидный.
+	
+
+ */
+
+
 void 				vl_set_error_handler(struct vl_instance *vl, void (*error_handler)(int));
 
 /*!

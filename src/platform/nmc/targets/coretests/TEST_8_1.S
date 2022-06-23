@@ -253,7 +253,7 @@ rumboot_runtime_init(016800h);
 		    
 <mytest_additional>	
 //	1
-.repeat 848;																						// Align address (should be 800h!)
+.repeat 843;																						// Align address (should be 800h!)
 	nul 0h;
 .endrepeat;
 

@@ -45,6 +45,11 @@ cfg_mpe->   dt       = DataType_Int16 ;
 cfg_mpe->   rnd_mode = RoundMode_HalfAwayFromZero;
 cfg_mpe->   sat_en   = Enable_En;
 cfg_mpe->   rnd_size = 0 ;
+cfg_mpe->   TpData   = 0 ;
+cfg_mpe->   BpData   = 0 ;
+cfg_mpe->   LpData   = 0 ;
+cfg_mpe->   RpData   = 0 ;
+  
   
 cfg_mpe->ma_config.ADD_CountI0  = 1   ;
 cfg_mpe->ma_config.CMP_CountI0  = 8   ;
