@@ -675,6 +675,30 @@ macro (ADD_NKBVS_TEST CONF name arrays_path d vpe_in_c vpe_in_h vpe_in_w)
   )
 endmacro()
 
+macro (ADD_NKBVS_DW_TRANSPOSE_TEST CONF name arrays_path d stride_h stride_w pad_h pad_w vpe_in_c vpe_in_h vpe_in_w)
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME nkbvs_${name}
+    FILES scr1/targets/simple-rom/nu/npe/nkbvs_dw_transpose.c
+    CFLAGS -D${d} -Dstride_h=${stride_h} -Dstride_w=${stride_w} -Dpad_h=${pad_h} -Dpad_w=${pad_w} -Dvpe_in_c=${vpe_in_c} -Dvpe_in_w=${vpe_in_w} -Dvpe_in_h=${vpe_in_h}
+    PREPCMD
+        ${NA_RM_BIN_PATH}/main_nkbvs_${name}
+        ${NA_RM_KEYS}
+        ${RM_TF_KEYS}
+        > ${RM_LOGFILE} &&
+
+        ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} TRUNC16 < ${arrays_path}/mpe_arrays.txt
+
+        #&& cp ${arrays_path}/config_vpe.bin .
+
+        && mv ./config_vpe.bin.0 ./config_vpe.bin
+
+        || exit 1
+
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:main_nkbvs_${name}
+  )
+endmacro()
 
 macro (ADD_MPE_COUPLED_TEST_LOOP CONF name rm_bin_name)
   set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
@@ -1698,6 +1722,17 @@ macro(na_testsuite_add_npe_tests CONF)
     ADD_NKBVS_TEST(${CONF} 2d_deconv_1 /home/v.gordeev/na_arrays/nkbvs_2d_deconv_1 No 32 421 419)
 
     ADD_NKBVS_TEST(${CONF} depthwise_1 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_1 VPE_TraceMode_MPE_DW 32 416 408)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_deconv_2 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/nkbvs_2d_deconv_2 No 2 2 1 0 64 827 838)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_1_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_1_small VPE_TraceMode_MPE_DW 1 1 0 1 32 9 165)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_1 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_1 VPE_TraceMode_MPE_DW 1 1 0 1 32 421 419)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_2_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_2_small VPE_TraceMode_MPE_DW 2 2 1 0 64 2 99)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_2 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_2 VPE_TraceMode_MPE_DW 2 2 1 0 64 413 419)
+    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3_opt_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3_opt_small VPE_TraceMode_MPE_DW 3 3 1 1 32 2 163)
+    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3_opt /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3_opt VPE_TraceMode_MPE_DW 3 3 1 1 32 2 163)
+    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3_small VPE_TraceMode_MPE_DW 1 1 1 1 32 6 159)
+    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3 VPE_TraceMode_MPE_DW 1 1 1 1 32 6 159)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_7_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_7_small VPE_TraceMode_MPE_DW 1 1 0 3 32 16 171)
+    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_7 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_7 VPE_TraceMode_MPE_DW 1 1 0 3 2048 427 421)
   endif()
 
   na_testsuite_add_vpe_tests(${CONF})
