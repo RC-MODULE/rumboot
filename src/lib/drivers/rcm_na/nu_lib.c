@@ -3188,7 +3188,7 @@ NPEReg* nu_vpe_dma_add_diff_reg_map(uintptr_t base, uintptr_t vpe_dma_base, NPER
 NPEReg* nu_vpe_add_diff_start(NPEReg* cfg_diff_ptr, ConfigVPE* cfg) {
   uint32_t temp;
 
-  temp = (temp & 0xE0FFFFFF) | cfg->depend_mask; // Manipulate With DPND Fields
+  temp = cfg->depend_mask; // Manipulate With DPND Fields
 
   if(cfg->mark)
    {temp = temp | 0x00000003; }//MARKED_CNTX=1 & NEXT_CNTX=1
