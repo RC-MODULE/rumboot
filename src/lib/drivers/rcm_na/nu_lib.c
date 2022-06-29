@@ -602,15 +602,15 @@ void nu_mpe_print_ConfigWRDMAMPEBias(ConfigWRDMAMPEBias* bias,int index) {
 
 void nu_mpe_print_ConfigRDDMAMPE(ConfigRDDMAMPE* cfg,char* name) {
   rumboot_printf("ConfigRDDMAMPE(%s):\n",name);
-    rumboot_printf("  BFCA = 0x%x\n",cfg->BFCA);
-    rumboot_printf("  AOffset = 0x%x\n",cfg->AOffset);
-    rumboot_printf("  LPXOffset = %d \n",cfg->LPXOffset);
-    rumboot_printf("  RPXOffset = %d \n",cfg->RPXOffset);
-    rumboot_printf("  TPYOffset = %d \n",cfg->TPYOffset);
-    rumboot_printf("  BPYOffset = %d \n",cfg->BPYOffset);
-    rumboot_printf("  CntSha = %d \n",cfg->CntSha);
+    rumboot_printf("  BFCA      = 0x%x\n",cfg->BFCA);
+    rumboot_printf("  AOffset   = 0x%x\n",cfg->AOffset);
+    rumboot_printf("  LPXOffset = 0x%x \n",cfg->LPXOffset);
+    rumboot_printf("  RPXOffset = 0x%x \n",cfg->RPXOffset);
+    rumboot_printf("  TPYOffset = 0x%x \n",cfg->TPYOffset);
+    rumboot_printf("  BPYOffset = 0x%x \n",cfg->BPYOffset);
+    rumboot_printf("  CntSha    = %d \n",cfg->CntSha);
     rumboot_printf("  CntThresholdSha = %d \n",cfg->CntThresholdSha);
-    rumboot_printf("  ThreCtrl = %d \n",cfg->ThreCtrl);
+    rumboot_printf("  ThreCtrl        = %d \n",cfg->ThreCtrl);
     nu_vpe_print_Enable(cfg->LPXEn,"LPXEn");
     nu_vpe_print_Enable(cfg->RPXEn,"RPXEn");
     nu_vpe_print_Enable(cfg->TPYEn,"TPYEn");
@@ -1529,8 +1529,7 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
   ptr = *ptr_;
   
   cfg->MAINCNT=(uint16_t)        *ptr;ptr++;
-  
-//                                  ptr+=5; //Skipped 
+
   cfg->rdma.AOffset=             *ptr;ptr++;
   cfg->rdma.LPXOffset=           *ptr;ptr++;
   cfg->rdma.RPXOffset=           *ptr;ptr++;
@@ -1539,14 +1538,13 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
   
   cfg->rdma.CntSha=(uint16_t)    *ptr;ptr++;
   
-//                                  ptr+=5;
   cfg->rdma.CntThresholdSha=(uint16_t)*ptr;ptr++;
   cfg->rdma.ThreCtrl=(uint8_t)   *ptr;ptr++;
   cfg->rdma.LPXEn=               *ptr;ptr++;
   cfg->rdma.RPXEn=               *ptr;ptr++;
   cfg->rdma.TPYEn=               *ptr;ptr++;
   cfg->rdma.BPYEn=               *ptr;ptr++;
-//
+
   for(int i=0;i<7;i++){
     cfg->rdma.Bias[i].BiasEn=                    *ptr;ptr++;
 
@@ -1558,7 +1556,6 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
     cfg->rdma.Bias[i].PXBSEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].PYBSEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].Bias=                      *ptr;ptr++;
-//                                                      ptr++; // Skipped AOffset
 
     cfg->rdma.Bias[i].CntSha=(uint16_t)          *ptr;ptr++;
 
@@ -1570,8 +1567,7 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
     cfg->rdma.Bias[i].CntThresholdSha=(uint16_t) *ptr;ptr++;
     cfg->rdma.Bias[i].CntCmp=(uint16_t)          *ptr;ptr++;
   }
-  
-  
+
   cfg->wdma.BADR=(uint16_t)            *ptr;ptr++;
   cfg->wdma.LADR=(uint16_t)            *ptr;ptr++;
   cfg->wdma.USED=                      *ptr;ptr++;
