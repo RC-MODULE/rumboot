@@ -1568,6 +1568,11 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
     cfg->rdma.Bias[i].CntCmp=(uint16_t)          *ptr;ptr++;
   }
 
+  cfg->rdma.LPXData = *ptr;ptr++;
+  cfg->rdma.RPXData = *ptr;ptr++;
+  cfg->rdma.TPYData = *ptr;ptr++;
+  cfg->rdma.BPYData = *ptr;ptr++;
+
   cfg->wdma.BADR=(uint16_t)            *ptr;ptr++;
   cfg->wdma.LADR=(uint16_t)            *ptr;ptr++;
   cfg->wdma.USED=                      *ptr;ptr++;

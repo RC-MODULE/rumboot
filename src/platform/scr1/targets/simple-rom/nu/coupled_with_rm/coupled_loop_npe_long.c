@@ -27,9 +27,6 @@ int nu_mpe_decide_dma_config(
   // Search For The MPE DMA Configuration (That Is Predefined In cfg_lut Table)
   if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1;
 
-  // Fill Other Fields
-  if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1;
-
   return 0;
 }
 
