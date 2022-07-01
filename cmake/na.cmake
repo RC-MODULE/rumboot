@@ -1717,7 +1717,7 @@ macro(na_testsuite_add_npe_tests CONF)
     )  
   endmacro()
 
-  if(NOT DEFINED NA_TESTGROUP OR NA_TESTGROUP STREQUAL "NKBVS")
+  if(NA_TESTGROUP STREQUAL "NKBVS")
     if(NOT DEFINED NKBVS_TEST_DIR)
       set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
     endif()
