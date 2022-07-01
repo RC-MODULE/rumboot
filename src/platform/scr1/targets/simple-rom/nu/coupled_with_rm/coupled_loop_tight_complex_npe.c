@@ -197,6 +197,18 @@ int main() {
     if (nu_npe_place_associative_regs_dump(heap_id,&test_desc,iterations) !=0) return -1;
     if (nu_npe_place_array_of_depend_table(heap_id,&test_desc, iterations) !=0) return -1;
     nu_get_temp_depend_table(&test_desc, iterations);
+    
+      // Make Trivial iteration_cfg_map
+    if( nu_malloc_iteration_cfg_map(heap_id, &(test_desc.iteration_cfg_map), iterations) != 0) return -1;
+    nu_fill_iteration_cfg_map(
+    &(test_desc.iteration_cfg_map), 
+      test_desc.array_of_depend_table, 
+      test_desc.array_of_cfg_mpe,
+      test_desc.array_of_cfg_vpe,
+      test_desc.array_of_cfg_ppe,
+      test_desc.array_of_cfg_reg_ppe,
+      iterations
+    );
 
       // Make The Iteration Descriptor To Point At The First Test Data
     nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
@@ -246,7 +258,7 @@ int main() {
                 iteration_desc.res_data
             );
 
-        nu_npe_add_depend_rd_after_wr(&test_desc, i);
+        nu_npe_add_depend_rd_after_wr(&test_desc, test_desc.PPE_ENABLED, i);
         nu_npe_add_depend_wr_after_rd(&test_desc, i);
     
         nu_setup_next_regs_dump(iteration_desc);

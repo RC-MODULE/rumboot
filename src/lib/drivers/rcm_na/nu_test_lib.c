@@ -57,6 +57,7 @@ void nu_get_rather_fair_heap_map(NAHeapMap* heap_map) {
   heap_map->metrics_ppe_cfg    =nu_get_heap_id();
   // heap_map->metrics_res        =nu_get_heap_id();
   heap_map->metrics_etalon     =nu_get_heap_id();
+  heap_map->control            =nu_get_heap_id();
 }
 
 void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map) {
@@ -84,6 +85,7 @@ void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map) {
   heap_map->metrics_ppe_cfg    =nu_get_heap_id();
   // heap_map->metrics_res        =nu_get_heap_id();
   heap_map->metrics_etalon     =nu_get_heap_id();
+  heap_map->control            =nu_get_heap_id();
 }
 
 
@@ -1884,6 +1886,7 @@ int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations
 
 void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
   test_desc-> MPE_ENABLED=Enable_En;
+  test_desc-> VPE_ENABLED=Enable_En;
   test_desc-> PPE_ENABLED=Enable_En;
   
   test_desc-> array_of_cfg_mpe=NULL;
@@ -1913,11 +1916,19 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
   test_desc->associative_regs_dump_end_ptr=NULL;
 
   test_desc->array_of_depend_table=NULL;
+  test_desc->iteration_cfg_map.num_mpe_cfgs=0;
+  test_desc->iteration_cfg_map.num_vpe_cfgs=0;
+  test_desc->iteration_cfg_map.num_ppe_cfgs=0;
+  test_desc->iteration_cfg_map.cfg_mpe=NULL;
+  test_desc->iteration_cfg_map.cfg_vpe=NULL;
+  test_desc->iteration_cfg_map.cfg_ppe=NULL;
+  test_desc->iteration_cfg_map.cfg_reg_ppe=NULL;
 }
 
 
 void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc) {
   iteration_desc->MPE_ENABLED=test_desc->MPE_ENABLED;
+  iteration_desc->VPE_ENABLED=test_desc->VPE_ENABLED;
   iteration_desc->PPE_ENABLED=test_desc->PPE_ENABLED;
   
   iteration_desc->cfg_mpe  = test_desc->array_of_cfg_mpe;
@@ -1990,60 +2001,78 @@ void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty
     iteration_desc->op2=NULL;
 }
 
+void nu_npe_iteration_with_dep_start(NPEIterationDescriptor* iteration_desc,NAIterationConfigMap* iteration_cfg_map,int i){
+  iteration_desc->MPE_ENABLED = (iteration_cfg_map->cfg_mpe[i] == NULL) ? Enable_NotEn : Enable_En;
+  iteration_desc->VPE_ENABLED = (iteration_cfg_map->cfg_vpe[i] == NULL) ? Enable_NotEn : Enable_En;
+  iteration_desc->PPE_ENABLED = (iteration_cfg_map->cfg_ppe[i] == NULL) ? Enable_NotEn : Enable_En;
+  
+  nu_npe_iteration_start(iteration_desc);
+}
+
+
 void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
-  desc->in_data = (void*) ( (char*)(desc->in_data) + (desc->cfg_vpe->src_rdma_config.dma_bsize+1) * (desc->in_metrics->s) );
+  if(desc->VPE_ENABLED == Enable_En) { // Common Algorythm Can Work With Batches, So We Should Look At cfg_vpe Where The Batch Configuration Lies
+    desc->in_data = (void*) ( (char*)(desc->in_data) + (desc->cfg_vpe->src_rdma_config.dma_bsize+1) * (desc->in_metrics->s) );
+    desc->etalon  = (void*) ( (char*)(desc->etalon ) + (desc->cfg_vpe->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
+    desc->res_data= (void*) ( (char*)(desc->res_data)+ (desc->cfg_vpe->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
+  }
+  else {  // PPE Only Works, We Have No cfg_vpe And No Batches
+    desc->in_data = (void*) ( (char*)(desc->in_data) + desc->in_metrics->s  );
+    desc->etalon  = (void*) ( (char*)(desc->etalon ) + desc->res_metrics->s );
+    desc->res_data= (void*) ( (char*)(desc->res_data)+ desc->res_metrics->s );
+  }
   if(desc->MPE_ENABLED==Enable_En) {
     desc->warr    = (void*) ( (char*)(desc->warr)    + desc->warr_metrics->s); // ???: with batch * bsize ?
   }
-  desc->etalon  = (void*) ( (char*)(desc->etalon ) + (desc->cfg_vpe->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
-  desc->res_data= (void*) ( (char*)(desc->res_data)+ (desc->cfg_vpe->    wdma_config.dma_bsize+1) * (desc->res_metrics->s));
-  if    (desc->cfg_vpe->op0_en==Enable_En) {
-    if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Element) ||
-        (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Element) ) {
-             desc->op0_cube = (void*) ( (char*)(desc->op0_cube) + 
-                                                desc->op0_cube_metrics->s );
-             desc->op0_cube_metrics += (desc->cfg_vpe->op0_rdma_config.dma_bsize+1);
+  if(desc->VPE_ENABLED == Enable_En) {
+    if    (desc->cfg_vpe->op0_en==Enable_En) {
+      if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Element) ||
+          (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Element) ) {
+               desc->op0_cube = (void*) ( (char*)(desc->op0_cube) + 
+                                                  desc->op0_cube_metrics->s );
+               desc->op0_cube_metrics += (desc->cfg_vpe->op0_rdma_config.dma_bsize+1);
+      }
+      if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Channel) ||
+          (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Channel) ) {
+               desc->op0_vec  = (void*) ( (char*)(desc->op0_vec ) + 
+                                                  desc->op0_vec_metrics->s  );
+               desc->op0_vec_metrics  += 1;
+      }
     }
-    if( (desc->cfg_vpe->op0_config.alu_en==Enable_En   &&   desc->cfg_vpe->op0_config.alu_mode==Mode_Channel) ||
-        (desc->cfg_vpe->op0_config.mux_en==Enable_En   &&   desc->cfg_vpe->op0_config.mux_mode==Mode_Channel) ) {
-             desc->op0_vec  = (void*) ( (char*)(desc->op0_vec ) + 
-                                                desc->op0_vec_metrics->s  );
-             desc->op0_vec_metrics  += 1;
+    if    (desc->cfg_vpe->op1_en==Enable_En) {
+      if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Element) ||
+          (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Element) ) {
+               desc->op1_cube = (void*) ( (char*)(desc->op1_cube) + 
+                                                  (desc->cfg_vpe->op1_rdma_config.dma_bsize+1) * (desc->op1_cube_metrics->s) );
+               desc->op1_cube_metrics += (desc->cfg_vpe->op1_rdma_config.dma_bsize+1);
+      }
+      if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Channel) ||
+          (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Channel) ) {
+               desc->op1_vec  = (void*) ( (char*)(desc->op1_vec ) + 
+                                                  desc->op1_vec_metrics->s  );
+               desc->op1_vec_metrics  += 1;
+      }
     }
-  }
-  if    (desc->cfg_vpe->op1_en==Enable_En) {
-    if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Element) ||
-        (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Element) ) {
-             desc->op1_cube = (void*) ( (char*)(desc->op1_cube) + 
-                                                (desc->cfg_vpe->op1_rdma_config.dma_bsize+1) * (desc->op1_cube_metrics->s) );
-             desc->op1_cube_metrics += (desc->cfg_vpe->op1_rdma_config.dma_bsize+1);
-    }
-    if( (desc->cfg_vpe->op1_config.alu_en==Enable_En   &&   desc->cfg_vpe->op1_config.alu_mode==Mode_Channel) ||
-        (desc->cfg_vpe->op1_config.mux_en==Enable_En   &&   desc->cfg_vpe->op1_config.mux_mode==Mode_Channel) ) {
-             desc->op1_vec  = (void*) ( (char*)(desc->op1_vec ) + 
-                                                desc->op1_vec_metrics->s  );
-             desc->op1_vec_metrics  += 1;
-    }
-  }
-  if    (desc->cfg_vpe->op2_en==Enable_En) {
-    if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Element) ||
-        (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Element) ) {
-             desc->op2_cube = (void*) ( (char*)(desc->op2_cube) + 
-                                                (desc->cfg_vpe->op2_rdma_config.dma_bsize+1) * (desc->op2_cube_metrics->s) );
-             desc->op2_cube_metrics += (desc->cfg_vpe->op2_rdma_config.dma_bsize+1);
-    }
-    if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Channel) ||
-        (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Channel) ) {
-             desc->op2_vec  = (void*) ( (char*)(desc->op2_vec ) + 
-                                                desc->op2_vec_metrics->s  );
-             desc->op2_vec_metrics  += 1;
-    }
-    
-    if(desc->cfg_vpe->op2_config.lut_en==Enable_En) {
-      desc->lut1 = (void*) ( (char*)(desc->lut1) + desc->lut1_metrics->s );
-      desc->lut2 = (void*) ( (char*)(desc->lut2) + desc->lut2_metrics->s );
-      desc->lut1_metrics       += 1;
-      desc->lut2_metrics       += 1;
+    if    (desc->cfg_vpe->op2_en==Enable_En) {
+      if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Element) ||
+          (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Element) ) {
+               desc->op2_cube = (void*) ( (char*)(desc->op2_cube) + 
+                                                  (desc->cfg_vpe->op2_rdma_config.dma_bsize+1) * (desc->op2_cube_metrics->s) );
+               desc->op2_cube_metrics += (desc->cfg_vpe->op2_rdma_config.dma_bsize+1);
+      }
+      if( (desc->cfg_vpe->op2_config.alu_en==Enable_En   &&   desc->cfg_vpe->op2_config.alu_mode==Mode_Channel) ||
+          (desc->cfg_vpe->op2_config.mux_en==Enable_En   &&   desc->cfg_vpe->op2_config.mux_mode==Mode_Channel) ) {
+               desc->op2_vec  = (void*) ( (char*)(desc->op2_vec ) + 
+                                                  desc->op2_vec_metrics->s  );
+               desc->op2_vec_metrics  += 1;
+      }
+      
+      if(desc->cfg_vpe->op2_config.lut_en==Enable_En) {
+        desc->lut1 = (void*) ( (char*)(desc->lut1) + desc->lut1_metrics->s );
+        desc->lut2 = (void*) ( (char*)(desc->lut2) + desc->lut2_metrics->s );
+        desc->lut1_metrics       += 1;
+        desc->lut2_metrics       += 1;
+      }
     }
   }
   
@@ -2057,7 +2086,10 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
   if(desc->MPE_ENABLED) {
     desc->cfg_mpe += 1;
   }
-  desc->cfg_vpe += 1;
+  
+  if(desc->VPE_ENABLED) {
+    desc->cfg_vpe += 1;
+  }
   
   if(desc->PPE_ENABLED==Enable_En) {
     desc->cfg_ppe += 1;
@@ -2194,10 +2226,227 @@ int nu_npe_place_arrays(int heap_id, NPETestDescriptor* test_desc,int iterations
   heap_map.metrics_ppe_cfg=heap_id;
   // heap_map.metrics_res=heap_id;
   heap_map.metrics_etalon=heap_id;
+  heap_map.control=heap_id;
   
   return nu_npe_place_arrays_by_heap_map(&heap_map,test_desc,iterations);
 }
   
+int nu_malloc_iteration_cfg_map(int heap_id, NAIterationConfigMap* iteration_cfg_map, int iterations) {
+    // Allocate The Arrays Of Configuration Pointers For Each Unit
+  iteration_cfg_map->cfg_mpe = rumboot_malloc_from_heap(heap_id,sizeof(ConfigMPE*)*iterations);
+  iteration_cfg_map->cfg_vpe = rumboot_malloc_from_heap(heap_id,sizeof(ConfigVPE*)*iterations);
+  iteration_cfg_map->cfg_ppe = rumboot_malloc_from_heap(heap_id,sizeof(ConfigPPE*)*iterations);
+  iteration_cfg_map->cfg_reg_ppe = rumboot_malloc_from_heap(heap_id,sizeof(ConfigREGPPE*)*iterations);
+  
+  if(iteration_cfg_map->cfg_mpe == NULL ||
+     iteration_cfg_map->cfg_vpe == NULL ||
+     iteration_cfg_map->cfg_ppe == NULL ||
+     iteration_cfg_map->cfg_reg_ppe == NULL) return -1;
+  
+  return 0;
+}
+
+bool nu_mpe_dep_table_requires_mpe_run(NADependTable* dep_table) {
+  if( 
+    ( (dep_table->read_after_write[VPE_WDMA][MPE_RDMA_D] == -2) &&
+      (dep_table->read_after_write[PPE_WDMA][MPE_RDMA_D] == -2) 
+    ) || 
+    ( (dep_table->read_after_write[VPE_WDMA][MPE_RDMA_W] == -2) &&
+      (dep_table->read_after_write[PPE_WDMA][MPE_RDMA_W] == -2)
+    )
+  )
+    return false;
+  else
+    return true;
+}
+
+bool nu_vpe_dep_table_requires_vpe_run(NADependTable* dep_table) {
+  if( (dep_table->read_after_write[VPE_WDMA][VPE_RDMA] == -2) &&
+      (dep_table->read_after_write[PPE_WDMA][VPE_RDMA] == -2)
+  ) 
+    return false;
+  else
+    return true;
+}
+
+bool nu_ppe_dep_table_requires_ppe_run(NADependTable* dep_table) {
+  if( (dep_table->read_after_write[VPE_WDMA][PPE_RDMA] == -2) &&
+      (dep_table->read_after_write[PPE_WDMA][PPE_RDMA] == -2)
+  )
+    return false;
+  else
+    return true;
+}
+
+void nu_npe_count_cfgs_by_dep_table(NAIterationConfigMap* iteration_cfg_map,NADependTable* array_of_depend_table,int iterations) {
+  // Calc iteration_cfg_map->num_mpe_cfgs , num_vpe_cfgs, num_ppe_cfgs
+  iteration_cfg_map->num_mpe_cfgs = 0;
+  iteration_cfg_map->num_vpe_cfgs = 0;
+  iteration_cfg_map->num_ppe_cfgs = 0;
+  
+  for(int i = 0; i < iterations; i++) {
+    if(nu_mpe_dep_table_requires_mpe_run( &(array_of_depend_table[i]) ) )
+      iteration_cfg_map->num_mpe_cfgs++;
+    
+    if(nu_vpe_dep_table_requires_vpe_run( &(array_of_depend_table[i]) ) )
+      iteration_cfg_map->num_vpe_cfgs++;
+    
+    if(nu_ppe_dep_table_requires_ppe_run( &(array_of_depend_table[i]) ) )
+      iteration_cfg_map->num_ppe_cfgs++;
+  }
+}
+
+void nu_fill_iteration_cfg_map(
+  NAIterationConfigMap* iteration_cfg_map, 
+  NADependTable* array_of_depend_table, 
+  ConfigMPE* array_of_cfg_mpe,
+  ConfigVPE* array_of_cfg_vpe,
+  ConfigPPE* array_of_cfg_ppe,
+  ConfigREGPPE* array_of_cfg_reg_ppe,
+  int iterations
+) {
+  // Defines iteration_cfg_map.mpe_cfg, vpe_cfg, ppe_cfg Arrays
+  //  Corresponding mpe_cfg[i] , vpe_cfg[i] Or ppe_cfg[i] Set To NULL if Unit Should Not Be Run On A Current Iteration
+  //   And Takes Its Pointer To An Existing Configuration Structure if Unit Should Be Run
+  int ptr_cfg_mpe;
+  int ptr_cfg_vpe;
+  int ptr_cfg_ppe;
+  
+  ptr_cfg_mpe=0;
+  ptr_cfg_vpe=0;
+  ptr_cfg_ppe=0;
+  
+  for(int i=0; i<iterations; i++) {
+    if( nu_mpe_dep_table_requires_mpe_run( &(array_of_depend_table[i]) ) ) {
+      iteration_cfg_map->cfg_mpe[i] = &(array_of_cfg_mpe[ptr_cfg_mpe]);
+      ptr_cfg_mpe++;
+    }
+    else {
+      iteration_cfg_map->cfg_mpe[i] = NULL;
+    }
+    
+    if( nu_vpe_dep_table_requires_vpe_run( &(array_of_depend_table[i]) ) ) {
+      iteration_cfg_map->cfg_vpe[i] = &(array_of_cfg_vpe[ptr_cfg_vpe]);
+      ptr_cfg_vpe++;
+    }
+    else {
+      iteration_cfg_map->cfg_vpe[i] = NULL;
+    }
+    
+    if( nu_ppe_dep_table_requires_ppe_run( &(array_of_depend_table[i]) ) ) {
+      iteration_cfg_map->cfg_ppe    [i] = &(array_of_cfg_ppe    [ptr_cfg_ppe]);
+      iteration_cfg_map->cfg_reg_ppe[i] = &(array_of_cfg_reg_ppe[ptr_cfg_ppe]);
+      ptr_cfg_ppe++;
+    }
+    else {
+      iteration_cfg_map->cfg_ppe    [i] = NULL;
+      iteration_cfg_map->cfg_reg_ppe[i] = NULL;
+    }
+  }
+}
+
+int nu_npe_place_arrays_with_dep_by_heap_map(NAHeapMap* heap_map, NPETestDescriptor* test_desc,int iterations) {
+    // The Same As In nu_npe_place_arrays_by_heap_map
+    // We Load An Intermediate Data From Files Because It Is Simplier To Make This Than Not To Make
+  test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(heap_map->metrics_in_data, "metrics_in_tag", iterations);
+  test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(heap_map->metrics_etalon, "metrics_etalon_tag", iterations);
+  if(test_desc->array_of_in_metrics  ==NULL || test_desc->array_of_res_metrics ==NULL  ) return -1;
+  test_desc->array_of_in_data = nu_load_array_of_cubes(heap_map->in_data,         "in_file_tag",test_desc->array_of_in_metrics ,iterations);
+  test_desc->array_of_etalon  = nu_load_array_of_cubes(heap_map->etalon,      "etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+  test_desc->array_of_res_data= nu_malloc_array_of_res(heap_map->res,                           test_desc->array_of_res_metrics,iterations);
+  if(test_desc->array_of_in_data ==NULL || 
+     test_desc->array_of_etalon  ==NULL || 
+     test_desc->array_of_res_data==NULL ) return -1;
+    //
+  
+    // Allocate The Configuration Pointer Arrays
+  if(nu_malloc_iteration_cfg_map(heap_map->control, &(test_desc->iteration_cfg_map), iterations) != 0) return -1;
+  
+    // Load 'Read After Write' Depend Table From File
+  test_desc->array_of_depend_table = 
+    nu_load_array_of_depend_table(heap_map->control,"dep_table_file_tag","metrics_dep_table_tag",iterations);
+  if(test_desc->array_of_depend_table == NULL) return -1;
+  
+    // Count The Actual Number Of ConfigMPE,ConfigVPE,ConfigPPE Structures (Store It In iteration_cfg_map)
+  nu_npe_count_cfgs_by_dep_table(&(test_desc->iteration_cfg_map), test_desc->array_of_depend_table, iterations);
+  
+    // Load Test Data That Associated With MPE // Yeh! Could Make It A Function:(
+  if(test_desc->iteration_cfg_map.num_mpe_cfgs != 0) {
+      // WARR
+    test_desc->array_of_warr_metrics=
+      nu_load_array_of_warr_metrics(heap_map->metrics_warr, "metrics_warr_tag", test_desc->iteration_cfg_map.num_mpe_cfgs);
+    if(test_desc->array_of_warr_metrics == NULL) return -1;
+    
+    test_desc->array_of_warr = 
+      nu_load_array_of_warr(heap_map->warr, "warr_file_tag",test_desc->array_of_warr_metrics, test_desc->iteration_cfg_map.num_mpe_cfgs);
+    if(test_desc->array_of_warr == NULL) return -1;
+    
+      // ConfigMPE
+    test_desc->array_of_cfg_mpe = 
+      rumboot_malloc_from_heap_aligned(heap_map->mpe_cfg,sizeof(ConfigMPE)*(test_desc->iteration_cfg_map.num_mpe_cfgs),sizeof(uint32_t));
+    if(test_desc->array_of_cfg_mpe == NULL) return -1;
+    
+    if(nu_mpe_load_array_of_cfg(heap_map->mpe_cfg,test_desc->array_of_cfg_mpe,test_desc->iteration_cfg_map.num_mpe_cfgs) !=0) return -1;
+    
+      // mpe_cfg_lut
+    test_desc->mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_map->mpe_cfg_lut);
+    if(test_desc->mpe_cfg_lut==NULL) return -1;
+  }
+  
+    // Load Test Data That Associated With VPE
+  if(test_desc->iteration_cfg_map.num_vpe_cfgs != 0) {
+      // ConfigVPE
+    test_desc->array_of_cfg_vpe = 
+      rumboot_malloc_from_heap_aligned(heap_map->vpe_cfg,sizeof(ConfigVPE)*(test_desc->iteration_cfg_map.num_vpe_cfgs),sizeof(uint32_t));
+    if(test_desc->array_of_cfg_vpe == NULL) return -1;
+    
+    if(nu_vpe_load_array_of_cfg(heap_map->vpe_cfg, test_desc->array_of_cfg_vpe, test_desc->iteration_cfg_map.num_vpe_cfgs) !=0) 
+      return -1;
+      
+      // OP0-OP2
+    if(nu_vpe_load_arrays_of_op_metrics(
+      heap_map->metrics_op0,heap_map->metrics_op1,heap_map->metrics_op2,heap_map->metrics_lut,
+      &(test_desc->op0_array_desc),
+      &(test_desc->op1_array_desc),
+      &(test_desc->op2_array_desc),
+      test_desc->array_of_cfg_vpe,
+      test_desc->iteration_cfg_map.num_vpe_cfgs) !=0) return -1;
+    
+    if(nu_vpe_load_arrays_of_ops(
+      heap_map->op0,heap_map->op1,heap_map->op2,heap_map->lut,
+      &(test_desc->op0_array_desc),
+      &(test_desc->op1_array_desc),
+      &(test_desc->op2_array_desc)
+      ) !=0) return -1;
+  }
+  
+    // Load Test Data That Associated With PPE
+  if(test_desc->iteration_cfg_map.num_ppe_cfgs != 0) {
+    test_desc->array_of_cfg_ppe = 
+      rumboot_malloc_from_heap_aligned(heap_map->ppe_cfg, sizeof(ConfigPPE   )*(test_desc->iteration_cfg_map.num_ppe_cfgs), sizeof(uint32_t));
+    
+    test_desc->array_of_cfg_reg_ppe = 
+      rumboot_malloc_from_heap_aligned(heap_map->ppe_cfg, sizeof(ConfigREGPPE)*(test_desc->iteration_cfg_map.num_ppe_cfgs), sizeof(uint32_t));
+    
+    if(test_desc->array_of_cfg_ppe == NULL || test_desc->array_of_cfg_reg_ppe == NULL) return -1;
+    
+    if(nu_ppe_load_array_of_cfg(heap_map->ppe_cfg, test_desc->array_of_cfg_ppe, test_desc->iteration_cfg_map.num_ppe_cfgs) !=0) 
+      return -1;
+  }
+  
+    // Now We Can Fill The iteration_cfg_map
+  nu_fill_iteration_cfg_map(
+  &(test_desc->iteration_cfg_map), 
+    test_desc->array_of_depend_table, 
+    test_desc->array_of_cfg_mpe,
+    test_desc->array_of_cfg_vpe,
+    test_desc->array_of_cfg_ppe,
+    test_desc->array_of_cfg_reg_ppe,
+    iterations
+  );
+  
+  return 0;
+}
 
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Prepare for Stop VPE begin...\n");
@@ -2424,18 +2673,58 @@ int nu_npe_place_associative_regs_dump(int heap_id, NPETestDescriptor* test_desc
 
 int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc,int iterations) {
   test_desc->array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NADependTable)*iterations, sizeof(uint32_t));
-  if (test_desc->associative_regs_dump_start_ptr == NULL) return -1;
+  if (test_desc->array_of_depend_table == NULL) return -1;
   return 0;
 }
 
-NADependTable* nu_load_array_of_depend_table(int heap_id, char* file_tag, int iterations) {
-  void* array_of_depend_table;
+NADependTable* nu_load_array_of_depend_table(int heap_id, char* file_tag, char* metrics_file_tag, int iterations) {
+  NADependTable* array_of_depend_table;
+  CubeMetrics* metrics_dep_table; // Temporary Cube And Its Metrics For File Content
+  int16_t* dep_table_loaded;
+  int16_t* temp_ptr;
+  
+    // Allocate The Array Of NADependTable
   int size = sizeof(NADependTable)*iterations;
-  array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, size, sizeof(NADependTable));
+  array_of_depend_table = rumboot_malloc_from_heap_aligned(heap_id, size, sizeof(int));
   if(array_of_depend_table==NULL)
     return NULL;
 
-  rumboot_platform_request_file_ex(file_tag,(uintptr_t)array_of_depend_table,size);
+    // 'Depend Table' In A File Is A Cube That Can Be Loaded By Ordinary Cube Load Methods
+    // First, We Load Its Metrics (Yeh, This Is Redundant Because 'Depend Table' Metrics Are Fixed)
+  metrics_dep_table = nu_load_cube_metrics(heap_id,metrics_file_tag);
+  if(metrics_dep_table == NULL)
+    return NULL;
+  
+    // Then, We Load The Content
+  dep_table_loaded = nu_load_cube(heap_id,file_tag,metrics_dep_table);
+  if(dep_table_loaded == NULL)
+    return NULL;
+  
+    // Now We Should Move The Loaded 'Depend Table' Content Into NADependTable Structure 
+    //   But We Use read_after_write Fields Only
+  temp_ptr = dep_table_loaded;
+  rumboot_printf("array_of_depend_table:\n");
+  for(int i = 0; i < iterations; i++) {
+    rumboot_printf("{\n");
+    for(int j = 0; j < 2; j++) {
+      rumboot_printf("  {");
+      for(int k = 0; k < 7; k++) {
+        array_of_depend_table[i].read_after_write[j][k] = *temp_ptr;  //dep_table_loaded[i][j][k];
+        temp_ptr++;
+        if(array_of_depend_table[i].read_after_write[j][k] < 0) // It Is Not Able To Print Negatives :(
+          rumboot_printf(" -%d",0-array_of_depend_table[i].read_after_write[j][k]);
+        else
+          rumboot_printf(" %d",array_of_depend_table[i].read_after_write[j][k]);
+      }
+      rumboot_printf("  }\n");
+    }
+    rumboot_printf("}\n");
+  }
+  
+    // Delete The Temporary Data
+  rumboot_free(metrics_dep_table);
+  rumboot_free(dep_table_loaded);
+
   return array_of_depend_table;
 }
 
@@ -2450,11 +2739,7 @@ void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations
     }
 }
 
-void nu_npe_add_depend_rd_after_wr(
-  NPETestDescriptor* desc,
-  int curr_i
-) {
-
+void nu_npe_add_depend_rd_after_wr(NPETestDescriptor* desc,Enable PPE_ENABLED,int curr_i) {
   int write_channel;
   int read_channel;
   int depend_i;
@@ -2462,20 +2747,22 @@ void nu_npe_add_depend_rd_after_wr(
 
   for (write_channel = VPE_WDMA; write_channel <= PPE_WDMA; write_channel++) {  // VPE_WDMA, PPE_WDMA
     for (read_channel = MPE_RDMA_D; read_channel <= PPE_RDMA; read_channel++) { // MPE_RDMA_D, MPE_RDMA_W, VPE_RDMA, VPE_OP0_RDMA, VPE_OP1_RDMA, VPE_OP2_RDMA, PPE_RDMA
-      depend_i = desc->array_of_depend_table[curr_i].read_after_write[write_channel][read_channel];
-      if (depend_i >= 0) {
+      depend_i = (int) desc->array_of_depend_table[curr_i].read_after_write[write_channel][read_channel];
+      if (depend_i >= 0 && depend_i != curr_i) { // Negative Number Means No Depend, Own Iteration Number Means No Actual Channel Run
         switch(write_channel) {
           case VPE_WDMA: {
-            address = desc->array_of_cfg_vpe[depend_i].wdma_config.dma_baddr;
+            address = desc->iteration_cfg_map.cfg_vpe[depend_i]->wdma_config.dma_baddr; // Yeh! :) Become The Master Of '.' And '->'!
             rumboot_printf("VPE_WDMA memory address = %x\n", address);
-            nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+            if(depend_i+1 == curr_i) // Actual Dependance Should Be On Prev Iteration Only
+              nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_VPE_WDMA);
             break;
           }
           case PPE_WDMA: {
-            if(desc->PPE_ENABLED==Enable_En) {
-              address = desc->array_of_cfg_reg_ppe[depend_i].wBALo;
+            if(PPE_ENABLED==Enable_En) {
+              address = desc->iteration_cfg_map.cfg_reg_ppe[depend_i]->wBALo;
               rumboot_printf("PPE_WDMA memory address = %x\n", address);
-              nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_PPE_WDMA);
+              if(depend_i+1 == curr_i-1) // Actual Dependance Should Be On Prev Iteration Only
+                nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_PPE_WDMA);
             }
             break;
           }
@@ -2499,7 +2786,7 @@ void nu_npe_add_depend_wr_after_rd(
 
   for (read_channel = MPE_RDMA_D; read_channel <= PPE_RDMA; read_channel++) { // MPE_RDMA_D, MPE_RDMA_W, VPE_RDMA, VPE_OP0_RDMA, VPE_OP1_RDMA, VPE_OP2_RDMA, PPE_RDMA
     for (write_channel = VPE_WDMA; write_channel <= PPE_WDMA; write_channel++) {  // VPE_WDMA, PPE_WDMA
-      depend_i = desc->array_of_depend_table[curr_i].write_after_read[write_channel][read_channel];
+      depend_i = (int) desc->array_of_depend_table[curr_i].write_after_read[write_channel][read_channel];
       if (depend_i >= 0) {
         switch (read_channel) {
           case MPE_RDMA_D: {
@@ -2563,44 +2850,44 @@ void nu_npe_add_depend_rd_channel_cfg(
   switch (read_channel) {
     case MPE_RDMA_D: {
       rumboot_printf("MPE_RDMA_D\n");
-      desc->array_of_cfg_mpe[curr_i].dma_d_config.rdma.BFCA = address;
-      desc->array_of_cfg_mpe[curr_i].dma_d_config.depend_mask |= depend_mask;
+      desc->iteration_cfg_map.cfg_mpe[curr_i]->dma_d_config.rdma.BFCA = address;
+      desc->iteration_cfg_map.cfg_mpe[curr_i]->dma_d_config.depend_mask |= depend_mask;
       break;
     }
     case MPE_RDMA_W: {
       rumboot_printf("MPE_RDMA_W\n");
-      desc->array_of_cfg_mpe[curr_i].dma_w_config.rdma.BFCA = address;
-      desc->array_of_cfg_mpe[curr_i].dma_w_config.depend_mask |= depend_mask;
+      desc->iteration_cfg_map.cfg_mpe[curr_i]->dma_w_config.rdma.BFCA = address;
+      desc->iteration_cfg_map.cfg_mpe[curr_i]->dma_w_config.depend_mask |= depend_mask;
       break;
     }
     case VPE_RDMA: {
       rumboot_printf("VPE_RDMA\n");
-      desc->array_of_cfg_vpe[curr_i].src_rdma_config.dma_baddr = address;
-      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->src_rdma_config.dma_baddr = address;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->depend_mask |= depend_mask;
       break;
     }
     case VPE_RDMA_OP0: {
       rumboot_printf("VPE_OP0_RDMA\n");
-      desc->array_of_cfg_vpe[curr_i].op0_rdma_config.dma_baddr = address;
-      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->op0_rdma_config.dma_baddr = address;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->depend_mask |= depend_mask;
       break;
     }
     case VPE_RDMA_OP1: {
       rumboot_printf("VPE_OP1_RDMA\n");
-      desc->array_of_cfg_vpe[curr_i].op1_rdma_config.dma_baddr = address;
-      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->op1_rdma_config.dma_baddr = address;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->depend_mask |= depend_mask;
       break;
     }
     case VPE_RDMA_OP2: {
       rumboot_printf("VPE_OP2_RDMA\n");
-      desc->array_of_cfg_vpe[curr_i].op2_rdma_config.dma_baddr = address;
-      desc->array_of_cfg_vpe[curr_i].depend_mask |= depend_mask;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->op2_rdma_config.dma_baddr = address;
+      desc->iteration_cfg_map.cfg_vpe[curr_i]->depend_mask |= depend_mask;
       break;
     }
     case PPE_RDMA: {
       rumboot_printf("PPE_RDMA\n");
-      desc->array_of_cfg_reg_ppe[curr_i].rBALi = address;
-      desc->array_of_cfg_reg_ppe[curr_i].rOpEn |= depend_mask;
+      desc->iteration_cfg_map.cfg_reg_ppe[curr_i]->rBALi = address;
+      desc->iteration_cfg_map.cfg_reg_ppe[curr_i]->rOpEn |= depend_mask;
       break;
     }
     default: break;

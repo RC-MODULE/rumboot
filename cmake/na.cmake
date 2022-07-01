@@ -1537,12 +1537,26 @@ macro(na_testsuite_add_npe_tests CONF)
     )	  
   # ADD_NPE_SIMPLE_TEST(${CONF} npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)    	  
       ##########################################       
-	   ## NPE CMD DMA MPE Test
-	add_rumboot_target(
+  	   ## NPE CMD DMA MPE Test
+  	add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME NPE_CU_CMD_DMA_MPE
+        FILES scr1/targets/simple-rom/nu/na_cu/cu_cmd_dma_mpe.c
+      )	   	
+
+    add_rumboot_target(
       CONFIGURATION ${CONF}
-      NAME NPE_CU_CMD_DMA_MPE
-      FILES scr1/targets/simple-rom/nu/na_cu/cu_cmd_dma_mpe.c
-    )	   	
+      NAME debug_dep_table
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_with_dep.c
+      PREPCMD
+        ${NA_RM_BIN_PATH}/main_na_cu ${NA_RM_KEYS} > ${RM_LOGFILE} && 
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} 
+          > ${ConfigMPE_to_LUT_LOGFILE} &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || 
+        exit 1
+      SUBPROJECT_DEPS npe_rm:main_na_cu
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+    )
   endif() # NA_TESTGROUP CU
   
   
