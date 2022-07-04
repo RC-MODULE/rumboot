@@ -24,16 +24,18 @@ end text_dma;
 
 // The test result dimension
 data data_test_res
-test_result : word[48] = (-1 dup 48);
+test_result : word[46] = (-1 dup 46);
 // The control value dimension
-contr_result : word[48] = (
+contr_result : word[46] = (
                            0h dup 2, 100h, 2_0000h, 0h dup 4,
                            0h dup 8, 
                            8000h, 2h, 0h dup 4,
-                           8000h, 0300_0400h, 0h, 0c00107e0h, 8h, 1FFFh, 1h, 0h,
+                           8000h, 0300_0400h, 0h, 0c0010658h, 8h, 1FFFh, 1h, 0h,
                            0h, 0c0078000h, 8h, 1FFFh, 1h, 0h dup 3,
                            0ffffffffh, 0h,
-                           0h, 0h, 8000h, 6h, 0h dup 3, 0c0ch
+                           0h, 0h, 
+//                           8000h, 6h, 
+                           0h dup 4
                             );
 end data_test_res;
 
@@ -317,7 +319,8 @@ rumboot_runtime_init(016800h);
         ar1 = [IMRL_ADDRESS];
        
         [ar0++] = ar1,gr1;                    // Read IMRH, IMRL
-        
+
+/*        
 // DMAC Initialization 2 (To suspend DMA)
 									        
 // DMA Initialization (Receive Part)
@@ -358,9 +361,10 @@ rumboot_runtime_init(016800h);
         [DMA_ControlRegister_ADDRESS] = gr7;
         gr1 = [DMA_ControlRegister_ADDRESS];
         ar1 = [IRRL_ADDRESS];
-
+        
         [ar0++] = ar1,gr1;                    // Read ControlRegister, IRRL
         gr7 = DMA_STOP;
+*/
         [DMA_ControlRegister_ADDRESS] = gr7;  // reset ControlRegister
         gr1 = [DMA_ControlRegister_ADDRESS];        
 				gr7 = 0_C000h; 				      
@@ -379,7 +383,7 @@ rumboot_runtime_init(016800h);
 // Check the result    	
        ar0 = test_result + 16;
 	     ar1 = contr_result + 16;
-       gr0 = 32;
+       gr0 = 30;
 
 <Loop_Check>
 	gr1 = [ar0++];
