@@ -1734,20 +1734,30 @@ macro(na_testsuite_add_npe_tests CONF)
     ADD_NKBVS_TEST(${CONF} 2d_deconv_1 /home/v.gordeev/na_arrays/nkbvs_2d_deconv_1 No 32 421 419)
 
     ADD_NKBVS_TEST(${CONF} depthwise_1 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_1 VPE_TraceMode_MPE_DW 32 416 408)
+    
     ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_deconv_2_small /home/a.yarovikov/projects/nkbvs/tranpose_conv2d/2st_2D_DeConvolution_configuration_small VPE_TraceMode_MPE 2 2 1 0 64 2 99)
+
+    # Long time test
     ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_deconv_2 /home/a.yarovikov/projects/nkbvs/tranpose_conv2d/2st_2D_DeConvolution_configuration VPE_TraceMode_MPE 2 2 1 0 64 413 419)
-    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_1_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_1_small VPE_TraceMode_MPE_DW 1 1 0 1 32 9 165)
-    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_1 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_1 VPE_TraceMode_MPE_DW 1 1 0 1 32 421 419)
-    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_2_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_2_small VPE_TraceMode_MPE_DW 2 2 1 0 64 2 99)
-    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_2 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_2 VPE_TraceMode_MPE_DW 2 2 1 0 64 413 419)
+
+    # DepthWise Transpose 2d
+    ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_1_small /home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/1st_DepthWise_2D_DeConvolution_configuration_small VPE_TraceMode_MPE_DW 1 1 0 1 32 9 165)
+
+    # Long time test
+    ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_1 /home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/1st_DepthWise_2D_DeConvolution_configuration VPE_TraceMode_MPE_DW 1 1 0 1 32 421 419)
+
+    ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_2_small /home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/2nd_DepthWise_2D_DeConvolution_configuration_small VPE_TraceMode_MPE_DW 2 2 1 0 64 2 99)
+
+    # long time test
+    ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_2 /home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/2nd_DepthWise_2D_DeConvolution_configuration VPE_TraceMode_MPE_DW 2 2 1 0 64 413 419)
+
     #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3_opt_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3_opt_small VPE_TraceMode_MPE_DW 3 3 1 1 32 2 163)
-    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3_opt /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3_opt VPE_TraceMode_MPE_DW 3 3 1 1 32 2 163)
-    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3_small VPE_TraceMode_MPE_DW 1 1 1 1 32 6 159)
-    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_3 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_3 VPE_TraceMode_MPE_DW 1 1 1 1 32 6 159)
-    ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_7_small /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_7_small VPE_TraceMode_MPE_DW 1 1 0 3 32 16 171)
+    #ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_3_opt /home/a.yarovikov/projects//home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/3rd_DepthWise_2D_DeConvolution_configuration VPE_TraceMode_MPE_DW 3 3 1 1 32 2 163)
+
+    ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_7_small /home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/7th_DepthWise_2D_DeConvolution_configuration_small VPE_TraceMode_MPE_DW 1 1 0 3 32 16 171)
 
     # Out of memory (more than 2 gb)
-    #ADD_NKBVS_DW_TRANSPOSE_TEST(${CONF} 2d_dw_deconv_7 /home/a.yarovikov/projects/rcm_lava_mpe/py/manual_tests/depthwise_deconvolution_7 VPE_TraceMode_MPE_DW 1 1 0 3 2048 427 421)
+    #ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_dw_deconv_7 /home/a.yarovikov/projects/nkbvs/dw_transpose_conv2d/7th_DepthWise_2D_DeConvolution_configuration VPE_TraceMode_MPE_DW 1 1 0 3 2048 427 421)
   endif()
 
   na_testsuite_add_vpe_tests(${CONF})
