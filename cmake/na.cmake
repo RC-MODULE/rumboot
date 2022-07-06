@@ -263,7 +263,7 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
   endif()
 
   if(NOT DEFINED NU_IT_NMB OR NU_IT_NMB EQUAL 1)
-    set(NU_IT_NMB 32)
+    set(NU_IT_NMB 16)
   endif()
 
   if("${sfx}" MATCHES "krnl")

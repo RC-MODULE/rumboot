@@ -9,7 +9,7 @@
 #include <devices/rcm_na/nu_test_lib.h> 
 #include <devices/rcm_na/nu_test_macro.h> 
 
-#define SKIP_ITERATIONS 0
+#define SKIP_ITERATIONS 64
 
 void nu_ppe_decide_dma_config(
   ConfigPPE* cfg, 
@@ -184,10 +184,10 @@ int main() {
     iteration_desc.cfg_reg->rOpEn  = 0x0;
     iteration_desc.cfg_reg->wOpEn  = 0x0;
 
-    #if SKIP_ITERATIONS != 0
-      nu_ppe_print_config(iteration_desc.cfg);
-      nu_ppe_print_config_reg(iteration_desc.cfg_reg);
-    #endif
+//    #if SKIP_ITERATIONS != 0
+//      nu_ppe_print_config(iteration_desc.cfg);
+//      nu_ppe_print_config_reg(iteration_desc.cfg_reg);
+//    #endif
 
     if (setup_reg) nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg);
 
@@ -237,6 +237,7 @@ int main() {
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
 
       clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
+      clk_cnt = 0xE7707;
 
       if (!vpe_mem) nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // rdma finish
 
