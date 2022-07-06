@@ -97,6 +97,7 @@ typedef struct OpArrayDescriptor {
   int num_luts;
 }OpArrayDescriptor;
 void nu_vpe_init_op_array_desc(OpArrayDescriptor* desc);
+void nu_vpe_print_op_array_desc(OpArrayDescriptor* desc);
 int nu_vpe_load_arrays_of_op_metrics(
   int heap_id_op0,int heap_id_op1,int heap_id_op2,int heap_id_lut,
   OpArrayDescriptor* op0_array_desc,
@@ -360,6 +361,7 @@ typedef struct NPETestDescriptor {
 }NPETestDescriptor;
 
 void nu_npe_init_test_desc(NPETestDescriptor* test_desc);
+void nu_npe_print_test_desc(NPETestDescriptor* test_desc, int iterations);
 
 
 typedef struct NPEIterationDescriptor {
@@ -433,6 +435,7 @@ void nu_fill_iteration_cfg_map(
   int iterations
 );
 int nu_npe_place_arrays_with_dep_by_heap_map(NAHeapMap* heap_map, NPETestDescriptor* test_desc,int iterations);
+void nu_npe_erase_unused_in_data(NPEIterationDescriptor* iteration_desc, NADependTable* dep_table, int curr_i);
 
 void nu_vpe_pause_next_cntx_fail_stop(uintptr_t vpe_base, ConfigVPE* cfg);
 int nu_vpe_regs_check(uintptr_t base, int num, int iteration);
@@ -444,7 +447,7 @@ void nu_na_vpe_fail_mpe_srst_stop(uintptr_t npe_base);
 void nu_na_ppe_pause_fail_stop(uintptr_t npe_base); 
 int nu_mpe_regs_check(uintptr_t base, int num, int iteration);
 
-void nu_npe_add_depend_rd_after_wr(NPETestDescriptor* desc,Enable PPE_ENABLED,int curr_i);
+void nu_npe_add_depend_rd_after_wr(NPETestDescriptor* desc,int curr_i);
 void nu_npe_add_depend_wr_after_rd(
   NPETestDescriptor* desc,
   int curr_i

@@ -258,7 +258,7 @@ int main() {
                 iteration_desc.res_data
             );
 
-        nu_npe_add_depend_rd_after_wr(&test_desc, test_desc.PPE_ENABLED, i);
+        nu_npe_add_depend_rd_after_wr(&test_desc, i);
         nu_npe_add_depend_wr_after_rd(&test_desc, i);
     
         nu_setup_next_regs_dump(iteration_desc);

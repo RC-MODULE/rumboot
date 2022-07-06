@@ -2977,6 +2977,24 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
   return res;
 }
 
+bool nu_vpe_op01_is_cube(ConfigOp01* op_config) {
+  return (op_config->alu_en==Enable_En   &&   op_config->alu_mode==Mode_Element) ||
+         (op_config->mux_en==Enable_En   &&   op_config->mux_mode==Mode_Element) ;
+}
+bool nu_vpe_op2_is_cube(ConfigOp2* op_config) {
+  return (op_config->alu_en==Enable_En   &&   op_config->alu_mode==Mode_Element) ||
+         (op_config->mux_en==Enable_En   &&   op_config->mux_mode==Mode_Element) ;
+}
+bool nu_vpe_op01_is_vec(ConfigOp01* op_config) {
+  return (op_config->alu_en==Enable_En   &&   op_config->alu_mode==Mode_Channel) ||
+         (op_config->mux_en==Enable_En   &&   op_config->mux_mode==Mode_Channel) ;
+}
+bool nu_vpe_op2_is_vec(ConfigOp2* op_config) {
+  return (op_config->alu_en==Enable_En   &&   op_config->alu_mode==Mode_Channel) ||
+         (op_config->mux_en==Enable_En   &&   op_config->mux_mode==Mode_Channel) ;
+}
+
+
 void nu_ppe_set_wdma_int_mask(uintptr_t ppe_base){
     if (( (ioread32(ppe_base + NU_PPE_WDMA_INT_STATUS) >> 12) & 1) ==0 )
     iowrite32((1<<12) | (1<<8)| (1<<4) | (1<<5) |(1<<6) | (1<<0) | (1<<1),ppe_base + NU_VPE + NU_VPE_INT_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 

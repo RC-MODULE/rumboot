@@ -1446,6 +1446,21 @@ void nu_vpe_init_op_array_desc(OpArrayDescriptor* desc) {
   desc-> num_luts=0;
 }
 
+void nu_vpe_print_op_array_desc(OpArrayDescriptor* desc) {
+  rumboot_printf("OpArrayDescriptor:\n");
+  rumboot_printf("    num_cubes = %d\n", desc->num_cubes);
+  rumboot_printf("    num_vecs = %d\n", desc->num_vecs);
+  rumboot_printf("    num_luts = %d\n", desc->num_luts);
+  rumboot_printf("    array_of_cube_metrics = 0x%x\n",desc->array_of_cube_metrics);
+  rumboot_printf("    array_of_vec_metrics = 0x%x\n",desc->array_of_vec_metrics);
+  rumboot_printf("    array_of_lut1_metrics = 0x%x\n",desc->array_of_lut1_metrics);
+  rumboot_printf("    array_of_lut2_metrics = 0x%x\n",desc->array_of_lut2_metrics);
+  rumboot_printf("    array_of_cubes = 0x%x\n",desc->array_of_cubes);
+  rumboot_printf("    array_of_vecs = 0x%x\n",desc->array_of_vecs);
+  rumboot_printf("    array_of_lut1 = 0x%x\n",desc->array_of_lut1);
+  rumboot_printf("    array_of_lut2 = 0x%x\n",desc->array_of_lut2);
+}
+
 void nu_vpe_init_test_desc(VPETestDescriptor* test_desc) {
   test_desc-> array_of_cfg=NULL;
   
@@ -1923,6 +1938,50 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
   test_desc->iteration_cfg_map.cfg_vpe=NULL;
   test_desc->iteration_cfg_map.cfg_ppe=NULL;
   test_desc->iteration_cfg_map.cfg_reg_ppe=NULL;
+}
+
+void nu_npe_print_test_desc(NPETestDescriptor* test_desc, int iterations) {
+  rumboot_printf("NPETestDescriptor:\n");
+  nu_vpe_print_Enable(test_desc->MPE_ENABLED,"MPE_ENABLED");
+  nu_vpe_print_Enable(test_desc->VPE_ENABLED,"VPE_ENABLED");
+  nu_vpe_print_Enable(test_desc->PPE_ENABLED,"PPE_ENABLED");
+  
+  rumboot_printf("  array_of_cfg_mpe = 0x%x\n",test_desc->array_of_cfg_mpe);
+  rumboot_printf("  array_of_cfg_vpe = 0x%x\n",test_desc->array_of_cfg_vpe);
+  rumboot_printf("  array_of_cfg_ppe = 0x%x\n",test_desc->array_of_cfg_ppe);
+  rumboot_printf("  array_of_cfg_reg_ppe = 0x%x\n",test_desc->array_of_cfg_reg_ppe);
+  
+  rumboot_printf("  associative_regs_dump_start_ptr = 0x%x\n",test_desc->associative_regs_dump_start_ptr);
+  rumboot_printf("  associative_regs_dump_end_ptr = 0x%x\n",test_desc->associative_regs_dump_end_ptr);
+  rumboot_printf("  array_of_depend_table = 0x%x\n",test_desc->array_of_depend_table);
+  rumboot_printf("  iteration_cfg_map:\n");
+  rumboot_printf("    num_mpe_cfgs = %d\n",test_desc->iteration_cfg_map.num_mpe_cfgs);
+  rumboot_printf("    num_vpe_cfgs = %d\n",test_desc->iteration_cfg_map.num_vpe_cfgs);
+  rumboot_printf("    num_ppe_cfgs = %d\n",test_desc->iteration_cfg_map.num_ppe_cfgs);
+  for(int i=0; i<iterations; i++)
+    rumboot_printf("    cfg_mpe[%d] = 0x%x\n", i, test_desc->iteration_cfg_map.cfg_mpe[i]);
+  for(int i=0; i<iterations; i++)
+    rumboot_printf("    cfg_vpe[%d] = 0x%x\n", i, test_desc->iteration_cfg_map.cfg_vpe[i]);
+  for(int i=0; i<iterations; i++) {
+    rumboot_printf("    cfg_ppe[%d] = 0x%x\n", i, test_desc->iteration_cfg_map.cfg_ppe[i]);
+    rumboot_printf("    cfg_reg_ppe[%d] = 0x%x\n", i, test_desc->iteration_cfg_map.cfg_reg_ppe[i]);
+  }
+  
+  rumboot_printf("  array_of_warr_metrics = 0x%x\n",test_desc->array_of_warr_metrics);
+  rumboot_printf("  array_of_in_metrics = 0x%x\n",test_desc->array_of_in_metrics);
+  rumboot_printf("  array_of_res_metrics = 0x%x\n",test_desc->array_of_res_metrics);
+  rumboot_printf("  array_of_in_data = 0x%x\n",test_desc->array_of_in_data);
+  rumboot_printf("  array_of_warr = 0x%x\n",test_desc->array_of_warr);
+  rumboot_printf("  array_of_etalon = 0x%x\n",test_desc->array_of_etalon);
+  rumboot_printf("  array_of_res_data = 0x%x\n",test_desc->array_of_res_data);
+  rumboot_printf("  mpe_cfg_lut = 0x%x\n",test_desc->mpe_cfg_lut);
+  
+  rumboot_printf("  op0_array_desc ");
+  nu_vpe_print_op_array_desc( & (test_desc->op0_array_desc) ); 
+  rumboot_printf("  op1_array_desc ");
+  nu_vpe_print_op_array_desc( & (test_desc->op1_array_desc) ); 
+  rumboot_printf("  op2_array_desc ");
+  nu_vpe_print_op_array_desc( & (test_desc->op2_array_desc) ); 
 }
 
 
@@ -2739,10 +2798,112 @@ void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations
     }
 }
 
-void nu_npe_add_depend_rd_after_wr(NPETestDescriptor* desc,Enable PPE_ENABLED,int curr_i) {
+int nu_npe_get_rdma_depend_iteration(NADependTable* dep_table, NA_RDMA rdma) {
+  // Get The Number Of Iteration On Which The Given NA_RDMA Depends
+  // Of Negative If Not Depends
+  int depend_i_vpe;
+  int depend_i_ppe;
+  int depend_i;
+    // if One Of The Cells In A Pair Contains Non-Negative Number
+    //   return It
+  depend_i_vpe = dep_table->read_after_write[VPE_WDMA][rdma];
+  depend_i_ppe = dep_table->read_after_write[PPE_WDMA][rdma];
+  depend_i = depend_i_vpe>=0 ? depend_i_vpe : depend_i_ppe; // Can Be Only A One Of Them
+  return depend_i;
+}
+
+bool nu_npe_rdma_depends(NADependTable* dep_table, NA_RDMA rdma, int curr_i) { 
+  // Look At Depend Table And Decide
+  // Does The Given NA_RDMA Depends On Some Prev Iteration
+  int depend_i;
+  
+  depend_i = nu_npe_get_rdma_depend_iteration(dep_table, rdma);
+  return depend_i>=0 && depend_i != curr_i;
+}
+
+void nu_npe_write_erase_pattern(void* ptr, int size) {
+  memset(ptr,0xA5,size);
+}
+
+void nu_npe_erase_unused_in_data(NPEIterationDescriptor* iteration_desc, NADependTable* dep_table, int curr_i) {
+  bool erase_in_data;
+  
+  erase_in_data = false;
+  
+    // We Need To Check in_data To Erase
+    //  1) MPE_RDMA_D - When MPE Works
+  if(iteration_desc->MPE_ENABLED == Enable_En) {
+    erase_in_data = nu_npe_rdma_depends(dep_table,MPE_RDMA_D,curr_i);
+  }
+    //  2) VPE_RDMA - For The Modes Where MPE Does Not Work And VPE Works
+  else if(iteration_desc->VPE_ENABLED == Enable_En) {
+    erase_in_data = nu_npe_rdma_depends(dep_table,VPE_RDMA,curr_i);
+  }
+    //  3) PPE_RDMA - For The Mode Where PPE Only
+  else if(iteration_desc->PPE_ENABLED == Enable_En) {
+    erase_in_data = nu_npe_rdma_depends(dep_table,PPE_RDMA,curr_i);
+  }
+  
+  if(erase_in_data) {
+    nu_npe_write_erase_pattern(iteration_desc->in_data,iteration_desc->in_metrics->s);
+  }
+
+    // Erase warr
+  if(iteration_desc->MPE_ENABLED == Enable_En) {
+    if(nu_npe_rdma_depends(dep_table,MPE_RDMA_W,curr_i))
+      nu_npe_write_erase_pattern(iteration_desc->warr,iteration_desc->warr_metrics->s);
+  }
+  
+    // Erase OPx
+  if(iteration_desc->VPE_ENABLED == Enable_En) {
+    int size;
+    
+    if(iteration_desc->cfg_vpe->op0_en == Enable_En) 
+      if(nu_npe_rdma_depends(dep_table,VPE_RDMA_OP0,curr_i)) {
+        size = 0;
+        if(nu_vpe_op01_is_cube(& (iteration_desc->cfg_vpe->op0_config) )) {
+          size = iteration_desc->op0_cube_metrics->s;
+        }
+        else if(nu_vpe_op01_is_vec(& (iteration_desc->cfg_vpe->op0_config) )) {
+          size = iteration_desc->op0_vec_metrics->s;
+        }
+        if(size!=0)
+          nu_npe_write_erase_pattern(iteration_desc->op0,size);
+      }
+      
+    if(iteration_desc->cfg_vpe->op1_en == Enable_En) 
+      if(nu_npe_rdma_depends(dep_table,VPE_RDMA_OP1,curr_i)) {
+        size=0;
+        if(nu_vpe_op01_is_cube(& (iteration_desc->cfg_vpe->op1_config) )) {
+          size = iteration_desc->op1_cube_metrics->s;
+        }
+        else if(nu_vpe_op01_is_vec(& (iteration_desc->cfg_vpe->op1_config) )) {
+          size = iteration_desc->op1_vec_metrics->s;
+        }
+        if(size!=0)
+          nu_npe_write_erase_pattern(iteration_desc->op1,size);
+      }
+      
+    if(iteration_desc->cfg_vpe->op2_en == Enable_En) 
+      if(nu_npe_rdma_depends(dep_table,VPE_RDMA_OP2,curr_i)) {
+        size=0;
+        if(nu_vpe_op2_is_cube(& (iteration_desc->cfg_vpe->op2_config) )) {
+          size = iteration_desc->op2_cube_metrics->s;
+        }
+        else if(nu_vpe_op2_is_vec(& (iteration_desc->cfg_vpe->op2_config) )) {
+          size = iteration_desc->op2_vec_metrics->s;
+        }
+        if(size!=0)
+          nu_npe_write_erase_pattern(iteration_desc->op2,size);
+      }
+  }
+}
+
+void nu_npe_add_depend_rd_after_wr(NPETestDescriptor* desc,int curr_i) {
   int write_channel;
   int read_channel;
   int depend_i;
+  uint32_t depend_mask;
   uint32_t address;
 
   for (write_channel = VPE_WDMA; write_channel <= PPE_WDMA; write_channel++) {  // VPE_WDMA, PPE_WDMA
@@ -2752,18 +2913,17 @@ void nu_npe_add_depend_rd_after_wr(NPETestDescriptor* desc,Enable PPE_ENABLED,in
         switch(write_channel) {
           case VPE_WDMA: {
             address = desc->iteration_cfg_map.cfg_vpe[depend_i]->wdma_config.dma_baddr; // Yeh! :) Become The Master Of '.' And '->'!
-            rumboot_printf("VPE_WDMA memory address = %x\n", address);
-            if(depend_i+1 == curr_i) // Actual Dependance Should Be On Prev Iteration Only
-              nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_VPE_WDMA);
+              // Actual Dependence Should Be On Prev Iteration Only
+            depend_mask = (depend_i+1 == curr_i) ? NU_DEPEND_MASK_VPE_WDMA : 0;
+            rumboot_printf("Dependence: NA_RDMA Channel %d Depends on VPE_WDMA, address = 0x%x, mask = 0x%x\n", read_channel, address, depend_mask);
+            nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, depend_mask);
             break;
           }
           case PPE_WDMA: {
-            if(PPE_ENABLED==Enable_En) {
-              address = desc->iteration_cfg_map.cfg_reg_ppe[depend_i]->wBALo;
-              rumboot_printf("PPE_WDMA memory address = %x\n", address);
-              if(depend_i+1 == curr_i-1) // Actual Dependance Should Be On Prev Iteration Only
-                nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, NU_DEPEND_MASK_PPE_WDMA);
-            }
+            address = desc->iteration_cfg_map.cfg_reg_ppe[depend_i]->wBALo;
+            depend_mask = (depend_i+1 == curr_i) ? NU_DEPEND_MASK_PPE_WDMA : 0;
+            rumboot_printf("Dependence: NA_RDMA Channel %d Depends on PPE_WDMA, address = 0x%x, mask = 0x%x\n", read_channel, address, depend_mask);
+            nu_npe_add_depend_rd_channel_cfg(desc, curr_i, read_channel, address, depend_mask);
             break;
           }
           default: break;

@@ -588,6 +588,19 @@ static __attribute__((no_instrument_function)) inline void nu_write_reg_or_dump(
 
 
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
+void nu_vpe_print_Mode(Mode mode, char* name);
+void nu_vpe_print_RoundMode(RoundMode mode, char* name);
+void nu_vpe_print_TraceMode(TraceMode mode, char* name);
+void nu_vpe_print_Enable(Enable enable, char* name);
+void nu_vpe_print_AluOperationSwitch(AluOperationSwitch operation, char* name);
+void nu_vpe_print_AluOperationExtSwitch(AluOperationExtSwitch operation, char* name);
+void nu_vpe_print_PoolingOperationSwitch(PoolingOperationSwitch operation, char* name);
+void nu_vpe_print_DataType(DataType data_type, char* name);
+void nu_vpe_print_DataTypeExt(DataTypeExt data_type, char* name);
+void nu_vpe_print_DmaRamType(DmaRamType rt, char* name);
+void nu_vpe_print_DmaDSizeType(DmaDSizeType st, char* name);
+void nu_vpe_print_DmaDUseType(DmaDUseType ut, char* name);
+void nu_vpe_print_DmaXYZDirectionType(DmaXYZDirectionType ut, char* name);
 void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_print_config_dma(ConfigDMA * cfg_dma,char* name);
 
@@ -608,6 +621,11 @@ void nu_vpe_decide_op2_rdma_config(ConfigOp2* op_config, ConfigDMA* op_rdma_conf
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics);
 
 bool nu_vpe_mode_to_bool (Mode in_mode);
+
+bool nu_vpe_op01_is_cube(ConfigOp01* op_config);
+bool nu_vpe_op2_is_cube(ConfigOp2* op_config);
+bool nu_vpe_op01_is_vec(ConfigOp01* op_config);
+bool nu_vpe_op2_is_vec(ConfigOp2* op_config);
 
 // void nu_calc_mpe2vpe_cube_metrics(CubeMetrics* mpe2vpe_metrics,CubeMetrics* cube_metrics,WarrMetrics* warr_metrics);
 
