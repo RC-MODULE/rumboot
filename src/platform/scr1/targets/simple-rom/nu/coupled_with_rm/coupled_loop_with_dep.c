@@ -141,6 +141,8 @@ int main() {
   
     // Place The Test Data Including Dependency Table
   nu_npe_place_arrays_with_dep_by_heap_map(&heap_map,&test_desc,iterations);
+  
+  nu_npe_print_test_desc(&test_desc,iterations);
 
     // Load The Initial Values To The Iteration Descriptor
   nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
@@ -192,7 +194,21 @@ int main() {
     }
     
       // This Updates The Address Fields And Dependency Mask Of Configuration Structures
-    nu_npe_add_depend_rd_after_wr(&test_desc, iteration_desc.PPE_ENABLED, i);
+    nu_npe_add_depend_rd_after_wr(&test_desc, i);
+    
+      // CRUTCH, Because The Unused Copy Of Input Data Come From Files
+      //         This Data Should Be Got In Runtime, And We Erase The Initial Copy Of This Data
+      //         To Guarantee That Device Has Read Them From Runtime Copy
+    nu_npe_erase_unused_in_data(&iteration_desc, & (test_desc.array_of_depend_table[i]), i);
+    
+    // if(iteration_desc.MPE_ENABLED == Enable_En)
+    //   nu_mpe_print_config(iteration_desc.cfg_mpe);
+    // if(iteration_desc.VPE_ENABLED == Enable_En)
+    //   nu_vpe_print_config(iteration_desc.cfg_vpe);
+    // if(iteration_desc.PPE_ENABLED == Enable_En) {
+    //   nu_ppe_print_config(iteration_desc.cfg_ppe);
+    //   nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
+    // }
 
       // Point At The Next Iteration Arrays
     nu_npe_iterate_desc(&iteration_desc);
@@ -253,8 +269,10 @@ int main() {
         nu_mpe_print_config(iteration_desc.cfg_mpe);
       if(iteration_desc.VPE_ENABLED==Enable_En)
         nu_vpe_print_config(iteration_desc.cfg_vpe);
-      if(iteration_desc.PPE_ENABLED==Enable_En)
+      if(iteration_desc.PPE_ENABLED==Enable_En) {
         nu_ppe_print_config(iteration_desc.cfg_ppe);
+        nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
+      }
       
       rumboot_printf("Test FAILED at iteration %d\n",i);
 

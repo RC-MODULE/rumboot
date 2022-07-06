@@ -124,10 +124,10 @@ NPEReg* nu_npe_add_diff_reg_map(NPEReg* associative_regs_dump_curr_ptr, NPEItera
 
 
 void nu_setup_next_regs_dump(NPEIterationDescriptor iteration_desc) {
-    nu_mpe_setup((uintptr_t)iteration_desc.next_regs_dump->mpe, iteration_desc.cfg_mpe);
-    nu_vpe_setup((uintptr_t)iteration_desc.next_regs_dump->vpe, iteration_desc.cfg_vpe);
+    nu_mpe_setup_or_dump(1,(uintptr_t)iteration_desc.next_regs_dump->mpe, iteration_desc.cfg_mpe);
+    nu_vpe_setup_or_dump(1,(uintptr_t)iteration_desc.next_regs_dump->vpe, iteration_desc.cfg_vpe);
     if(iteration_desc.PPE_ENABLED==Enable_En) {
-        nu_ppe_setup_reg((uintptr_t)iteration_desc.next_regs_dump->ppe_rdma, (uintptr_t)iteration_desc.next_regs_dump->ppe_wdma, iteration_desc.cfg_reg_ppe);
+        nu_ppe_setup_reg_or_dump(1,(uintptr_t)iteration_desc.next_regs_dump->ppe_rdma, (uintptr_t)iteration_desc.next_regs_dump->ppe_wdma, iteration_desc.cfg_reg_ppe);
     }
 }
 
@@ -258,7 +258,7 @@ int main() {
                 iteration_desc.res_data
             );
 
-        nu_npe_add_depend_rd_after_wr(&test_desc, test_desc.PPE_ENABLED, i);
+        nu_npe_add_depend_rd_after_wr(&test_desc, i);
         nu_npe_add_depend_wr_after_rd(&test_desc, i);
     
         nu_setup_next_regs_dump(iteration_desc);

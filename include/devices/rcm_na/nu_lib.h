@@ -4,6 +4,7 @@
 #define NU_LIB_H
 
 #include <stdint.h>
+#include <rumboot/io.h>
 
 #define NU_VPE_CFG_PARAMS_NUM 83
 #define NU_MPE_CFG_PARAMS_NUM 23
@@ -576,18 +577,42 @@
   
 #define SIZEOF_StatusRegs_BIN sizeof(StatusRegs)
   
+static __attribute__((no_instrument_function)) inline void nu_write_reg_or_dump(int dump, uint32_t const value, uint32_t const base_addr)
+{
+  if(dump) {
+    *((uint32_t*)(base_addr)) = value;
+  }
+  else
+    iowrite32(value,base_addr);
+}
+
+
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
+void nu_vpe_print_Mode(Mode mode, char* name);
+void nu_vpe_print_RoundMode(RoundMode mode, char* name);
+void nu_vpe_print_TraceMode(TraceMode mode, char* name);
+void nu_vpe_print_Enable(Enable enable, char* name);
+void nu_vpe_print_AluOperationSwitch(AluOperationSwitch operation, char* name);
+void nu_vpe_print_AluOperationExtSwitch(AluOperationExtSwitch operation, char* name);
+void nu_vpe_print_PoolingOperationSwitch(PoolingOperationSwitch operation, char* name);
+void nu_vpe_print_DataType(DataType data_type, char* name);
+void nu_vpe_print_DataTypeExt(DataTypeExt data_type, char* name);
+void nu_vpe_print_DmaRamType(DmaRamType rt, char* name);
+void nu_vpe_print_DmaDSizeType(DmaDSizeType st, char* name);
+void nu_vpe_print_DmaDUseType(DmaDUseType ut, char* name);
+void nu_vpe_print_DmaXYZDirectionType(DmaXYZDirectionType ut, char* name);
 void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_print_config_dma(ConfigDMA * cfg_dma,char* name);
 
 uint32_t nu_lut_log2(uint32_t a);
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2);
 
-void nu_vpe_setup_op01(uintptr_t base_, Enable op_en, ConfigOp01* op_config);
-void nu_vpe_setup_lut(uintptr_t base_, ConfigOp2* op_config, DataTypeExt in_data_type);
-void nu_vpe_setup_op2(uintptr_t base_, Enable op_en, ConfigOp2* op_config, DataTypeExt in_data_type);
-void nu_vpe_setup_dma(uintptr_t base_, ConfigDMA* dma_config, TraceMode trace_mode);
+void nu_vpe_setup_op01(int dump, uintptr_t base_, Enable op_en, ConfigOp01* op_config);
+void nu_vpe_setup_lut(int dump, uintptr_t base_, ConfigOp2* op_config, DataTypeExt in_data_type);
+void nu_vpe_setup_op2(int dump, uintptr_t base_, Enable op_en, ConfigOp2* op_config, DataTypeExt in_data_type);
+void nu_vpe_setup_dma(int dump, uintptr_t base_, ConfigDMA* dma_config, TraceMode trace_mode);
   
+void nu_vpe_setup_or_dump(int dump, uintptr_t base, ConfigVPE* cfg);
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg);
 
 void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, CubeMetrics* metrics);
@@ -596,6 +621,11 @@ void nu_vpe_decide_op2_rdma_config(ConfigOp2* op_config, ConfigDMA* op_rdma_conf
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics);
 
 bool nu_vpe_mode_to_bool (Mode in_mode);
+
+bool nu_vpe_op01_is_cube(ConfigOp01* op_config);
+bool nu_vpe_op2_is_cube(ConfigOp2* op_config);
+bool nu_vpe_op01_is_vec(ConfigOp01* op_config);
+bool nu_vpe_op2_is_vec(ConfigOp2* op_config);
 
 // void nu_calc_mpe2vpe_cube_metrics(CubeMetrics* mpe2vpe_metrics,CubeMetrics* cube_metrics,WarrMetrics* warr_metrics);
 
@@ -608,7 +638,14 @@ void nu_mpe_print_config(ConfigMPE* cfg);
 void nu_mpe_print_config_dma(ConfigDMAMPE* cfg);
 
 int  nu_mpe_get_size_in_partitions(int size_in_bytes);
+
+void nu_mpe_rdma_setup(int dump, uintptr_t base, ConfigRDDMAMPE* cfg);
+void nu_mpe_wdma_setup(int dump, uintptr_t base, ConfigWRDMAMPE* cfg);
+void nu_mpe_dma_setup(int dump, uintptr_t base, ConfigDMAMPE* cfg);
+void nu_mpe_ma_setup(int dump, uintptr_t base, ConfigMPE* cfg);
+void nu_mpe_setup_or_dump(int dump, uintptr_t base, ConfigMPE* cfg);
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg);
+
 int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table);
 int  nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics);
 uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics);
@@ -620,6 +657,7 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin);
 
 void nu_ppe_print_config(ConfigPPE* cfg);
 
+void nu_ppe_setup_reg_or_dump(int dump, uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) ;
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
 void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg);
 
