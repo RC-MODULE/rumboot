@@ -9,7 +9,7 @@
 #include <devices/rcm_na/nu_test_lib.h> 
 #include <devices/rcm_na/nu_test_macro.h> 
 
-#define SKIP_ITERATIONS 64
+#define SKIP_ITERATIONS 0
 
 void nu_ppe_decide_dma_config(
   ConfigPPE* cfg, 
