@@ -3081,3 +3081,24 @@ void nu_npe_write_channel_depend_cfg(
     default: break;
   }
 }
+
+// how many 10 multiplied clocks there are in 1 ns (the time scale of nu_get_uptime_ns())
+// how many 10 multiplied clocks there are in 1 us (the time scale of nu_get_uptime())
+int get_nmb_10_clk_t() {
+  int res = 0;
+
+  #ifdef RUMBOOT_PLATFORM_SCR1    // nu_get_uptime_ns(); devider turned off
+    res = 40;
+  #endif
+
+  #ifdef RUMBOOT_PLATFORM_REMOTE  // nu_get_uptime()
+    res = 10000;
+  #endif
+
+  #ifdef RUMBOOT_PLATFORM_NATIVE  // nu_get_uptime()
+    res = 100  ; // circuit board frequency is 10 MHz
+//    res = 625 ; // circuit board frequency is 62.5 MHz;
+  #endif
+
+  return res;
+}

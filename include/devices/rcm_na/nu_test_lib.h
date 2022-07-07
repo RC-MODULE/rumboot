@@ -479,4 +479,6 @@ void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations
 int nu_ppe_rdma_regs_swrst_check (uintptr_t base);
 int nu_ppe_regs_swrst_check (uintptr_t base);
 
+int get_nmb_10_clk_t();
+
 #endif
