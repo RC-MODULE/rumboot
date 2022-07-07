@@ -287,7 +287,7 @@ int main() {
         #ifdef ShowPerf
           dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
-          if (clk_cnt > 0) {
+          if (clk_cnt > 0 && ppe_10_clk_t > 0) {
             clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
 
             clk_cnt = (clk_cnt*100*10)/ppe_10_clk_t;
