@@ -205,7 +205,6 @@ int main() {
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
 
     clk_cnt = nu_get_uptime_ns();
-    rumboot_printf("clk_cnt start %d\n", clk_cnt);
 
     if (!vpe_mem) {
       iteration_desc.cfg_reg->rOpEn  = iteration_desc.cfg_reg->rOpEn | 0x1;
@@ -241,8 +240,6 @@ int main() {
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
 
       tmp = nu_get_uptime_ns();
-      rumboot_printf("clk_cnt stop %d\n", tmp);
-
       clk_cnt = tmp > clk_cnt ? tmp - clk_cnt : 0;
 
       if (!vpe_mem) nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // rdma finish
