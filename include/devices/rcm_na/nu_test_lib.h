@@ -475,6 +475,6 @@ void nu_npe_append_associative_regs_dump(NPEIterationDescriptor* iteration_desc)
 int nu_ppe_rdma_regs_swrst_check (uintptr_t base);
 int nu_ppe_regs_swrst_check (uintptr_t base);
 
-int get_nmb_10_clk_t();
+int get_nmb_clk_10_t();
 
 #endif

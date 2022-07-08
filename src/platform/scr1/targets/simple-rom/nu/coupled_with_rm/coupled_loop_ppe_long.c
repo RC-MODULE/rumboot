@@ -148,13 +148,14 @@ int main() {
   #endif
 
   #ifdef ShowPerf
-    uint32_t ppe_10_clk_t;
+    uint32_t ppe_clk_10_t;
+    uint32_t prcsn = 100;
 
-    ppe_10_clk_t = get_nmb_10_clk_t();
+    ppe_clk_10_t = get_nmb_clk_10_t();
 
-    rumboot_printf("ppe_10_clk_t %d\n", ppe_10_clk_t);
+    rumboot_printf("ppe_clk_10_t %d\n", ppe_clk_10_t);
   #else
-    ppe_10_clk_t = 1;
+    ppe_clk_10_t = 1;
   #endif
 
   #ifdef RESP_ERR
@@ -204,7 +205,7 @@ int main() {
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
 
     clk_cnt = nu_get_uptime_ns();
-    rumboot_printf("clk_cnt start 0x%x\n", clk_cnt);
+    rumboot_printf("clk_cnt start %d\n", clk_cnt);
 
     if (!vpe_mem) {
       iteration_desc.cfg_reg->rOpEn  = iteration_desc.cfg_reg->rOpEn | 0x1;
@@ -240,7 +241,7 @@ int main() {
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
 
       tmp = nu_get_uptime_ns();
-      rumboot_printf("clk_cnt stop 0x%x\n", tmp);
+      rumboot_printf("clk_cnt stop %d\n", tmp);
 
       clk_cnt = tmp > clk_cnt ? tmp - clk_cnt : 0;
 
@@ -288,20 +289,18 @@ int main() {
 
         #ifdef ShowPerf
 
-          if (clk_cnt > 0 && ppe_10_clk_t > 0) {
+          if (clk_cnt > 0 && ppe_clk_10_t > 0) {
             dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
-            rumboot_printf("diff clk_cnt 0x%x\n", clk_cnt);
+            rumboot_printf("spent time %d\n", clk_cnt);
 
-//            clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * ppe_10_t_clk)/(clk_cnt*10);
-            clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * ppe_10_clk_t)/(clk_cnt*10);
+            clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * 10 * prcsn)/(clk_cnt*ppe_clk_10_t);
 
-            rumboot_printf("HWC in bytes %d ", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB));
-            rumboot_printf("clk_cnt 0x%x\n", clk_cnt);
+            rumboot_printf("HWC in bytes %d\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB));
 
             perf_avg += clk_cnt;
 
-            rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
+            rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/prcsn, clk_cnt-(clk_cnt/prcsn)*prcsn);
           }
           else rumboot_printf("Unable to determine PPE perfomance\n");
 

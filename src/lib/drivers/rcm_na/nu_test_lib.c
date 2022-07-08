@@ -3088,7 +3088,7 @@ void nu_npe_write_channel_depend_cfg(
 
 // how many clocks there are in 10 ns (the time scale of nu_get_uptime_ns() is 1 ns)
 // how many clocks there are in 10 us (the time scale of nu_get_uptime() is 1 us)
-int get_nmb_10_clk_t() {
+int get_nmb_clk_10_t() {
   int res = 0;
 
   #ifdef RUMBOOT_PLATFORM_SCR1    // nu_get_uptime_ns(); devider turned off
