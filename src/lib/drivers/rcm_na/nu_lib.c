@@ -3274,6 +3274,40 @@ NPEReg* nu_add_diff_reg_map(uintptr_t base, uintptr_t device_base, NPEReg* cfg_d
   return cfg_diff_ptr;
 }
 
+
+void nu_npe_make_abstract_reg_dump( uintptr_t base, uint32_t* regs_dump, int size) {
+  uintptr_t rptr;
+  uint32_t* wptr;
+  rptr = base;
+  wptr = regs_dump;
+  for(int i=0; i<size; i+=4) {
+    *wptr = ioread32(rptr);
+    rptr+=4;
+    wptr++;
+  }
+}
+
+void nu_mpe_make_reg_dump( uintptr_t base, NARegDump* regs_dump) {
+  nu_npe_make_abstract_reg_dump(base + NA_MPE_BASE, regs_dump->mpe, NU_MPE_REG_MAP_SIZE);
+}
+void nu_vpe_make_reg_dump( uintptr_t base, NARegDump* regs_dump) {
+  nu_npe_make_abstract_reg_dump(base + NA_VPE_BASE, regs_dump->vpe, NU_VPE_REG_MAP_SIZE);
+}
+void nu_ppe_rdma_make_reg_dump( uintptr_t base, NARegDump* regs_dump) {
+  nu_npe_make_abstract_reg_dump(base + NA_PPE_RDMA_BASE, regs_dump->ppe_rdma, NU_PPE_RDMA_REG_MAP_SIZE);
+}
+void nu_ppe_wdma_make_reg_dump( uintptr_t base, NARegDump* regs_dump) {
+  nu_npe_make_abstract_reg_dump(base + NA_PPE_WDMA_BASE, regs_dump->ppe_wdma, NU_PPE_WDMA_REG_MAP_SIZE);
+}
+
+void nu_npe_make_reg_dump( uintptr_t base, NARegDump* regs_dump) {
+  nu_mpe_make_reg_dump(base,regs_dump);
+  nu_vpe_make_reg_dump(base,regs_dump);
+  nu_ppe_rdma_make_reg_dump(base,regs_dump);
+  nu_ppe_wdma_make_reg_dump(base,regs_dump);
+}
+
+
 void nu_print_associative_regs_dump(NPEReg* start_ptr, NPEReg* end_ptr) {
 #ifndef NU_NO_PRINT
   rumboot_printf("Print associative regs dump\n");
@@ -3485,6 +3519,12 @@ void nu_npe_set_int_mask(uintptr_t npe_base){
 	npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK);  //IRQ_DEV_ON  IRQ_CUBE_CMPL IRQ_DEV_OFF 
 	rumboot_printf("nu_npe_set_int_mask: Writing [0x%x]=0x%x\n",ioread32(npe_base + NA_CU_REGS_BASE + NA_INT_UNITS_MASK));
 }
+void nu_npe_wait_busy(uintptr_t base) {
+  rumboot_printf("Waiting NA_BUSY..\n");
+  while( ioread32(base + NA_CU_REGS_BASE + NA_STAT) & (1<<19) )
+  {}
+}
+
 void na_rst(uintptr_t base){
 	
 uint32_t busy;

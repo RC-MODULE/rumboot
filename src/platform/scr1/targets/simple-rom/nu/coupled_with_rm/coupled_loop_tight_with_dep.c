@@ -2,6 +2,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
+#include <string.h>
 
 #include <platform/devices.h> 
 
@@ -140,7 +141,20 @@ int main() {
   nu_npe_init_test_desc(&test_desc);
   
     // Place The Test Data Including Dependency Table
-  if(nu_npe_place_arrays_with_dep_by_heap_map(&heap_map,&test_desc,iterations) !=0) return -1;
+  if(nu_npe_place_arrays_with_dep_by_heap_map(&heap_map,&test_desc,iterations) != 0) return -1;
+  
+    // Allocate The Place For A Maximum Associative Register Dump
+  if(nu_npe_place_associative_regs_dump(heap_map.control, &test_desc, iterations) != 0) return -1;
+  
+    // Allocate Two Reg Dump Buffers
+  nu_npe_place_regs_dump(heap_map.control,&test_desc); 
+  
+    // Move The Content Of DUT Regs Into The Initial Regs Dump
+    //  Then, It Will Be Compared With The First Iteration Dump
+  //nu_npe_make_reg_dump(NPE_BASE, test_desc.curr_regs_dump);
+  // This Is Bad On RTL Because DUT Contains Not Initialized Regs
+    // Hope, That Write Reg Value Will Never Match 0xA5A5A5A5 On The First Iteration
+  memset(test_desc.curr_regs_dump,0xA5,sizeof(NARegDump));
   
   nu_npe_print_test_desc(&test_desc,iterations);
 
@@ -210,56 +224,36 @@ int main() {
     //   nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
     // }
 
-      // Point At The Next Iteration Arrays
+      // Fill The next_regs_dump Field With The Current Iteration Reg Content
+    nu_npe_setup_next_regs_dump(&iteration_desc);
+    
+      // Make The Associative Dump Of This Iteration Regs
+    nu_npe_append_associative_regs_dump(&iteration_desc);
+    
+      // Point At The Next Iteration Arrays (Also Swaps Reg Dumps)
     nu_npe_iterate_desc(&iteration_desc);
   }
   
-  
-    // Program The CU To Enable Direct Mode For All Units // Yet So
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE|NA_CU_PPE_UNIT_MODE);
-  
-    // Load The Initial Values To The Iteration Descriptor (Once More, Start From Beginning)
-  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
-  
-  for(i=0;i<iterations;i++) {
-    rumboot_printf("Starting iteration %d\n",i);
-	
-      // Prepare Iteration Descriptor (Init MPE_ENABLED, VPE_ENABLED, PPE_ENABLED Fields Once More, But We Dont Care)
-    nu_npe_iteration_with_dep_start(&iteration_desc,&(test_desc.iteration_cfg_map),i);
-    
-      // Setup The Given Units And Run
-    if(iteration_desc.MPE_ENABLED == Enable_En) {
-      nu_mpe_setup(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
-      nu_mpe_run(MY_MPE_REGS_BASE, iteration_desc.cfg_mpe);
-    }
-    
-    if(iteration_desc.VPE_ENABLED == Enable_En) {
-      nu_vpe_setup(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-        // Load (Into The VPE Internal Memory) LUTs If Needed
-      if(iteration_desc.cfg_vpe->op2_config.lut_en == Enable_En) {
-        nu_vpe_load_lut(MY_VPE_REGS_BASE,iteration_desc.lut1,iteration_desc.lut2);
-      }
+  test_desc.associative_regs_dump_end_ptr = iteration_desc.associative_regs_dump_curr_ptr;
 
-      nu_vpe_run(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-    }
-    
-    if(iteration_desc.PPE_ENABLED == Enable_En) {
-      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
-      if(iteration_desc.VPE_ENABLED == Enable_NotEn) {
-        iteration_desc.cfg_reg_ppe->rOpEn |= 1;
-        nu_ppe_rdma_run(MY_PPE_RDMA_BASE, iteration_desc.cfg_reg_ppe);
-      }
-      iteration_desc.cfg_reg_ppe->wOpEn  |= 1;
-      nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg_ppe);
-    }
-    
-      // Wait For The Corresponding DMA Channels To Complete
-    if(iteration_desc.PPE_ENABLED==Enable_En)
-      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
-    else
-      nu_vpe_wait(MY_VPE_REGS_BASE, iteration_desc.cfg_vpe);
-    
-    rumboot_printf("Comparing..\n");
+  uint32_t associative_regs_dump_byte_size = (
+      test_desc.associative_regs_dump_end_ptr -
+      test_desc.associative_regs_dump_start_ptr
+  )*sizeof(NPEReg);
+
+    // Actual Work
+  nu_npe_cmd_dma_setup(NPE_BASE, (uint32_t)test_desc.associative_regs_dump_start_ptr, associative_regs_dump_byte_size);
+  nu_npe_cmd_dma_run(NPE_BASE);
+  nu_npe_cmd_dma_wait_page_complete(NPE_BASE);
+  nu_npe_wait_busy(NPE_BASE);
+    //
+
+    // Checking
+    // Init It Again - We Start Iterate From The Beginning
+  nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
+  for(i=0;i<iterations;i++) {
+    rumboot_printf("Comparing iteration %d..\n",i);
+    nu_npe_iteration_start(&iteration_desc);
     
       // Result vs Etalon Comparision
     if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)
@@ -273,14 +267,14 @@ int main() {
         nu_ppe_print_config(iteration_desc.cfg_ppe);
         nu_ppe_print_config_reg(iteration_desc.cfg_reg_ppe);
       }
-      
+
       rumboot_printf("Test FAILED at iteration %d\n",i);
 
       return 1;
     }
-
-      // Point At The Next Iteration Arrays
-    nu_npe_iterate_desc(&iteration_desc);    
+    
+      // Point At The Next Iteration Data
+    nu_npe_iterate_desc(&iteration_desc);
   }
   
   rumboot_printf("Test Passed\n");

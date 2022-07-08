@@ -24,6 +24,7 @@
 #define MPE_CMD_IRCW  0x500
 #define MPE_CMD_ICM   0x600
 #define MPE_CMD_ICMW  0x700
+
 #define MPE_COMMON_WA               0x000
 #define MPE_COMMON_DA               0x004
 #define MPE_COMMON_VRA              0x008
@@ -55,6 +56,9 @@
 #define MPE_CMP_CountI0     0x06C 
 #define MPE_NULL            0x070 
 #define MPE_STATUS          0x080 
+  // We Take The Both Whole DMA Spaces (Dont Want To Extract Holes From Them) + Valid Part Of MA Space
+#define NU_MPE_REG_MAP_SIZE ( (MPE_MA_BASE - MPE_RDMA_D_BASE) + (MPE_NULL - MPE_COMMON_WA + 4) )
+
 
 // MPE_DMA Comtrol
 #define DMA_START                 0x0000
