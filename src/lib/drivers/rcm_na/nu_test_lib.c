@@ -96,6 +96,7 @@ uint32_t nu_get_uptime_ns() {
   return ioread32(SCR1_TIMER_BASE + 8) * 10;
 #else
   // On Other Platforms
+
   return rumboot_platform_get_uptime() * 1000;
 #endif
 }
@@ -3082,8 +3083,8 @@ void nu_npe_write_channel_depend_cfg(
   }
 }
 
-// how many 10 multiplied clocks there are in 1 ns (the time scale of nu_get_uptime_ns())
-// how many 10 multiplied clocks there are in 1 us (the time scale of nu_get_uptime())
+// how many clocks there are in 10 ns (the time scale of nu_get_uptime_ns() is 1 ns)
+// how many clocks there are in 10 us (the time scale of nu_get_uptime() is 1 us)
 int get_nmb_10_clk_t() {
   int res = 0;
 

@@ -36,13 +36,13 @@ PPEIterationDescriptor iteration_desc;
 
 int main() {
   int heap_id ;
-  int i, it_nmb, dtB;
-  int clk_cnt, perf_avg;
+  int i, it_nmb, skip, dtB, perf_avg;
   int res;
-  int skip;
 
-  uint32_t flying_mode, lbs, vpe_mem, max_red, ppe_10_clk_t;
-  uint32_t ppe_swrst_en, setup_reg, mark_cube, resperr;
+  uint32_t flying_mode, lbs, vpe_mem, max_red;
+  uint32_t ppe_swrst_en, setup_reg, resperr;
+
+  uint32_t clk_cnt, tmp;
 
   flying_mode = 0x0;
   lbs         = 0x0;
@@ -51,7 +51,6 @@ int main() {
 
   ppe_swrst_en= 0;
   setup_reg   = 1;
-  mark_cube   = 0;
 
   rumboot_printf("coupled_loop_ppe_long\n");
 
@@ -143,13 +142,14 @@ int main() {
   #endif
 
   #if PPE_MARK_CUBE
-    mark_cube = 1;
+    uint32_t mark_cube = 1;
+
     nu_ppe_marked_page_cmpl_mask(MY_PPE_REGS_BASE);
-  #else
-    mark_cube = 0;
   #endif
 
   #ifdef ShowPerf
+    uint32_t ppe_10_clk_t;
+
     ppe_10_clk_t = get_nmb_10_clk_t();
 
     rumboot_printf("ppe_10_clk_t %d\n", ppe_10_clk_t);
@@ -204,7 +204,7 @@ int main() {
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
 
     clk_cnt = nu_get_uptime_ns();
-    rumboot_printf("clk_cnt %d\n", clk_cnt);
+    rumboot_printf("clk_cnt start 0x%x\n", clk_cnt);
 
     if (!vpe_mem) {
       iteration_desc.cfg_reg->rOpEn  = iteration_desc.cfg_reg->rOpEn | 0x1;
@@ -239,8 +239,10 @@ int main() {
     else {
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
 
-      clk_cnt = nu_get_uptime_ns() - clk_cnt;
-      rumboot_printf("diff clk_cnt %d\n", clk_cnt);
+      tmp = nu_get_uptime_ns();
+      rumboot_printf("clk_cnt stop 0x%x\n", tmp);
+
+      clk_cnt = tmp > clk_cnt ? tmp - clk_cnt : 0;
 
       if (!vpe_mem) nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // rdma finish
 
@@ -285,12 +287,18 @@ int main() {
         rumboot_printf("Iteration %d PASSED\n", i);
 
         #ifdef ShowPerf
-          dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
           if (clk_cnt > 0 && ppe_10_clk_t > 0) {
-            clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB)/clk_cnt;
+            dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
-            clk_cnt = (clk_cnt*100*10)/ppe_10_clk_t;
+            rumboot_printf("diff clk_cnt 0x%x\n", clk_cnt);
+
+//            clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * ppe_10_t_clk)/(clk_cnt*10);
+            clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * ppe_10_clk_t)/(clk_cnt*10);
+
+            rumboot_printf("HWC in bytes %d ", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB));
+            rumboot_printf("clk_cnt 0x%x\n", clk_cnt);
+
             perf_avg += clk_cnt;
 
             rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
