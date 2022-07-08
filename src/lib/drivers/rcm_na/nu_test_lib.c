@@ -1929,6 +1929,8 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
   
   test_desc->associative_regs_dump_start_ptr=NULL;
   test_desc->associative_regs_dump_end_ptr=NULL;
+  test_desc->curr_regs_dump=NULL;
+  test_desc->next_regs_dump=NULL;
 
   test_desc->array_of_depend_table=NULL;
   test_desc->iteration_cfg_map.num_mpe_cfgs=0;
@@ -2024,8 +2026,6 @@ void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescri
   iteration_desc->in_metrics   = test_desc->array_of_in_metrics;
   iteration_desc->res_metrics  = test_desc->array_of_res_metrics;
   
-  iteration_desc->curr_regs_dump = NULL;
-  iteration_desc->next_regs_dump = NULL;
   iteration_desc->associative_regs_dump_curr_ptr = test_desc->associative_regs_dump_start_ptr;
   iteration_desc->curr_regs_dump = test_desc->curr_regs_dump;
   iteration_desc->next_regs_dump = test_desc->next_regs_dump;
