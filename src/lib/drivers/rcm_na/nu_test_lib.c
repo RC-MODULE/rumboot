@@ -1930,6 +1930,8 @@ void nu_npe_init_test_desc(NPETestDescriptor* test_desc) {
   
   test_desc->associative_regs_dump_start_ptr=NULL;
   test_desc->associative_regs_dump_end_ptr=NULL;
+  test_desc->curr_regs_dump=NULL;
+  test_desc->next_regs_dump=NULL;
 
   test_desc->array_of_depend_table=NULL;
   test_desc->iteration_cfg_map.num_mpe_cfgs=0;
@@ -2025,8 +2027,9 @@ void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescri
   iteration_desc->in_metrics   = test_desc->array_of_in_metrics;
   iteration_desc->res_metrics  = test_desc->array_of_res_metrics;
   
-  iteration_desc->curr_regs_dump = NULL;
-  iteration_desc->next_regs_dump = NULL;
+  iteration_desc->associative_regs_dump_curr_ptr = test_desc->associative_regs_dump_start_ptr;
+  iteration_desc->curr_regs_dump = test_desc->curr_regs_dump;
+  iteration_desc->next_regs_dump = test_desc->next_regs_dump;
 }
 
 void nu_npe_iteration_start(NPEIterationDescriptor* iteration_desc){ // :( Dirty Copypaste
@@ -2167,7 +2170,7 @@ void nu_npe_reg_map_swap(NPEIterationDescriptor* desc) {
     desc->next_regs_dump = swap_ptr;
 }
 
-int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc) {
+int nu_npe_place_regs_dump(int heap_id, NPETestDescriptor* desc) {
   desc->curr_regs_dump = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump), sizeof(uint32_t));
   desc->next_regs_dump = rumboot_malloc_from_heap_aligned(heap_id, sizeof(NARegDump), sizeof(uint32_t));
   if(
@@ -3102,4 +3105,59 @@ int get_nmb_10_clk_t() {
   #endif
 
   return res;
+}
+
+void nu_npe_setup_next_regs_dump(NPEIterationDescriptor* iteration_desc) {
+  if(iteration_desc->MPE_ENABLED == Enable_En) 
+    nu_mpe_setup_or_dump(1,(uintptr_t)iteration_desc->next_regs_dump->mpe, iteration_desc->cfg_mpe);
+  if(iteration_desc->VPE_ENABLED == Enable_En)
+    nu_vpe_setup_or_dump(1,(uintptr_t)iteration_desc->next_regs_dump->vpe, iteration_desc->cfg_vpe);
+  if(iteration_desc->PPE_ENABLED == Enable_En) 
+    nu_ppe_setup_reg_or_dump(1,(uintptr_t)iteration_desc->next_regs_dump->ppe_rdma, (uintptr_t)iteration_desc->next_regs_dump->ppe_wdma, iteration_desc->cfg_reg_ppe);
+}
+
+void nu_npe_append_associative_regs_dump(NPEIterationDescriptor* iteration_desc) {
+  // Makes A Diff Between curr_regs_dump And next_regs_dump
+  //  And Writes A Diff In A Form Of Associative Dump
+  //  Using The associative_regs_dump_curr_ptr
+  
+  if(iteration_desc->MPE_ENABLED == Enable_En) {
+    iteration_desc->associative_regs_dump_curr_ptr = nu_mpe_add_diff_reg_map(
+      iteration_desc->associative_regs_dump_curr_ptr, 
+      iteration_desc->curr_regs_dump->mpe, 
+      iteration_desc->next_regs_dump->mpe
+    );
+    iteration_desc->associative_regs_dump_curr_ptr = nu_mpe_add_diff_start(
+      iteration_desc->associative_regs_dump_curr_ptr,
+      iteration_desc->cfg_mpe
+    );
+  }
+  if(iteration_desc->VPE_ENABLED == Enable_En) {
+    iteration_desc->associative_regs_dump_curr_ptr = nu_vpe_add_diff_reg_map(
+      iteration_desc->associative_regs_dump_curr_ptr, 
+      iteration_desc->curr_regs_dump->vpe, 
+      iteration_desc->next_regs_dump->vpe, 
+      iteration_desc->cfg_vpe->op2_config.lut_en
+    );
+    iteration_desc->associative_regs_dump_curr_ptr = nu_vpe_add_diff_start(
+      iteration_desc->associative_regs_dump_curr_ptr, 
+      iteration_desc->cfg_vpe
+    );
+  }
+  if(iteration_desc->PPE_ENABLED == Enable_En) {
+    iteration_desc->associative_regs_dump_curr_ptr = nu_ppe_rdma_add_diff_reg_map(
+      iteration_desc->associative_regs_dump_curr_ptr, 
+      iteration_desc->curr_regs_dump->ppe_rdma, 
+      iteration_desc->next_regs_dump->ppe_rdma
+    );
+    iteration_desc->associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_reg_map(
+      iteration_desc->associative_regs_dump_curr_ptr, 
+      iteration_desc->curr_regs_dump->ppe_wdma, 
+      iteration_desc->next_regs_dump->ppe_wdma
+    );
+    iteration_desc->associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_start(
+      iteration_desc->associative_regs_dump_curr_ptr, 
+      iteration_desc->cfg_reg_ppe
+    );
+  }
 }

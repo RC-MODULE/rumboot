@@ -211,8 +211,8 @@ int main() {
     );
 
       // Make The Iteration Descriptor To Point At The First Test Data
+    if (nu_npe_place_regs_dump(heap_id,&test_desc) !=0) return -1;
     nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
-    if (nu_npe_place_regs_dump(heap_id,&iteration_desc) !=0) return -1;
 
     NPEReg* associative_regs_dump_curr_ptr = test_desc.associative_regs_dump_start_ptr;
     for(i=0;i<iterations;i++) {

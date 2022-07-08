@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <rumboot/io.h>
 
+#include <regs/regs_na.h>
+
 #define NU_VPE_CFG_PARAMS_NUM 83
 #define NU_MPE_CFG_PARAMS_NUM 23
 #define NU_PPE_CFG_PARAMS_NUM 22
@@ -575,6 +577,13 @@
     uint32_t value;
   } NPEReg;
   
+  typedef struct NARegDump {
+    uint32_t mpe[NU_MPE_REG_MAP_SIZE/sizeof(uint32_t)];
+    uint32_t vpe[NU_VPE_REG_MAP_SIZE/sizeof(uint32_t)];
+    uint32_t ppe_rdma[NU_PPE_RDMA_REG_MAP_SIZE/sizeof(uint32_t)];
+    uint32_t ppe_wdma[NU_PPE_WDMA_REG_MAP_SIZE/sizeof(uint32_t)];
+  } NARegDump;
+
 #define SIZEOF_StatusRegs_BIN sizeof(StatusRegs)
   
 static __attribute__((no_instrument_function)) inline void nu_write_reg_or_dump(int dump, uint32_t const value, uint32_t const base_addr)
@@ -784,6 +793,8 @@ NPEReg* nu_ppe_wdma_add_diff_start(NPEReg* cfg_diff_ptr, ConfigREGPPE* cfg);
 NPEReg* nu_add_diff_reg_map(uintptr_t base, uintptr_t device_base, NPEReg* cfg_diff_ptr,  uint32_t* curr_cfg_ptr, uint32_t* next_cfg_ptr, uint32_t start_shift, uint32_t end_shift);
 NPEReg* nu_add_diff_start(NPEReg* cfg_diff_ptr, uintptr_t start, uint32_t depend_start);
 
+void nu_npe_make_reg_dump( uintptr_t base, NARegDump* regs_dump);
+
 void nu_npe_run(uintptr_t npe_base, NPEReg* cfg_diff_start_ptr, NPEReg* cfg_diff_end_ptr);
 
 void nu_print_associative_regs_dump(NPEReg* start_ptr, NPEReg* end_ptr);
@@ -828,6 +839,7 @@ void nu_ppe_wdma_err_reset (uintptr_t base);
 void nu_ppe_rdma_err_mask (uintptr_t base);
 uint32_t nu_ppe_rdma_err_status(uintptr_t base);
 void nu_ppe_rdma_err_reset (uintptr_t base);
+void nu_npe_wait_busy(uintptr_t base);
 void na_rst(uintptr_t base );
 
 uint32_t mask_N_M (int N, int M);

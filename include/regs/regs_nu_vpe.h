@@ -113,6 +113,10 @@
 #define NU_VPE_DMA_BATCH_SIZE          0x078
 #define NU_VPE_DMA_BATCH_STRIDE        0x07C
 
+  // Diff Between The Offset Of The Last Group And Offset Of The First Group
+  //  + The Size Of The Last Group
+#define NU_VPE_REG_MAP_SIZE ( (NU_VPE_OP2_RDMA - NU_VPE) + (NU_VPE_DMA_BATCH_STRIDE - NU_VPE_DMA_CFG + 4) )
+
 #endif
 
 

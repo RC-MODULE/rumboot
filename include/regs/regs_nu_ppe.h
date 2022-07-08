@@ -29,9 +29,11 @@
 #define NU_PPE_RDMA_BOX_OFFSET_X    0X06C
 #define NU_PPE_RDMA_BOX_OFFSET_Y    0X070
 #define NU_PPE_RDMA_BOX_OFFSET_Z    0X074
+  // Size Of Reg Map - Diff Between Last Reg And First Reg
+#define NU_PPE_RDMA_REG_MAP_SIZE (NU_PPE_RDMA_BOX_OFFSET_Z - NU_PPE_OP_ENABLE)
 
 // PPE+WDMA registers
-//#define NU_PPE_OP_ENABLE           0x000
+//#define NU_PPE_OP_ENABLE           0x000 // Duplicate (Defined Higher)
 //#define NU_PPE_POINTER             0x004
 //#define NU_PPE_STATUS              0x008
 #define NU_PPE_WDMA_AXI_PARAM       0x00C
@@ -84,4 +86,6 @@
 #define NU_PPE_NAN_NUM_IN           0x0D0
 #define NU_PPE_NAN_NUM_OUT          0x0D4
 #define NU_PPE_STATUS_DONE          0x0D8
+  // Diff Between Last Meaningful Reg And First Reg
+#define NU_PPE_WDMA_REG_MAP_SIZE (NU_PPE_PADDING_VALUE_7 - NU_PPE_OP_ENABLE + 4)
 #endif

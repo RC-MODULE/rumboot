@@ -6,11 +6,6 @@
 #include <regs/regs_na.h>
 #include "devices/rcm_na/nu_lib.h"
 
-#define NU_MPE_REG_MAP_SIZE (MPE_MA_BASE + MPE_CMD_ICMW)  // 0xF00
-#define NU_VPE_REG_MAP_SIZE (NU_VPE_OP2_RDMA + NU_VPE_DMA_BATCH_STRIDE) // 0x1DF
-#define NU_PPE_RDMA_REG_MAP_SIZE NU_PPE_RDMA_BOX_OFFSET_Z // 0x074
-#define NU_PPE_WDMA_REG_MAP_SIZE NU_PPE_PADDING_VALUE_7 // 0x0С8
-
 #define NU_RDMA_NUMBER 7
 #define NU_WDMA_NUMBER 2
 
@@ -287,13 +282,6 @@ typedef struct NAHeapMap {
 void nu_get_rather_fair_heap_map(NAHeapMap* heap_map);
 void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map);
 
-typedef struct NARegDump {
-  uint32_t mpe[NU_MPE_REG_MAP_SIZE/sizeof(uint32_t)];
-  uint32_t vpe[NU_VPE_REG_MAP_SIZE/sizeof(uint32_t)];
-  uint32_t ppe_rdma[NU_PPE_RDMA_REG_MAP_SIZE/sizeof(uint32_t)];
-  uint32_t ppe_wdma[NU_PPE_WDMA_REG_MAP_SIZE/sizeof(uint32_t)];
-} NARegDump;
-
 typedef enum NA_RDMA {
   MPE_RDMA_D=0,
   MPE_RDMA_W=1,
@@ -338,6 +326,9 @@ typedef struct NPETestDescriptor {
 
   NPEReg* associative_regs_dump_start_ptr;
   NPEReg* associative_regs_dump_end_ptr;
+  
+  NARegDump* curr_regs_dump;
+  NARegDump* next_regs_dump;
 
   NADependTable* array_of_depend_table;
   NAIterationConfigMap iteration_cfg_map;
@@ -411,6 +402,8 @@ typedef struct NPEIterationDescriptor {
   VectorMetrics* lut2_metrics;
 
   //~ StatusRegs* status_regs_etalon;
+  
+  NPEReg* associative_regs_dump_curr_ptr;
 } NPEIterationDescriptor;
 
 void nu_npe_init_iteration_desc(NPETestDescriptor* test_desc, NPEIterationDescriptor* iteration_desc);
@@ -469,12 +462,15 @@ void nu_npe_write_channel_depend_cfg(
   uint32_t start_bit
 );
 
+void nu_npe_setup_next_regs_dump(NPEIterationDescriptor* iteration_desc) ;
+
 void nu_npe_reg_map_swap(NPEIterationDescriptor* desc);
 int nu_npe_place_associative_regs_dump(int heap_id, NPETestDescriptor* test_desc,int iterations);
-int nu_npe_place_regs_dump(int heap_id, NPEIterationDescriptor* desc);
+int nu_npe_place_regs_dump(int heap_id, NPETestDescriptor* desc);
 int nu_npe_place_array_of_depend_table(int heap_id, NPETestDescriptor* test_desc,int iterations);
 NADependTable* nu_load_array_of_depend_table(int heap_id, char* file_tag, char* metrics_file_tag, int iterations);
 void nu_print_array_of_depend_table(NPETestDescriptor* test_desc, int iterations);
+void nu_npe_append_associative_regs_dump(NPEIterationDescriptor* iteration_desc) ;
 
 int nu_ppe_rdma_regs_swrst_check (uintptr_t base);
 int nu_ppe_regs_swrst_check (uintptr_t base);
