@@ -705,6 +705,9 @@ void nu_vpe_wait_int_pause_cntx_appl(uintptr_t vpe_base);
 void nu_vpe_wait_int_cntx_appl(uintptr_t vpe_base);
 void nu_vpe_wait_int_dev_off(uintptr_t vpe_base);
 
+int run_na_cmd_dma(uintptr_t npe_base,uintptr_t dump_ptr_adr, uintptr_t size);
+int na_dma_cmd_complete(uintptr_t npe_base);
+
 void nu_vpe_dev_pause_norst_resume(uintptr_t vpe_base);
 void nu_vpe_wait_int_pause_norst_cntx_appl(uintptr_t vpe_base);
 void nu_vpe_soft_reset(uintptr_t vpe_base);
@@ -843,5 +846,9 @@ void nu_npe_wait_busy(uintptr_t base);
 void na_rst(uintptr_t base );
 
 uint32_t mask_N_M (int N, int M);
+
+void nu_vpe_regs_cmd_dma_setup(uintptr_t base, uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigVPE* cfg);
+void nu_vpe_dma_regs_cmd_dma_setup(uintptr_t base,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigDMA* dma_config,TraceMode trace_mode);
+void nu_vpe_lut_access_setup(uintptr_t base,uint32_t command, uint32_t dump_ptr_adr[0],uint32_t lut_size, void* lut);
 
 #endif
