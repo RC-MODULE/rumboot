@@ -198,6 +198,8 @@ macro(_na_init_variables DUT)
   endif()
 
   set(MERGE_BINS_4_LONG_SCRIPT ${CMAKE_SOURCE_DIR}/scripts/merge_npe_rm_files.sh)
+  set(WRITE_DEP_TABLE_SCRIPT ${CMAKE_SOURCE_DIR}/scripts/write_na_trivial_dep_table.pl)
+  set(DEP_TABLE_LOG dep_table.log)
 
 endmacro()
 
@@ -368,6 +370,25 @@ macro(ADD_NPE_MPE_VPE_TEST_SEED CONF name rm_bin_name make_tight comparer seed_v
 
         || exit 1
 
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_cif
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_with_dep.c
+      CFLAGS ${COMPARER_OPT}
+      PREPCMD
+        ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} ${RM_TF_KEYS} > ${RM_LOGFILE} 
+        &&
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} 
+          > ${ConfigMPE_to_LUT_LOGFILE} 
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+        &&
+        ${WRITE_DEP_TABLE_SCRIPT} -mpe_vpe ${NA_TEST_num_iterations_file} ${NA_TEST_dep_table_file} > ${DEP_TABLE_LOG}
+        || exit 1
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
     )
@@ -543,6 +564,27 @@ macro(ADD_NPE_COMPLEX_TEST CONF name rm_bin_name make_tight comparer)
         ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE}
         &&
         ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+
+        || exit 1
+
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+    )
+
+    add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_cif
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_with_dep.c
+      CFLAGS ${COMPARER_OPT}
+      PREPCMD
+        ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} ${RM_TF_KEYS} > ${RM_LOGFILE}
+        &&
+        ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} 
+          > ${ConfigMPE_to_LUT_LOGFILE}
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+        &&
+        ${WRITE_DEP_TABLE_SCRIPT} -mpe_vpe_ppe ${NA_TEST_num_iterations_file} ${NA_TEST_dep_table_file} > ${DEP_TABLE_LOG}
 
         || exit 1
 
@@ -1624,7 +1666,7 @@ macro(na_testsuite_add_npe_tests CONF)
     ###################################
     ## Some Other Direct Tests
     foreach(label RANGE 1 24)
-      ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE NO_TIGHT BITWISE)
+      ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE MAKE_TIGHT BITWISE)
     endforeach()
     foreach(label RANGE 1 48)
       ADD_NPE_COMPLEX_TEST(${CONF} npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE NO_TIGHT BITWISE) #BITWISE - Because it passes Yet
