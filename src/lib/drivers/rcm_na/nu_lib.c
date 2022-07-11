@@ -2596,7 +2596,29 @@ void nu_vpe_wait_int_pause_cntx_appl(uintptr_t vpe_base){
     iowrite32(((1<<7) | (1<<16)),vpe_base + NU_VPE + NU_VPE_INT_RESET); 
 	rumboot_printf("Done VPE context\n");
 }
+int run_na_cmd_dma(uintptr_t npe_base,uintptr_t dump_ptr_adr, uintptr_t size){
+	iowrite32( 0x100 ,npe_base + NA_CU_REGS_BASE   + NA_UNITS_MODE);
+	iowrite32(  0x0002000f  ,npe_base + NA_CU_REGS_BASE   + CMD_DMA_AXI_PARAM);
+	//rumboot_printf("AXI_PARAM =%x\n",ioread32(npe_base + NA_CU_REGS_BASE   + CMD_DMA_AXI_PARAM));
+	iowrite32( dump_ptr_adr,npe_base + NA_CU_REGS_BASE +  CMD_DMA_BASE_ADDR);
+	//rumboot_printf("BASE_ADDR =%x\n",ioread32(npe_base + NA_CU_REGS_BASE +  CMD_DMA_BASE_ADDR));
+	iowrite32( size,npe_base + NA_CU_REGS_BASE +  CMD_DMA_PAGE_SIZE);
+	//rumboot_printf("PAGE_SIZE =%x\n",ioread32(npe_base + NA_CU_REGS_BASE +  CMD_DMA_PAGE_SIZE));
+	iowrite32( 0x1,npe_base + NA_CU_REGS_BASE +  CMD_DMA_CFG);
 
+	while (( (ioread32(npe_base + NA_CU_REGS_BASE +  CMD_DMA_INT_STATUS)>> 16) & 1) !=1) {}	//CMD_DMA_CNTX_APPLY	
+	{iowrite32( (1<<16),npe_base + NA_CU_REGS_BASE   + CMD_DMA_INT_RESET);}
+	rumboot_printf("Done CMD DMA context\n");
+	return 0;
+}
+int na_dma_cmd_complete(uintptr_t npe_base){
+	rumboot_printf("Wait NA CND DMA page complete ...\n");
+	while (( (ioread32(npe_base + NA_CU_REGS_BASE +  CMD_DMA_INT_STATUS)>> 0) & 1) !=1) {}
+	{iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + CMD_DMA_INT_RESET);	
+	rumboot_printf(" NA CND DMA page complete done\n");
+	}
+	return 0;
+}
 void nu_na_vpe_wait_int_pause_cntx_appl(uintptr_t npe_base){
 	rumboot_printf("Wait_ NA_VPE context got\n");
     while(( (ioread32(npe_base +  NA_CU_REGS_BASE +  NA_INT_UNITS_STATUS) >> 12) & 1) !=1) {}
@@ -3572,7 +3594,517 @@ uint32_t busy;
 	  
 	  iowrite32(0x1F1	  ,base + NA_VPE_BASE + NU_VPE_OP1_RDMA + NU_VPE_INT_RESET);
 	  iowrite32(0x00000000,base + NA_VPE_BASE + NU_VPE_OP1_RDMA + NU_VPE_INT_MASK);	  
-	  
-	  
-	  
+	  	 	  
  }
+void nu_vpe_regs_cmd_dma_setup(uintptr_t base, uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigVPE* cfg){	
+	int j;
+	int32_t     tmp_data;
+	DataType    tmp_type;
+	int32_t     tmp_relu,tmp_mux_en,tmp_alu_en, tmp_op0_en;
+	int32_t     tmp1_relu,tmp1_mux_en,tmp1_alu_en, tmp1_op1_en;
+	int32_t     tmp2_lut_en,tmp2_mux_en,tmp2_alu_en, tmp2_op2_en,tmp2_c2_en,tmp2_c1_en;
+	
+	
+	uint16_t* ptr;
+	uint32_t command;
+	uint32_t lut1_size = NU_VPE_LUT1_SIZE; // Predefined By HW
+	uint32_t lut2_size = NU_VPE_LUT2_SIZE;
+	
+	rumboot_printf("lut1_size %x\n",lut1_size);
+	rumboot_printf("lut2_size %x\n",lut2_size);
+	
+	
+	int32_t shift_i1;
+	int32_t shift_i2;
+	
+	if(cfg->in_data_type == DataTypeExt_Fp16 ||cfg-> in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
+	float start_f;
+    float end_f;
+    float diff_f;
+    void* temp_ptr;
+
+	temp_ptr = &(cfg->op2_config.lut_tab1_x_end)  ;end_f   = *((float*) temp_ptr);// Read The Couple Of Bits 
+    temp_ptr = &(cfg->op2_config.lut_tab1_x_start);start_f = *((float*) temp_ptr);//  And Store It In A float Variable
+    diff_f = end_f  - start_f;
+    shift_i1 = nu_lut_log2_f(diff_f) - 8;
+	  
+    temp_ptr = &(cfg->op2_config.lut_tab2_x_end)  ;end_f   = *((float*) temp_ptr);// Read The Couple Of Bits 
+    temp_ptr = &(cfg->op2_config.lut_tab2_x_start);start_f = *((float*) temp_ptr);//  And Store It In A float Variable
+    
+	diff_f = end_f  - start_f;
+    shift_i2 = nu_lut_log2_f(diff_f) - 6;
+  }
+  else { // Integer LUT
+    shift_i1 = nu_lut_log2_i(cfg->op2_config.lut_tab1_x_end - cfg->op2_config.lut_tab1_x_start) - 8;
+    shift_i2 = nu_lut_log2_i(cfg->op2_config.lut_tab2_x_end - cfg->op2_config.lut_tab2_x_start) - 6;
+  }
+  
+  rumboot_printf("LUTs: shift_i1 = %x, shift_i2 = %x\n",shift_i1,shift_i2);
+ // ----------------------Configuration of VPE -------------------------------------------------------------------------	
+  if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
+  else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
+  else                                                                                       tmp_type = DataType_Int8  ;
+  tmp_data = ( (cfg->ninf_cnt_en&1) << 30) | 
+             ( (cfg->ovrf_cnt_en&1) << 29) | 
+             ( (cfg->lut_cnt_en&1)  << 28) |
+             (cfg->wdma_config.dma_bsize << 20) |   // why wdma&&&& maybe rdma????  -1
+             (cfg->out_data_type << 16) | 
+             ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |
+             ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |
+             ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |
+             (                 (tmp_type>>1) <<  9) | ( ((cfg->trace_mode==TraceMode_MPE  || cfg->trace_mode==TraceMode_MPE_DW)?1:0)<<8) |
+             (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
+//---------------------------------------------------------------------------------------------------------------------
+//rumboot_printf("lut_en = %x \n",(cfg->op2_config.lut_en));	
+	for ( j = 0; j < dump_size/4 ; j+=2) {
+		 
+	if ( j == 0 ) {
+		dump_ptr_adr[j+1] = cfg->cube_size;                 	//  CUBE_SIZE
+		dump_ptr_adr[j] =base + NU_VPE + NU_VPE_CUBE_SIZE ;
+		}
+	else if ( j == 2 ){
+		dump_ptr_adr[j+1] = 0x00000000;                 	// 		
+		dump_ptr_adr[j] =base + NU_VPE + NU_VPE_INT_STATUS ;
+		}
+	else if ( j == 4 ){
+		dump_ptr_adr[j+1] = 0x00000000;                 	// 		
+		dump_ptr_adr[j] =base + NU_VPE + NU_VPE_INT_RESET ;}
+	else if ( j == 6 ){
+		dump_ptr_adr[j+1] = 0x00000000;                 	// 		
+		dump_ptr_adr[j] =base + NU_VPE + NU_VPE_INT_SET ;}
+	else if ( j == 8 ){
+		dump_ptr_adr[j+1] = 0x00000000;                 	// 		
+		dump_ptr_adr[j] =base + NU_VPE + NU_VPE_INT_MASK;} 		
+				
+	else if ( j == 10 ){ 		   
+		dump_ptr_adr[j+1] = cfg->wdma_config.dma_cube_size_c-1; // CUBE_SIZE C
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_CUBE_SIZE_C;
+		}					
+	else if ( j == 12 ){
+		dump_ptr_adr[j+1] = cfg->wdma_config.dma_cube_size_w-1; // CUBE_SIZE W
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_CUBE_SIZE_W;
+		}		
+	else if ( j == 14 ){
+		dump_ptr_adr[j+1] = cfg->wdma_config.dma_cube_size_h-1; // CUBE_SIZE H
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_CUBE_SIZE_H;
+		}
+	else if ( j == 16 ){
+		dump_ptr_adr[j+1] = tmp_data; // Configuration of VPE
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP_MODE;
+		}
+	else if ( j == 18 ){
+		tmp_relu 	=(cfg -> op0_config.relu_en);
+		tmp_mux_en 	=(cfg -> op0_config.mux_en);
+		tmp_alu_en 	=(cfg -> op0_config.alu_en);
+		tmp_op0_en 	= (cfg -> op0_en);
+		
+		tmp_data =  (!tmp_relu      << 6) | // RELU_BYPASS !
+					(cfg -> op0_config.prelu_en     << 5) | // MUL_PRELU
+					(!tmp_mux_en       << 4) | // MUL_BYPASS !
+					(cfg -> op0_config.alu_operation << 2) | // ALU_ALGO
+					(!tmp_alu_en       << 1) | // ALU_BYPASS !
+					(!tmp_op0_en          		 << 0); //  BYPASS !
+		dump_ptr_adr[j+1] = tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP0_CFG;	
+		}
+	else if ( j == 20 ){
+		tmp_data = (cfg->op0_config.lshift_value << 8) | ((cfg->op0_config.alu_mode >> 1) << 0) ;
+		dump_ptr_adr[j+1] = tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP0_ALU_CFG;	
+		}
+	else if ( j == 22 ){
+		dump_ptr_adr[j+1] = cfg-> op0_config.alu_value;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP0_ALU_SRC_VAL;	
+		}
+	else if ( j == 24 ){
+		dump_ptr_adr[j+1] = (cfg-> op0_config.mux_mode >> 1);
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP0_MUL_CFG;
+		}
+	else if ( j == 26 ){
+		dump_ptr_adr[j+1] = cfg->op0_config.mux_value  ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP0_MUL_SRC_VAL;
+		}
+	else if ( j == 28 ){
+		tmp_data = (cfg->op0_config.norm_round_mode << 16) | (cfg->op0_config.norm_saturation_en << 8) | (cfg->op0_config.norm_round_size << 0);		
+		dump_ptr_adr[j+1] = tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP0_NORM_PARAM;	
+		}
+	else if ( j == 30 ){
+		tmp1_relu 		=(cfg -> op1_config.relu_en);
+		tmp1_mux_en 	=(cfg -> op1_config.mux_en);
+		tmp1_alu_en 	=(cfg -> op1_config.alu_en);
+		tmp1_op1_en 	=(cfg -> op1_en);
+		
+		tmp_data =  (!tmp1_relu      			     << 6) | // RELU_BYPASS !
+					(cfg -> op1_config.prelu_en      << 5) | // MUL_PRELU
+					(!tmp1_mux_en        			 << 4) | // MUL_BYPASS !
+					(cfg -> op1_config.alu_operation << 2) | // ALU_ALGO
+					(!tmp1_alu_en       			 << 1) | // ALU_BYPASS !
+					(!tmp1_op1_en          		 	 << 0);  //  BYPASS !
+		
+		dump_ptr_adr[j+1] = tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP1_CFG ;
+		}
+	else if ( j == 32 ){
+		tmp_data = (cfg->op1_config.lshift_value << 8) | ((cfg->op1_config.alu_mode>>1) << 0) ;
+		dump_ptr_adr[j+1] = tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP1_ALU_CFG;	
+		}
+	else if ( j == 34 ){
+		dump_ptr_adr[j+1] = cfg->op1_config.alu_value ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP1_ALU_SRC_VAL;	
+		}
+	else if ( j == 36 ){
+		dump_ptr_adr[j+1] = (cfg->op1_config.mux_mode>>1) ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP1_MUL_CFG;
+		}
+	else if ( j == 38 ){
+		
+		dump_ptr_adr[j+1] = (cfg->op1_config.mux_value) ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP1_MUL_SRC_VAL;
+		}
+	else if ( j == 40 ){
+		tmp_data = (cfg->op1_config.norm_round_mode << 16) | (cfg->op1_config.norm_saturation_en << 8) | (cfg->op1_config.norm_round_size << 0);
+		dump_ptr_adr[j+1] = tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP1_NORM_PARAM;
+		}
+	else if ( j == 42 ){
+		
+		tmp2_lut_en = cfg->op2_config.lut_en; 
+		tmp2_mux_en = cfg->op2_config.mux_en;
+		tmp2_alu_en = cfg->op2_config.alu_en;
+		tmp2_op2_en	= cfg->op2_en;
+		tmp_data = ( (cfg->op2_config.alu_operation & (1<<2)) 	<< (7-2) ) | // ALU_ALGO Split Field MSB            
+					(!tmp2_lut_en                             	<<  6)     | // LUT_BYPASS
+					( cfg->op2_config.prelu_en                  <<  5)     | // MUL_PRELU
+					(!tmp2_mux_en                   			<<  4)     | // MUL_BYPASS
+					( (cfg->op2_config.alu_operation & 3)  		<<  2)     | // ALU_ALGO Split Field LSB
+					(!tmp2_alu_en                    			<<  1)     | // ALU_BYPASS
+					(!tmp2_op2_en                           	<<  0)     ;  //  BYPASS
+			
+		dump_ptr_adr[j+1] = tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_CFG ;		
+		}
+	else if ( j == 44 ){
+		tmp2_c2_en	= cfg->op2_config.c2_en;
+		tmp_data = (!tmp2_c2_en << 1) | ((cfg->op2_config.alu_mode>>1) << 0) ;
+		dump_ptr_adr[j+1] = tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_ALU_CFG;
+		}
+	else if ( j == 46 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.alu_value;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_ALU_SRC_VAL;	
+		}
+	else if ( j == 48 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.c2_offset ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL ;
+		}
+	else if ( j == 50 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.c2_scale;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL;	
+		}
+	else if ( j == 52 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.c2_trunc ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_ALU_CVT_TRUNC_VAL;	
+		}
+	else if ( j == 54 ){
+		dump_ptr_adr[j+1] = 0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_ALU_CMP_RESULT;	
+		}				
+
+	else if ( j == 56 ){
+		tmp2_c1_en = cfg->op2_config.c1_en;   
+		tmp_data = (!tmp2_c1_en << 1) | ((cfg->op2_config.mux_mode>>1) << 0) ;
+		dump_ptr_adr[j+1] =tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_MUL_CFG;	
+		}
+	else if ( j == 58 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.mux_value ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_MUL_SRC_VAL;	
+		}
+	else if ( j == 60 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.c1_offset ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL ;		
+		}
+	else if ( j == 62 ){
+		dump_ptr_adr[j+1] = cfg->op2_config.c1_scale;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL;	
+		}
+	else if ( j == 64 ){
+		dump_ptr_adr[j+1] =cfg->op2_config.c1_trunc ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_MUL_CVT_TRUNC_VAL;
+		
+		}
+	else if ( j == 66 ){
+	    tmp_data = (cfg->op2_config.norm_round_mode << 16) | (cfg->op2_config.norm_saturation_en << 8) | (cfg->op2_config.norm_round_size << 0);
+		dump_ptr_adr[j+1] = tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OP2_NORM_PARAM;	
+		}
+	else if ( j == 68 ){
+		dump_ptr_adr[j+1] =0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_ACCESS_CFG ;
+		}		
+	else if ( j == 70 ){
+
+		dump_ptr_adr[j+1] =0x00000000;	
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_ACCESS_DATA ;		
+			}		
+	else if ( j == 72 ){
+	tmp_data = (cfg->op2_config.lut_mrr_type     << 4) | 
+             (cfg->op2_config.lut_mrr_en         << 3) |
+             (cfg->op2_config.lut_sel            << 2) | // HYBR_SEL
+             (cfg->op2_config.lut_right_priority << 1) | // OVRF_SEL
+             (cfg->op2_config.lut_left_priority  << 0) ; // UNDF_SEL	
+			 
+		dump_ptr_adr[j+1] =tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_CFG ;		
+		}
+	else if ( j == 74 ){
+		dump_ptr_adr[j+1] =cfg->op2_config.lut_xoffset;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_XOFFSET ;
+		}
+	else if ( j == 76 ){
+		tmp_data = 0x000000000 | cfg->op2_config.lut_yoffset;
+		dump_ptr_adr[j+1] =tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_YOFFSET ;	
+		}			
+	else if ( j == 78){		
+		dump_ptr_adr[j+1] =shift_i1;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB0_XSHIFT ;		
+		}
+	else if ( j == 80){
+		dump_ptr_adr[j+1] =shift_i2 ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB1_XSHIFT ;		
+		}		
+	else if ( j == 82){
+		dump_ptr_adr[j+1] =cfg->op2_config.lut_tab1_x_start ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB0_XMIN ;	
+		}	
+	else if ( j == 84){
+		dump_ptr_adr[j+1] =cfg->op2_config.lut_tab1_x_end ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB0_XMAX ;	
+		}				
+	else if ( j == 86){
+		dump_ptr_adr[j+1] =cfg->op2_config.lut_tab2_x_start ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB1_XMIN ;		
+		}
+	else if ( j == 88){
+		dump_ptr_adr[j+1] =cfg->op2_config. lut_tab2_x_end;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB1_XMAX ;	
+		}						
+	else if ( j == 90){
+		tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_scale & 0x0000FFFF) << 16) |
+                           ((cfg->op2_config.lut_tab1_slope_undf_scale & 0x0000FFFF)      );
+		dump_ptr_adr[j+1] =tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB0_SLOPE_SCALE ;		
+		}					
+	
+	else if ( j == 92){
+		tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_shift & 0x1F) << 8) |
+                           ((cfg->op2_config.lut_tab1_slope_undf_shift & 0x1F)     );
+		dump_ptr_adr[j+1] =tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB0_SLOPE_SHIFT ;	
+		}
+	else if ( j == 94){
+		tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_scale & 0x0000FFFF) << 16) |
+                           ((cfg->op2_config.lut_tab2_slope_undf_scale & 0x0000FFFF)      );
+		dump_ptr_adr[j+1] =tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE ;	
+		}				
+	else if ( j == 96){
+		 tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_shift & 0x1F) << 8) |
+                           ((cfg->op2_config.lut_tab2_slope_undf_shift & 0x1F)     );
+		dump_ptr_adr[j+1] =tmp_data ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT ;	
+		}
+				
+else if ( j == 98){
+		dump_ptr_adr[j+1] = cfg->c3_offset;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL;	
+		}
+else if ( j == 100){
+		dump_ptr_adr[j+1] = cfg->c3_scale;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL;	
+		}
+else if ( j == 102){
+		tmp_data = (cfg->c3_round_mode << 12) | (cfg->c3_satur_en << 8) | (cfg->c3_trunc << 0) ;
+		dump_ptr_adr[j+1] = tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL;
+		}				
+	}		
+ }
+void nu_vpe_dma_regs_cmd_dma_setup(uintptr_t base,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigDMA* dma_config,TraceMode trace_mode){
+int j;
+uint32_t tmp_data;
+
+    // CRUTCH - Because Of Wrong Batch Mode Algorythm This Fields Calculated Incorrectly By nu_vpe_decide_dma_cube_config
+    //          We Should Fix Them Here
+    //          Waiting For The Batch Mode Algorythm Edition To Remove This CRUTCH CHECK
+  if((trace_mode==TraceMode_MPE) ||( trace_mode==TraceMode_MPE_DW)) {
+    dma_config->dma_box_st_size_x = (128/(dma_config->dma_bsize+1)) - 1;
+    dma_config->dma_box_size_x    = (128/(dma_config->dma_bsize+1)) - 1;
+  }
+
+  
+  tmp_data =(dma_config->dma_ram_type         << 8) |
+            ((dma_config->dma_data_mode >> 1) << 7) | 
+            (dma_config->dma_data_size      << 6) | 
+            (dma_config->dma_data_use       << 4) | 
+            (dma_config->dma_en             << 0);        
+	for ( j = 0; j < dump_size/4 ; j+=2) {
+	if ( j == 0 ){
+		dump_ptr_adr[j+1] = tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_CFG;	
+		}
+	else if ( j == 2 ){
+		dump_ptr_adr[j+1] = 0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_POINTER;	
+		}
+   else if ( j == 4 ){
+		tmp_data = ((dma_config->dma_cube_size_c-1)/16 + 1)*dma_config->dma_cube_size_w*dma_config->dma_cube_size_h - 1;
+		dump_ptr_adr[j+1] = tmp_data;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_CUBE_SIZE;	
+		}				
+	else if ( j == 6 ){
+		tmp_data = (2 << 16) |						 // AXI_PROT 
+				   (dma_config->dma_axi_len <<  0) ; // AXI_LEN 
+		dump_ptr_adr[j+1] = tmp_data; //((dma_config->dma_cube_size_c-1)/16 + 1)*dma_config->dma_cube_size_w*dma_config->dma_cube_size_h - 1 ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_AXI_PARAM;	
+		}
+	else if ( j == 8 ){
+		dump_ptr_adr[j+1] = 0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_INT_STATUS;	
+		}
+	else if ( j == 10 ){
+		dump_ptr_adr[j+1] = 0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_INT_RESET;	
+		}		
+	else if ( j == 12 ){
+		dump_ptr_adr[j+1] = 0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_INT_SET;	
+		}
+	else if ( j == 14 ){
+		dump_ptr_adr[j+1] = 0x00000000;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_INT_MASK;	
+		}
+	else if ( j == 16 ){
+		dump_ptr_adr[j+1] = dma_config->dma_baddr;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BASE;
+		}
+	else if ( j == 18 ){
+		dump_ptr_adr[j+1] = dma_config->dma_cube_size_c-1 ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_CUBE_SIZE_C;
+		}
+	else if ( j == 20 ){
+		dump_ptr_adr[j+1] = dma_config->dma_cube_size_w-1 ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_CUBE_SIZE_W;
+
+		}
+	else if ( j == 22){
+		dump_ptr_adr[j+1] = dma_config->dma_cube_size_h-1 ;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_CUBE_SIZE_H;
+
+		}		
+	else if ( j == 24 ){
+		dump_ptr_adr[j+1] = dma_config->dma_border_x;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BORDER_X;
+
+		}
+	else if ( j == 26 ){
+		dump_ptr_adr[j+1] = dma_config->dma_border_y;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BORDER_Y;
+
+		}
+	else if ( j == 28 ){
+		dump_ptr_adr[j+1] = dma_config->dma_border_z;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BORDER_Z;
+
+		}
+	else if ( j == 30 ){
+		dump_ptr_adr[j+1] = dma_config->dma_stride_x;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_STRIDE_X;
+
+		}
+	else if ( j == 32){
+		dump_ptr_adr[j+1] = dma_config->dma_stride_y;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_STRIDE_Y;
+
+		}
+	else if ( j == 34 ){
+		dump_ptr_adr[j+1] = dma_config->dma_stride_z;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_STRIDE_Z;	
+		}		
+	else if ( j == 36 ){
+		dump_ptr_adr[j+1] = dma_config->dma_frag_size;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_FRAG_SIZE_ADDR;
+		}
+	else if ( j == 38 ){
+		dump_ptr_adr[j+1] = dma_config->dma_frag_last_size;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR;
+		}
+	else if ( j == 40 ){
+		dump_ptr_adr[j+1] = dma_config->dma_xyz_drct;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_XYZ_DRCT_ADDR;
+		}	
+	else if ( j == 42){
+		dump_ptr_adr[j+1] = dma_config->dma_box_st_size_x;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_ST_SIZE_X;
+		}
+	else if ( j == 44 ){
+		dump_ptr_adr[j+1] = dma_config->dma_box_st_size_y;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_ST_SIZE_Y;
+		}
+	else if ( j == 46 ){
+		dump_ptr_adr[j+1] = dma_config->dma_box_st_size_z;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_ST_SIZE_Z;
+		}
+	else if ( j == 48 ){
+		dump_ptr_adr[j+1] = dma_config->dma_box_size_x;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_SIZE_X;
+		}
+	else if ( j == 50 ){
+		dump_ptr_adr[j+1] = dma_config->dma_box_size_y;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_SIZE_Y;
+		}
+	else if ( j == 52){
+		dump_ptr_adr[j+1] = dma_config->dma_box_size_z;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_SIZE_Z;
+		}
+	else if ( j == 54){
+		dump_ptr_adr[j+1] = dma_config->dma_box_offset_x;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_OFFSET_SIZE_X;
+		}
+	else if ( j == 56 ){
+		dump_ptr_adr[j+1] = dma_config->dma_box_offset_y;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_OFFSET_SIZE_Y;
+		}
+	else if ( j == 58 ){
+		dump_ptr_adr[j+1] = dma_config->dma_box_offset_z;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BOX_OFFSET_SIZE_Z;
+		}
+	else if ( j == 60 ){
+		dump_ptr_adr[j+1] = dma_config->dma_bsize;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BATCH_SIZE;
+		}
+	else if ( j == 62){
+		dump_ptr_adr[j+1] = dma_config->dma_bstride;
+	   	dump_ptr_adr[j] =  base + NU_VPE + NU_VPE_DMA_BATCH_STRIDE;
+		}
+	}
+}
+void nu_vpe_lut_access_setup(uintptr_t base,uint32_t command, uint32_t dump_ptr_adr[0],uint32_t lut_size, void* lut) {
+  uint16_t* ptr;
+  int j;
+		ptr = (uint16_t*) lut;
+ for ( j = 0; j < (lut_size/4); j+=2) {
+	 if ( j == 0 ) {		
+ 		dump_ptr_adr[1] = command;                	//LUT_ACCESS_CFG
+		dump_ptr_adr[0] =base + NU_VPE + NU_VPE_LUT_ACCESS_CFG ;
+		}
+	else if ( j >=2){
+		dump_ptr_adr[j+1] =	(uint32_t) *ptr++;  	
+		dump_ptr_adr[j] =base + NU_VPE + NU_VPE_LUT_ACCESS_DATA ; // Write Data
+		}
+	}
+rumboot_printf("My last j is %d\n",j);	
+}
