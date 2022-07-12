@@ -1439,7 +1439,7 @@ macro(na_testsuite_add_npe_tests CONF)
     
     foreach(geometry IN ITEMS GEOMETRY_1 GEOMETRY_2 GEOMETRY_3 GEOMETRY_4 GEOMETRY_5 GEOMETRY_6 GEOMETRY_7)
      foreach(data IN ITEMS INT8 INT16 FP16)
-      foreach(batch_size RANGE 1 31)
+      foreach(batch_size RANGE 1 15)
        ADD_NPE_MPE_BATCH_TEST(${CONF} MPE_VPE_LONG_BATCH ${batch_size}_${data}_${geometry} main_npe_batch_${batch_size}_${data}_${geometry})
       endforeach()
      endforeach()
