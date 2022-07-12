@@ -36,7 +36,7 @@ PPEIterationDescriptor iteration_desc;
 
 int main() {
   int heap_id ;
-  int i, it_nmb, skip, dtB, perf_avg;
+  int i, it_nmb, skip;
   int res;
 
   uint32_t flying_mode, lbs, vpe_mem, max_red;
@@ -148,14 +148,13 @@ int main() {
   #endif
 
   #ifdef ShowPerf
-    uint32_t ppe_clk_10_t;
     uint32_t prcsn = 100;
+    uint32_t perf_avg = 0;
+    uint32_t ppe_clk_10_t = get_nmb_clk_10_t();
 
-    ppe_clk_10_t = get_nmb_clk_10_t();
+    uint32_t dtB;
 
     rumboot_printf("ppe_clk_10_t %d\n", ppe_clk_10_t);
-  #else
-    ppe_clk_10_t = 1;
   #endif
 
   #ifdef RESP_ERR
@@ -169,7 +168,7 @@ int main() {
 
   flying_mode = ((lbs&0x3)<<1) | (vpe_mem&0x1);
 
-  for (perf_avg=0, i=skip; i<it_nmb && !res; i++) {
+  for (i=skip; i<it_nmb && !res; i++) {
     //rumboot_malloc_update_heaps(1);
 
     rumboot_printf("Starting Iteration %d\n",i);
@@ -341,7 +340,7 @@ int main() {
   else {
     perf_avg = perf_avg/it_nmb;
 
-    rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/100, perf_avg-(perf_avg/100)*100);
+    rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/prcsn, perf_avg-(perf_avg/prcsn)*prcsn);
   }
   #endif
 
