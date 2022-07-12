@@ -203,7 +203,7 @@ int main() {
     iteration_desc.cfg_reg->wOpEn  = iteration_desc.cfg_reg->wOpEn | 0x1;
     nu_ppe_wdma_run(MY_PPE_REGS_BASE, iteration_desc.cfg_reg); // wdma start
 
-    clk_cnt = nu_get_uptime_ns();
+    clk_cnt = ppe_get_uptime();
 
     if (!vpe_mem) {
       iteration_desc.cfg_reg->rOpEn  = iteration_desc.cfg_reg->rOpEn | 0x1;
@@ -238,8 +238,8 @@ int main() {
     else {
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {}
 
-      tmp = nu_get_uptime_ns();
-      clk_cnt = tmp > clk_cnt ? tmp - clk_cnt : 0;
+     tmp = ppe_get_uptime();
+     clk_cnt = tmp > clk_cnt ? tmp - clk_cnt : 0;
 
       if (!vpe_mem) nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // rdma finish
 
@@ -289,10 +289,9 @@ int main() {
             dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
             rumboot_printf("spent time %d\n", clk_cnt);
+            rumboot_printf("HWC in bytes %d\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB));
 
             clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * 10 * prcsn)/(clk_cnt*ppe_clk_10_t);
-
-            rumboot_printf("HWC in bytes %d\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB));
 
             perf_avg += clk_cnt;
 
