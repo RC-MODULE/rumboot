@@ -35,7 +35,6 @@ PPETestDescriptor test_desc;
 PPEIterationDescriptor iteration_desc;
 
 int main() {
-  int heap_id ;
   int i, it_nmb, skip;
   int res;
 
@@ -43,6 +42,9 @@ int main() {
   uint32_t ppe_swrst_en, setup_reg, resperr;
 
   uint32_t clk_cnt, tmp;
+
+  IRESHeapMap ires_hm;
+  PPEHeapMap ppe_hm;
 
   flying_mode = 0x0;
   lbs         = 0x0;
@@ -78,8 +80,6 @@ int main() {
     max_red = 0x1<<1 | 0x1;
   #endif
 
-  heap_id = nu_get_heap_id();
-
   rumboot_platform_request_file_ex("num_iterations_file_tag", (uintptr_t) &it_nmb,sizeof(it_nmb));
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
@@ -89,7 +89,23 @@ int main() {
 
   nu_ppe_init_test_desc(&test_desc);
 
-  res = nu_ppe_place_arrays(heap_id,&test_desc,it_nmb);
+  #ifdef ShowPerf
+    uint32_t prcsn = 100;
+    uint32_t perf_avg = 0;
+    uint32_t ppe_clk_10_t = get_nmb_clk_10_t();
+
+    uint32_t dtB;
+
+    ppe_get_2ch_heap_map(&ires_hm, &ppe_hm);
+//    ppe_get_simple_heap_map(&ires_hm, &ppe_hm);
+
+    rumboot_printf("ppe_clk_10_t %d\n", ppe_clk_10_t);
+  #else
+    ppe_get_simple_heap_map(&ires_hm, &ppe_hm);
+  #endif
+
+//  res = nu_ppe_place_arrays(nu_get_heap_id(),&test_desc,it_nmb);
+  res = nu_ppe_place_arrays_by_heap_map(&ires_hm, &ppe_hm, &test_desc, it_nmb);
 
   if (!res) nu_ppe_init_iteration_desc(&test_desc,&iteration_desc);
 
@@ -145,16 +161,6 @@ int main() {
     uint32_t mark_cube = 1;
 
     nu_ppe_marked_page_cmpl_mask(MY_PPE_REGS_BASE);
-  #endif
-
-  #ifdef ShowPerf
-    uint32_t prcsn = 100;
-    uint32_t perf_avg = 0;
-    uint32_t ppe_clk_10_t = get_nmb_clk_10_t();
-
-    uint32_t dtB;
-
-    rumboot_printf("ppe_clk_10_t %d\n", ppe_clk_10_t);
   #endif
 
   #ifdef RESP_ERR
@@ -288,8 +294,7 @@ int main() {
           if (clk_cnt > 0 && ppe_clk_10_t > 0) {
             dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
-            rumboot_printf("spent time %d\n", clk_cnt);
-            rumboot_printf("HWC in bytes %d\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB));
+            rumboot_printf("%d bytes during %d ts\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB), clk_cnt);
 
             clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * 10 * prcsn)/(clk_cnt*ppe_clk_10_t);
 

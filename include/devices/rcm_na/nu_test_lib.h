@@ -18,7 +18,10 @@
 int nu_get_heap_id();
 int nu_get_add_heap_id();
 uintptr_t nu_virt_to_dma(volatile const void *addr);
+
 uint32_t nu_get_uptime_ns();
+uint32_t ppe_get_uptime();
+
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);
 int nu_vpe_load_array_of_cfg(int heap_id, ConfigVPE* array_of_cfg, int num) ;
 int nu_vpe_load_cfg_by_tag(int heap_id, ConfigVPE* cfg, char* cfg_file_tag);
@@ -262,7 +265,7 @@ typedef struct NAHeapMap {
   int ppe_cfg;
   int res;
   int etalon;
-  
+
   int metrics_in_data;
   int metrics_warr;
   int metrics_op0;
@@ -281,6 +284,30 @@ typedef struct NAHeapMap {
 
 void nu_get_rather_fair_heap_map(NAHeapMap* heap_map);
 void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map);
+
+typedef struct IRESHeapMap {
+  int in_data ;
+  int etalon  ;
+  int res     ;
+
+  int metrics_in_data ;
+  int metrics_etalon  ;
+
+  int status  ;
+
+} IRESHeapMap;
+
+typedef struct PPEHeapMap {
+  int ppe_cfg   ;
+  int ppe_cfgreg;
+
+  int metrics_ppe_cfg;
+} PPEHeapMap;
+
+void ppe_get_simple_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm);
+void ppe_get_2ch_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm);
+
+int nu_ppe_place_arrays_by_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm, PPETestDescriptor* test_desc, int it_nmb);
 
 typedef enum NA_RDMA {
   MPE_RDMA_D=0,

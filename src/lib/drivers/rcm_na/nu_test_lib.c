@@ -88,7 +88,6 @@ void nu_get_rather_fair_heap_map_perf_do(NAHeapMap* heap_map) {
   heap_map->control            =nu_get_heap_id();
 }
 
-
   // This Should Return Time In Nanoseconds
 uint32_t nu_get_uptime_ns() {
   // On SCR1 Platform Is Made By Direct Timer Request (Not Through rumboot_platform_get_uptime)
@@ -1875,6 +1874,71 @@ void nu_ppe_iterate_desc(PPEIterationDescriptor* desc) {
   desc->cfg_reg += 1;
 
   desc->status_regs_etalon += 1;
+}
+
+void ppe_get_simple_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm) {
+  ires_hm->in_data          = nu_get_heap_id();
+  ires_hm->etalon           = nu_get_heap_id();
+  ires_hm->res              = nu_get_heap_id();
+  ires_hm->metrics_in_data  = nu_get_heap_id();
+  ires_hm->metrics_etalon   = nu_get_heap_id();
+  ires_hm->status           = nu_get_heap_id();
+
+  ppe_hm->ppe_cfg           = nu_get_heap_id();
+  ppe_hm->ppe_cfgreg        = nu_get_heap_id();
+  ppe_hm->metrics_ppe_cfg   = nu_get_heap_id();
+}
+
+void ppe_get_2ch_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm) {
+  ires_hm->in_data          = nu_get_heap_id();
+  ires_hm->etalon           = nu_get_heap_id();
+  ires_hm->res              = nu_get_add_heap_id();
+  ires_hm->metrics_in_data  = nu_get_heap_id();
+  ires_hm->metrics_etalon   = nu_get_heap_id();
+  ires_hm->status           = nu_get_heap_id();
+
+  ppe_hm->ppe_cfg           = nu_get_heap_id();
+  ppe_hm->ppe_cfgreg        = nu_get_heap_id();
+  ppe_hm->metrics_ppe_cfg   = nu_get_heap_id();
+}
+
+int nu_ppe_place_arrays_by_heap_map (IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm, PPETestDescriptor* test_desc,int iterations) {
+  int res = 0;
+
+  test_desc->array_of_cfg     = rumboot_malloc_from_heap_aligned(ppe_hm->ppe_cfg,sizeof(ConfigPPE)   *iterations,sizeof(uint32_t));
+
+  test_desc->array_of_cfg_reg = rumboot_malloc_from_heap_aligned(ppe_hm->ppe_cfgreg,sizeof(ConfigREGPPE)*iterations,sizeof(uint32_t));
+
+  if (!res && test_desc->array_of_cfg == NULL) res = 1;
+  if (!res && test_desc->array_of_cfg_reg == NULL) res = 1;
+
+  if (!res) res = nu_ppe_load_array_of_cfg(ppe_hm->ppe_cfg, test_desc->array_of_cfg, iterations);
+
+  if (!res) {
+    test_desc->array_of_in_metrics = nu_load_array_of_cube_metrics(ires_hm->metrics_in_data,"metrics_in_tag", iterations);
+
+    test_desc->array_of_res_metrics= nu_load_array_of_cube_metrics(ires_hm->metrics_etalon,"metrics_etalon_tag", iterations);
+  }
+
+  if (!res && test_desc->array_of_in_metrics == NULL) res = 1;
+  if (!res && test_desc->array_of_res_metrics == NULL) res = 1;
+
+  if (!res) {
+    test_desc->array_of_in_data = nu_load_array_of_cubes(ires_hm->in_data,test_desc->in_file_tag,test_desc->array_of_in_metrics,iterations);
+
+    test_desc->array_of_etalon  = nu_load_array_of_cubes(ires_hm->etalon,"etalon_file_tag",test_desc->array_of_res_metrics,iterations);
+
+    test_desc->array_of_res_data= nu_malloc_array_of_res(ires_hm->res,test_desc->array_of_res_metrics,iterations);
+
+    test_desc->array_of_status_regs_etalon = nu_load_array_of_status_regs(ires_hm->status,iterations);
+  }
+
+  if (!res && test_desc->array_of_in_data == NULL) res = 1;
+  if (!res && test_desc->array_of_etalon  == NULL) res = 1; 
+  if (!res && test_desc->array_of_res_data== NULL) res = 1;
+  if (!res && test_desc->array_of_status_regs_etalon == NULL) res = 1;
+
+  return res;
 }
 
 int nu_ppe_place_arrays(int heap_id, PPETestDescriptor* test_desc,int iterations){
