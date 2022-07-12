@@ -1890,6 +1890,9 @@ void ppe_get_simple_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm) {
 }
 
 void ppe_get_2ch_heap_map(IRESHeapMap* ires_hm, PPEHeapMap* ppe_hm) {
+
+//  rumboot_printf("%s\n", __func__);
+
   ires_hm->in_data          = nu_get_heap_id();
   ires_hm->etalon           = nu_get_heap_id();
   ires_hm->res              = nu_get_add_heap_id();
@@ -3172,10 +3175,8 @@ int get_nmb_clk_10_t() {
   #endif
 
   #ifdef RUMBOOT_PLATFORM_NATIVE  // nu_get_uptime()
-    res = 625/2 ;
-
+    res = 625 ; // circuit board frequency is 62.5 MHz;
 //    res = 100 ; // circuit board frequency is 10 MHz
-//    res = 625 ; // circuit board frequency is 62.5 MHz;
   #endif
 
   return res;

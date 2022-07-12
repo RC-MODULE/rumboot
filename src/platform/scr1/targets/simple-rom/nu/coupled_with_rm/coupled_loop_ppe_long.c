@@ -90,6 +90,7 @@ int main() {
   nu_ppe_init_test_desc(&test_desc);
 
   #ifdef ShowPerf
+    uint32_t PPE_PERF_MAX = 16; // 16 B/clk
     uint32_t prcsn = 100;
     uint32_t perf_avg = 0;
     uint32_t ppe_clk_10_t = get_nmb_clk_10_t();
@@ -294,7 +295,7 @@ int main() {
           if (clk_cnt > 0 && ppe_clk_10_t > 0) {
             dtB = (iteration_desc.cfg_reg->wOpM >> 16 & 0x3) ? 0x2 : 0x1;
 
-            rumboot_printf("%d bytes during %d ts\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB), clk_cnt);
+            rumboot_printf("%d B during %d ts\n", (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB), clk_cnt);
 
             clk_cnt = (iteration_desc.in_metrics->H * iteration_desc.in_metrics->W * iteration_desc.in_metrics->C * dtB * 10 * prcsn)/(clk_cnt*ppe_clk_10_t);
 
@@ -340,12 +341,18 @@ int main() {
   }
 
   #ifdef ShowPerf
-  if (it_nmb == 0) rumboot_printf("ShowPerf failed\n");
-  else {
-    perf_avg = perf_avg/it_nmb;
+    if (it_nmb == 0) rumboot_printf("ShowPerf failed\n");
+    else {
+      perf_avg = perf_avg/it_nmb;
 
-    rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/prcsn, perf_avg-(perf_avg/prcsn)*prcsn);
-  }
+      rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/prcsn, perf_avg-(perf_avg/prcsn)*prcsn);
+
+      if (perf_avg/prcsn < PPE_PERF_MAX/2) {
+        res = 1;
+
+        rumboot_printf("Test FAILED: PPE perfomance is too low\n");
+      }
+    }
   #endif
 
   return res;
