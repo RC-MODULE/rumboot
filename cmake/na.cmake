@@ -1026,7 +1026,8 @@ macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL_FORCE_WDMA CONF name rm_bin_name)
     add_rumboot_target(
         CONFIGURATION ${CONF}
         NAME ${name}_${IntMisalign}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
+	  #  FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
         CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
@@ -1439,7 +1440,7 @@ macro(na_testsuite_add_npe_tests CONF)
     
     foreach(geometry IN ITEMS GEOMETRY_1 GEOMETRY_2 GEOMETRY_3 GEOMETRY_4 GEOMETRY_5 GEOMETRY_6 GEOMETRY_7)
      foreach(data IN ITEMS INT8 INT16 FP16)
-      foreach(batch_size RANGE 1 15)
+      foreach(batch_size RANGE 1 31)
        ADD_NPE_MPE_BATCH_TEST(${CONF} MPE_VPE_LONG_BATCH ${batch_size}_${data}_${geometry} main_npe_batch_${batch_size}_${data}_${geometry})
       endforeach()
      endforeach()
@@ -2030,9 +2031,7 @@ macro(na_testsuite_add_vpe_tests CONF)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_0_op1_relu_int_dma_cmd_dma  main_vpe_15_0_op1_relu_int_dma_cmd_dma )
- 	    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_15_1_op1_relu_fp_dma_cmd_dma  main_vpe_15_1_op1_relu_fp_dma_cmd_dma )
-   
+     
    # Tests on VPE::NORM
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
