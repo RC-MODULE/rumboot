@@ -933,16 +933,34 @@ macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_LONG CONF name rm_bin_name)
       IRUN_FLAGS ${NA_RM_PLUSARGS}
       SUBPROJECT_DEPS npe_rm:${rm_bin_name}
   )
-    add_rumboot_target(
+  add_rumboot_target(
       CONFIGURATION ${CONF}
       NAME ${name}_cmd_dma
       FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_cmd_dma_vpe_long.c
       CFLAGS -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
       PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} && ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} || exit 1
       IRUN_FLAGS ${NA_RM_PLUSARGS}
-     SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
  )
- endmacro()
+endmacro()
+
+macro(ADD_VPE_COUPLED_TEST_CIF CONF name rm_bin_name)
+  add_rumboot_target(
+      CONFIGURATION ${CONF}
+      NAME ${name}_cif
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_with_dep.c
+      CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+      PREPCMD
+        ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE}
+        &&
+        ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+        &&
+        ${WRITE_DEP_TABLE_SCRIPT} -vpe ${NA_TEST_num_iterations_file} ${NA_TEST_dep_table_file} > ${DEP_TABLE_LOG}
+        || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+endmacro()
  
 macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_SRST_LONG CONF name rm_bin_name)
   add_rumboot_target(
@@ -1839,6 +1857,7 @@ macro(na_testsuite_add_npe_tests CONF)
 
 
   na_testsuite_add_vpe_tests(${CONF})
+  na_testsuite_add_vpe_cif_tests(${CONF})
   na_testsuite_add_ppe_tests(${CONF})
 endmacro()
 
@@ -2167,6 +2186,94 @@ macro(na_testsuite_add_vpe_tests CONF)
     endforeach()
   endif() # NA_TESTGROUP VPE_DMA_BATCH
 
+endmacro()
+
+macro(na_testsuite_add_vpe_cif_tests CONF) #Most Of VPE DMA Tests Invoke By Control Interface
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_CIF")
+    # Tests on VPE::Formater
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_6_0_op0_f_int_dma  main_vpe_6_0_op0_f_int_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_6_1_op0_f_fp_dma   main_vpe_6_1_op0_f_fp_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_12_0_op1_f_int_dma main_vpe_12_0_op1_f_int_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_12_1_op1_f_fp_dma  main_vpe_12_1_op1_f_fp_dma  )
+
+    # Tests on VPE::LSHIFT
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_4_op0_lshift_dma   main_vpe_4_op0_lshift_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_10_op1_lshift_dma  main_vpe_10_op1_lshift_dma )
+
+    # Tests on VPE::InputConverters
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_18_op2_c1_dma      main_vpe_18_op2_c1_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_16_op2_c2_dma      main_vpe_16_op2_c2_dma )
+    
+    # Tests on VPE DMA
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_0_op0_alu_int8_low_dma      main_vpe_5_0_op0_alu_int8_low_dma     )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_1_op0_alu_int8_middle_dma   main_vpe_5_1_op0_alu_int8_middle_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_2_op0_alu_int8_high_dma     main_vpe_5_2_op0_alu_int8_high_dma    )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_3_op0_alu_int16_low_dma     main_vpe_5_3_op0_alu_int16_low_dma    )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_4_op0_alu_int16_middle_dma  main_vpe_5_4_op0_alu_int16_middle_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_5_op0_alu_int16_high_dma    main_vpe_5_5_op0_alu_int16_high_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_5_6_op0_alu_fp32_dma          main_vpe_5_6_op0_alu_fp32_dma         )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_0_op1_alu_int8_low_dma     main_vpe_11_0_op1_alu_int8_low_dma    )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_1_op1_alu_int8_middle_dma  main_vpe_11_1_op1_alu_int8_middle_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_2_op1_alu_int8_high_dma    main_vpe_11_2_op1_alu_int8_high_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_3_op1_alu_int16_low_dma    main_vpe_11_3_op1_alu_int16_low_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_5_op1_alu_int16_high_dma   main_vpe_11_5_op1_alu_int16_high_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_11_6_op1_alu_fp32_dma         main_vpe_11_6_op1_alu_fp32_dma        )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_17_0_op2_alu_int8_low_dma     main_vpe_17_0_op2_alu_int8_low_dma    )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_17_1_op2_alu_int8_high_dma    main_vpe_17_1_op2_alu_int8_high_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_17_2_op2_alu_int16_low_dma    main_vpe_17_2_op2_alu_int16_low_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_17_3_op2_alu_int16_high_dma   main_vpe_17_3_op2_alu_int16_high_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_17_4_op2_alu_fp32_dma         main_vpe_17_4_op2_alu_fp32_dma        )
+
+    # Tests on VPE::DEMUX::C3 TESTS MEM MODE
+    foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
+      foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+        ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
+      endforeach()
+    endforeach()
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
+
+    # Tests on VPE::RELU
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_0_op1_relu_int_dma_cmd_dma  main_vpe_15_0_op1_relu_int_dma_cmd_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_1_op1_relu_fp_dma_cmd_dma  main_vpe_15_1_op1_relu_fp_dma_cmd_dma )
+   
+   # Tests on VPE::NORM
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_14_0_op1_norm_dma      main_vpe_14_0_op1_norm_dma     )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
+
+    # Tests on VPE channel mode
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op0_vec_ex_fp_dma      main_vpe_op0_vec_ex_fp  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op1_vec_ex_fp_dma      main_vpe_op1_vec_ex_fp  )
+
+
+      # Tests on VPE::MUL
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_7_0_op0_mul_int16_dma  main_vpe_7_0_op0_mul_int16_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_7_1_op0_mul_int8_dma   main_vpe_7_1_op0_mul_int8_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_7_2_op0_mul_fp32_dma   main_vpe_7_2_op0_mul_fp32_dma   )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_13_1_op1_mul_int8_dma  main_vpe_13_1_op1_mul_int8_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_13_2_op1_mul_fp32_dma  main_vpe_13_2_op1_mul_fp32_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
+
+    # Tests on VPE channel mode
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
+    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+  endif()  # NA_TESTGROUP VPE_CIF
 endmacro()
 
 macro(ADD_PPE_RNDM CONF sfx rm_bin_name RM_CFG_PARAM)

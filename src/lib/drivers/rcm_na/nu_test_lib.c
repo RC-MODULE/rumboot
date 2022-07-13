@@ -908,7 +908,6 @@ int nu_vpe_load_arrays_of_op_metrics(
     // For Each Configuration
   for(int i=0;i<num;i++) {
       
-      
       // Calculate The Size Of OP0 Metrics Arrays
     if(array_of_cfg[i].op0_en==Enable_En) {
       
@@ -952,7 +951,6 @@ int nu_vpe_load_arrays_of_op_metrics(
     
   }
   
-    
     // Allocate The OPx Metrics Arrays
   if(op0_array_desc->num_cubes != 0) {
     size_op0_cubes = op0_array_desc->num_cubes * sizeof(CubeMetrics);
@@ -2541,6 +2539,20 @@ int nu_npe_place_arrays_with_dep_by_heap_map(NAHeapMap* heap_map, NPETestDescrip
     if(nu_vpe_load_array_of_cfg(heap_map->vpe_cfg, test_desc->array_of_cfg_vpe, test_desc->iteration_cfg_map.num_vpe_cfgs) !=0) 
       return -1;
       
+      // CRUTCH Bursts NYI
+    for(int i=0; i<test_desc->iteration_cfg_map.num_vpe_cfgs; i++) {
+      test_desc->array_of_cfg_vpe[i].src_rdma_config.dma_bsize = 0;
+      test_desc->array_of_cfg_vpe[i].src_rdma_config.dma_bstride = 0;
+      test_desc->array_of_cfg_vpe[i].op0_rdma_config.dma_bsize = 0;
+      test_desc->array_of_cfg_vpe[i].op0_rdma_config.dma_bstride = 0;
+      test_desc->array_of_cfg_vpe[i].op1_rdma_config.dma_bsize = 0;
+      test_desc->array_of_cfg_vpe[i].op1_rdma_config.dma_bstride = 0;
+      test_desc->array_of_cfg_vpe[i].op2_rdma_config.dma_bsize = 0;
+      test_desc->array_of_cfg_vpe[i].op2_rdma_config.dma_bstride = 0;
+      test_desc->array_of_cfg_vpe[i].wdma_config.dma_bsize = 0;
+      test_desc->array_of_cfg_vpe[i].wdma_config.dma_bstride = 0;
+    }
+    
       // OP0-OP2
     if(nu_vpe_load_arrays_of_op_metrics(
       heap_map->metrics_op0,heap_map->metrics_op1,heap_map->metrics_op2,heap_map->metrics_lut,
