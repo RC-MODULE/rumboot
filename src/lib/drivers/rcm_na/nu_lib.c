@@ -3606,7 +3606,7 @@ void nu_vpe_regs_cmd_dma_setup(uintptr_t base, uint32_t dump_ptr_adr[0], uint32_
 	
 	
 	uint16_t* ptr;
-	uint32_t command;
+
 	uint32_t lut1_size = NU_VPE_LUT1_SIZE; // Predefined By HW
 	uint32_t lut2_size = NU_VPE_LUT2_SIZE;
 	
