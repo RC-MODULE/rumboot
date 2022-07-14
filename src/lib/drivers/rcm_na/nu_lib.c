@@ -3610,7 +3610,7 @@ void nu_vpe_regs_cmd_dma_setup(uintptr_t base, uint32_t dump_ptr_adr[0], uint32_
 	int32_t     tmp2_lut_en,tmp2_mux_en,tmp2_alu_en, tmp2_op2_en,tmp2_c2_en,tmp2_c1_en;
 	
 	
-	uint16_t* ptr;
+	//uint16_t* ptr;
 
 	uint32_t lut1_size = NU_VPE_LUT1_SIZE; // Predefined By HW
 	uint32_t lut2_size = NU_VPE_LUT2_SIZE;
@@ -4108,14 +4108,15 @@ void nu_vpe_lut_access_setup(uintptr_t base,uint32_t command, uint32_t dump_ptr_
 	}
 rumboot_printf("My last j is %d\n",j);	
 }
-void nu_ppe_cmd_rdma_setup_reg(uintptr_tr wbase,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigREGPPE* cfg) {
+/*
+void nu_ppe_cmd_rdma_setup_reg(uintptr_t rbase,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigREGPPE* cfg) {
   int j;
   rumboot_printf("nu_ppe_setup_reg\n");
 
 for ( j = 0; j < dump_size/4 ; j+=2) {
 		 
 	if ( j == 0 ) {
-		dump_ptr_adr[j+1] = cfg->wBALi;
+		dump_ptr_adr[j+1] = cfg->rBALi;
 		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_RDMA_BASE_ADDR ;
 		}
 	else if ( j == 2 ){
@@ -4131,17 +4132,17 @@ for ( j = 0; j < dump_size/4 ; j+=2) {
 		dump_ptr_adr[j] =rbase + NU_PPE + 0X02C ;		
 		}				
 	else if ( j == 8 ){
-		dump_ptr_adr[j+1] = cfg->wBrdX;                 			
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_BORDER_X ;
+		dump_ptr_adr[j+1] = cfg->rBrdX;                 			
+		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_RDMA_BORDER_X ;
 		}
 	else if ( j == 10 ){
-		dump_ptr_adr[j+1] = cfg->wBrdY;                 	 		
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_BORDER_Y ;
+		dump_ptr_adr[j+1] = cfg->rBrdY;                 	 		
+		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_RDMA_BORDER_Y ;
 		}
 		
 	else if ( j == 12 ){
-		dump_ptr_adr[j+1] = cfg->wBrdZ;                 	 		
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_BORDER_Z ;
+		dump_ptr_adr[j+1] = cfg->rBrdZ;                 	 		
+		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_RDMA_BORDER_Z ;
 				}
 	else if ( j == 14 ){
 		dump_ptr_adr[j+1] = cfg->rStrX;                 	 		
@@ -4207,97 +4208,97 @@ for ( j = 0; j < dump_size/4 ; j+=2) {
 	}
 }
 
-void nu_ppe_cmd_wdma_setup_reg(uintptr_tr wbase,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigREGPPE* cfg) {
+void nu_ppe_cmd_wdma_setup_reg(uintptr_t wbase,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigREGPPE* cfg) {
  
 	rumboot_printf("nu_ppe_setup_reg\n"); 
 		
 	if ( j == 0 ) {
 		dump_ptr_adr[j+1] = cfg->wBALo;
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_RDMA_BASE_ADDR ;
+		dump_ptr_adr[j] =wbase + NU_PPE + NU_PPE_WDMA_BASE_ADDR ;
 		}
 	else if ( j == 2 ){
 		dump_ptr_adr[j+1] = 0x00000000;                 			
-		dump_ptr_adr[j] =rbase + NU_PPE + 0X024 ;
+		dump_ptr_adr[j] =wbase + NU_PPE + 0X024 ;
 		}
 	else if ( j == 4 ){
 		dump_ptr_adr[j+1] = 0x00000000;                 			
-		dump_ptr_adr[j] =rbase + NU_PPE + 0X028 ;		
+		dump_ptr_adr[j] =wbase + NU_PPE + 0X028 ;		
 		}
 	else if ( j == 6 ){
 		dump_ptr_adr[j+1] = 0x00000000;                 			
-		dump_ptr_adr[j] =rbase + NU_PPE + 0X02C ;		
+		dump_ptr_adr[j] =wbase + NU_PPE   + 0X02C ;		
 		}				
 	else if ( j == 8 ){
 		dump_ptr_adr[j+1] = cfg->wBrdX;                 			
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_BORDER_X ;
+		dump_ptr_adr[j] =wbase + NU_PPE + NU_PPE_WDMA_BORDER_X ;
 		}
 	else if ( j == 10 ){
 		dump_ptr_adr[j+1] = cfg->wBrdY;                 	 		
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_BORDER_Y ;
+		dump_ptr_adr[j] =wbase + NU_PPE + NU_PPE_WDMA_BORDER_Y ;
 		}		
 	else if ( j == 12 ){
 		dump_ptr_adr[j+1] = cfg->wBrdZ;                 	 		
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_BORDER_Z ;
+		dump_ptr_adr[j] =wbase + NU_PPE + NU_PPE_WDMA_BORDER_Z ;
 				}
 	else if ( j == 14 ){
 		dump_ptr_adr[j+1] = cfg->wStrX;                 	 		
-		dump_ptr_adr[j] =rbase + NU_PPE + NU_PPE_RDMA_STRIDE_X ; 		
+		dump_ptr_adr[j] =wbase + NU_PPE + NU_PPE_WDMA_STRIDE_X ; 		
 		}				
 	else if ( j == 16 ){ 		   
 		dump_ptr_adr[j+1] = cfg-> wStrY;
-	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_RDMA_STRIDE_Y;
+	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_WDMA_STRIDE_Y;
 		}					
 	else if ( j == 18 ){
 		dump_ptr_adr[j+1] = cfg-> wStrZ;
-	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_RDMA_STRIDE_Z;
+	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_WDMA_STRIDE_Z;
 		}		
 	else if ( j == 20 ){
 		dump_ptr_adr[j+1] = cfg-> wFrgs;
-	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_RDMA_FRAG_SIZE;
+	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_WDMA_FRAG_SIZE;
 		}
 	else if ( j == 22 ){
 		dump_ptr_adr[j+1] = cfg-> wFrgl;
-	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_RDMA_FRAG_LAST_SIZE;
+	   	dump_ptr_adr[j] =  rbase + NU_PPE + NU_PPE_WDMA_FRAG_LAST_SIZE;
 		}
 	else if ( j == 24 ){	
 		dump_ptr_adr[j+1] = cfg-> wXYZd;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_XYZ_DRCT;	
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_XYZ_DRCT;	
 		}
 	else if ( j == 26 ){
 		dump_ptr_adr[j+1] = cfg->wBstX ;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_ST_SIZE_X;	
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_ST_SIZE_X;	
 		}
 	else if ( j == 28 ){
 		dump_ptr_adr[j+1] = cfg->wBstY;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_ST_SIZE_Y;	
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_ST_SIZE_Y;	
 		}
 	else if ( j == 30 ){
 		dump_ptr_adr[j+1] = cfg->wBstZ;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_ST_SIZE_Z;
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_ST_SIZE_Z;
 		}
     else if ( j == 32 ){
 		dump_ptr_adr[j+1] = cfg->wBxtX ;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_SIZE_X;	
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_SIZE_X;	
 		}
 	else if ( j == 34 ){
 		dump_ptr_adr[j+1] = cfg->wBxtY;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_SIZE_Y;	
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_SIZE_Y;	
 		}
 	else if ( j == 36 ){
 		dump_ptr_adr[j+1] = cfg->wBxtZ;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_SIZE_Z;
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_SIZE_Z;
 		}						
 	else if ( j == 38 ){
 		dump_ptr_adr[j+1] = cfg->wBffX;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_OFFSET_X;
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_OFFSET_X;
 		}
 	else if ( j == 40 ){
 		dump_ptr_adr[j+1] = cfg->wBffY;
-	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_RDMA_BOX_OFFSET_Y;	
+	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_WDMA_BOX_OFFSET_Y;	
 		}
 	else if ( j == 42 ){	
 		dump_ptr_adr[j+1] = cfg->wBffZ;
-	   	dump_ptr_adr[j] =  wbase + + NU_PPE + NU_PPE_RDMA_BOX_OFFSET_Z;
+	   	dump_ptr_adr[j] =  wbase + + NU_PPE + NU_PPE_WDMA_BOX_OFFSET_Z;
 		}	
 		if ( j == 44 ) {
 		dump_ptr_adr[j+1] = cfg->wWi;
@@ -4373,4 +4374,5 @@ void nu_ppe_cmd_wdma_setup_reg(uintptr_tr wbase,uint32_t dump_ptr_adr[0], uint32
 	   	dump_ptr_adr[j] =  wbase + NU_PPE + NU_PPE_PADDING_VALUE_7;
 		}					 
 	}
-}
+
+*/
