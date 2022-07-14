@@ -1353,6 +1353,21 @@ macro (ADD_VPE_PPE_WKH_COMB CONF test_name_list ALL_COMB)
         SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
   
+      add_rumboot_target(
+        CONFIGURATION ${CONF}
+        NAME ${name}_cif
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_with_dep.c
+        PREPCMD
+            ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} ${wkh_opt} > ${RM_LOGFILE}
+            &&
+            ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS}
+            &&
+            ${WRITE_DEP_TABLE_SCRIPT} -vpe_ppe ${NA_TEST_num_iterations_file} ${NA_TEST_dep_table_file} > ${DEP_TABLE_LOG}
+            || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+      )
+
       if (NOT ${All_COMB})
         add_rumboot_target(
           CONFIGURATION ${CONF}
