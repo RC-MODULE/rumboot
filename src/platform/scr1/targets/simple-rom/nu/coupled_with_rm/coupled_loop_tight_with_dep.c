@@ -253,7 +253,7 @@ int main() {
   nu_npe_init_iteration_desc(&test_desc,&iteration_desc);
   for(i=0;i<iterations;i++) {
     rumboot_printf("Comparing iteration %d..\n",i);
-    nu_npe_iteration_start(&iteration_desc);
+    nu_npe_iteration_with_dep_start(&iteration_desc,&(test_desc.iteration_cfg_map),i);
     
       // Result vs Etalon Comparision
     if(NU_COMPARE_FUNCTION(iteration_desc.res_data, iteration_desc.etalon, iteration_desc.res_metrics->s) == 0)

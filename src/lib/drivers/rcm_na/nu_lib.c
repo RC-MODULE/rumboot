@@ -3270,6 +3270,11 @@ NPEReg* nu_ppe_wdma_add_diff_reg_map(NPEReg* cfg_diff_ptr,  uint32_t* curr_cfg_p
   return cfg_diff_ptr;
 }
 
+NPEReg* nu_ppe_rdma_add_diff_start(NPEReg* cfg_diff_ptr, ConfigREGPPE* cfg) {
+  cfg_diff_ptr = nu_add_diff_start(cfg_diff_ptr, NA_PPE_RDMA_BASE + NU_PPE_OP_ENABLE, cfg->wOpEn);
+  return cfg_diff_ptr;
+}
+
 NPEReg* nu_ppe_wdma_add_diff_start(NPEReg* cfg_diff_ptr, ConfigREGPPE* cfg) {
   cfg_diff_ptr = nu_add_diff_start(cfg_diff_ptr, NA_PPE_WDMA_BASE + NU_PPE_OP_ENABLE, cfg->wOpEn);
   return cfg_diff_ptr;

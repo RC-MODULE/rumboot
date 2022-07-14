@@ -813,6 +813,23 @@ macro (ADD_PPE_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)
     )
   endif()
 
+  add_rumboot_target(
+    CONFIGURATION ${CONF}
+    NAME ${name}_cif
+    FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_with_dep.c
+    PREPCMD
+      ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE}
+      &&
+      ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} 
+      &&
+      ${WRITE_DEP_TABLE_SCRIPT} -ppe ${NA_TEST_num_iterations_file} ${NA_TEST_dep_table_file} > ${DEP_TABLE_LOG}
+      || exit 1
+    
+    CFLAGS -DDUT=${DUT_LETTER_QUOTED}
+    IRUN_FLAGS ${NA_RM_PLUSARGS}
+    SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+  )
+
 endmacro()
 
 macro (ADD_PPE_RST_TESTS CONF name rm_bin_name ShowPerf DataSrc LBS RM_CFG_PARAM)

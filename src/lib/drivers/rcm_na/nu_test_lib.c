@@ -2212,12 +2212,19 @@ void nu_npe_iterate_desc(NPEIterationDescriptor* desc) {
     }
   }
   
-  if(desc->MPE_ENABLED) {
+  if(desc->MPE_ENABLED == Enable_En) {
     desc->warr_metrics       += 1;
   }
-  desc->in_metrics         += (desc->cfg_vpe->src_rdma_config.dma_bsize+1);
-  desc->res_metrics        += (desc->cfg_vpe->    wdma_config.dma_bsize+1);
-  //~ desc->status_regs_etalon += 1;
+  
+  if(desc->VPE_ENABLED == Enable_En) { // For Both MPE+VPE And VPE Cases We Init The src_rdma_config.dma_bsize
+    desc->in_metrics         += (desc->cfg_vpe->src_rdma_config.dma_bsize+1);
+    desc->res_metrics        += (desc->cfg_vpe->    wdma_config.dma_bsize+1);
+    //~ desc->status_regs_etalon += 1;
+  }
+  else { // Otherwise - We Invoke PPE Only
+    desc->in_metrics         += 1;
+    desc->res_metrics        += 1;
+  }
   
   if(desc->MPE_ENABLED) {
     desc->cfg_mpe += 1;
@@ -3242,6 +3249,12 @@ void nu_npe_append_associative_regs_dump(NPEIterationDescriptor* iteration_desc)
       iteration_desc->curr_regs_dump->ppe_wdma, 
       iteration_desc->next_regs_dump->ppe_wdma
     );
+    if(iteration_desc->VPE_ENABLED == Enable_NotEn) {
+      iteration_desc->associative_regs_dump_curr_ptr = nu_ppe_rdma_add_diff_start(
+        iteration_desc->associative_regs_dump_curr_ptr, 
+        iteration_desc->cfg_reg_ppe
+      );
+    }
     iteration_desc->associative_regs_dump_curr_ptr = nu_ppe_wdma_add_diff_start(
       iteration_desc->associative_regs_dump_curr_ptr, 
       iteration_desc->cfg_reg_ppe

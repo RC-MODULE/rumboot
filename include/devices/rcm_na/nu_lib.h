@@ -791,6 +791,7 @@ NPEReg* nu_vpe_lut_add_diff_reg_map(uintptr_t base, uintptr_t vpe_lut_base, NPER
 
 NPEReg* nu_ppe_rdma_add_diff_reg_map(NPEReg* cfg_diff,  uint32_t* curr_cfg_ptr, uint32_t* next_cfg_ptr);
 NPEReg* nu_ppe_wdma_add_diff_reg_map(NPEReg* cfg_diff_ptr,  uint32_t* curr_cfg_ptr, uint32_t* next_cfg_ptr);
+NPEReg* nu_ppe_rdma_add_diff_start(NPEReg* cfg_diff_ptr, ConfigREGPPE* cfg);
 NPEReg* nu_ppe_wdma_add_diff_start(NPEReg* cfg_diff_ptr, ConfigREGPPE* cfg);
 
 NPEReg* nu_add_diff_reg_map(uintptr_t base, uintptr_t device_base, NPEReg* cfg_diff_ptr,  uint32_t* curr_cfg_ptr, uint32_t* next_cfg_ptr, uint32_t start_shift, uint32_t end_shift);
