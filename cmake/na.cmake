@@ -265,7 +265,7 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
   endif()
 
   if(NOT DEFINED NU_IT_NMB OR NU_IT_NMB EQUAL 1)
-    set(NU_IT_NMB 16)
+    set(NU_IT_NMB 32)
   endif()
 
   if("${sfx}" MATCHES "krnl")
@@ -1545,7 +1545,8 @@ macro(na_testsuite_add_npe_tests CONF)
   endif()  # NA_TESTGROUP MPE
 
   ### MPE KERNEL STRIDE DILATION NA_TESTGROUP MPE_KRNL MPE_STRD MPE_DLTN
-  if(NOT DEFINED NA_TESTGROUP OR
+  if (
+    "${NA_TESTGROUP}" STREQUAL "MPE_KRNL_STRD_DLTN" OR
     "${NA_TESTGROUP}" STREQUAL "MPE_KRNL" OR
     "${NA_TESTGROUP}" STREQUAL "MPE_STRD" OR
     "${NA_TESTGROUP}" STREQUAL "MPE_DLTN"
@@ -1558,7 +1559,7 @@ macro(na_testsuite_add_npe_tests CONF)
     set (dltn_min "1")
     set (dltn_max "8")
 
-    if(NOT DEFINED NA_TESTGROUP)
+    if ("${NA_TESTGROUP}" STREQUAL "MPE_KRNL_STRD_DLTN")
       set(prm_list krnl strd dltn)
     elseif ("${NA_TESTGROUP}" STREQUAL "MPE_KRNL")
       set(prm_list "krnl")
@@ -1568,9 +1569,7 @@ macro(na_testsuite_add_npe_tests CONF)
       set(prm_list "dltn")
     endif()
 
-    if(NOT DEFINED NA_TESTGROUP)
-      set (dt_list IN_INT16)
-    elseif (NOT DEFINED NA_IN_DATATYPE)
+    if (NOT DEFINED NA_IN_DATATYPE)
       set (dt_list IN_INT8 IN_INT16 IN_FP16)
     elseif ("${NA_IN_DATATYPE}" STREQUAL "IN_INT8")
       set (dt_list "IN_INT8")
@@ -2482,7 +2481,7 @@ macro(na_testsuite_add_ppe_tests CONF)
     ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_var 0)
   endif() # NA_TESTGROUP VPE_PPE
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_RNDM")
+  if("${NA_TESTGROUP}" STREQUAL "PPE_RNDM")
     set (hwc_min 1)
     set (hwc_max 512)
 
@@ -2503,7 +2502,7 @@ macro(na_testsuite_add_ppe_tests CONF)
 
   endif() # NA_TESTGROUP PPE_RNDM
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_KRNL")
+  if("${NA_TESTGROUP}" STREQUAL "PPE_KRNL")
     set (hwc_min 1)
     set (hwc_max 512)
 
@@ -2528,6 +2527,6 @@ macro(na_testsuite_add_ppe_tests CONF)
       endforeach()
     endforeach()
 
-  endif() # NA_TESTGROUP PPE_RNDM
+  endif() # NA_TESTGROUP PPE_KRNL
 
 endmacro()
