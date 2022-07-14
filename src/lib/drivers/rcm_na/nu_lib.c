@@ -4211,7 +4211,7 @@ for ( j = 0; j < dump_size/4 ; j+=2) {
 void nu_ppe_cmd_wdma_setup_reg(uintptr_t wbase,uint32_t dump_ptr_adr[0], uint32_t dump_size, ConfigREGPPE* cfg) {
  
 	rumboot_printf("nu_ppe_setup_reg\n"); 
-		
+	int j;	
 	if ( j == 0 ) {
 		dump_ptr_adr[j+1] = cfg->wBALo;
 		dump_ptr_adr[j] =wbase + NU_PPE + NU_PPE_WDMA_BASE_ADDR ;
