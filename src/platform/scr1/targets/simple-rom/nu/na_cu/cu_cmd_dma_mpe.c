@@ -19,7 +19,7 @@ volatile uint32_t* dump_ptr_adr;
 int dump_size;
 //int dump_size2;
 
-int run_na_cmd_dma(uintptr_t npe_base,uintptr_t dump_ptr_adr, uintptr_t size){
+int my_run_na_cmd_dma(uintptr_t npe_base,uintptr_t dump_ptr_adr, uintptr_t size){
 	iowrite32( 0x100 ,npe_base + NA_CU_REGS_BASE   + NA_UNITS_MODE);
 	iowrite32(  0x0002000f  ,npe_base + NA_CU_REGS_BASE   + CMD_DMA_AXI_PARAM);
 	//rumboot_printf("AXI_PARAM =%x\n",ioread32(npe_base + NA_CU_REGS_BASE   + CMD_DMA_AXI_PARAM));
@@ -33,7 +33,7 @@ int run_na_cmd_dma(uintptr_t npe_base,uintptr_t dump_ptr_adr, uintptr_t size){
 	rumboot_printf("Done CMD DMA context\n");
 	return 0;
 }
-int na_dma_cmd_complete(uintptr_t npe_base){
+int my_na_dma_cmd_complete(uintptr_t npe_base){
 	rumboot_printf("Wait NA CND DMA page complete ...\n");
 	while (( (ioread32(npe_base + NA_CU_REGS_BASE +  CMD_DMA_INT_STATUS)>> 0) & 1) !=1) {}
 	{iowrite32( (1<<0),npe_base + NA_CU_REGS_BASE + CMD_DMA_INT_RESET);	
@@ -638,7 +638,7 @@ int main(){
      return 1;
    }
    else {
-    res = na_dma_cmd_complete(NPE_BASE);
+    res = my_na_dma_cmd_complete(NPE_BASE);
 	//	rumboot_printf("res_2= %x\n",res); 
 	if (res) 
 	{ rumboot_printf("Test FAILED\n");
