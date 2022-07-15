@@ -1806,7 +1806,8 @@ macro(na_testsuite_add_npe_tests CONF)
             ${PYTHON_EXECUTABLE} -B ${ConfigMPE_to_LUT} ${NA_TEST_num_iterations_file} 
             ${NA_TEST_cfg_mpe_file} ${NA_TEST_mpe_cfg_lut_file} > ${ConfigMPE_to_LUT_LOGFILE} &&
             ${MERGE_BINS_4_LONG_SCRIPT} ${NA_RM_KEYS} &&
-            ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/macro_comm/macro_microgen F || exit 1
+            gcc -Wall ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/macro_comm/macro_microgen.c -o macro_microgen  &&
+            ./macro_microgen F || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS}
         SUBPROJECT_DEPS npe_rm:main_mpe_batch_micro
     )
