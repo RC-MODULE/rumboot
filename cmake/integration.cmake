@@ -170,10 +170,10 @@ function(add_rumboot_target)
     set(${name} TRUE PARENT_SCOPE)
     set(HDL_EXTRA_REBUILD_CMD
       "${HDL_EXTRA_REBUILD_CMD}
-      make ${rumboot_dirname}-configure
-      [ -f \"${rumboot_dirname}/.stamps/${product}\" ] || make ${rumboot_dirname}-configure -B
+      ${CMAKE_COMMAND} --build . -t ${rumboot_dirname}-configure
+      [ -f \"${rumboot_dirname}/.stamps/${product}\" ] || ${CMAKE_COMMAND} --build . -t ${rumboot_dirname}-configure
       cd ${rumboot_dirname}
-      make ${product}.all $THREADS
+      ${CMAKE_COMMAND} --build . -t ${product}.all $THREADS
       cd ..
       "
     )
@@ -271,7 +271,7 @@ function(rumboot_load_build platform buildtype)
     if (${platform} STREQUAL ${PROJECT_NAME})
       add_custom_command(
           TARGET tarball
-          COMMAND cd ${CMAKE_BINARY_DIR}/${rumboot_dirname} && $(MAKE) package
+          COMMAND cd ${CMAKE_BINARY_DIR}/${rumboot_dirname} && ${CMAKE_COMMAND} --build . -t package
         )
     endif()
     
