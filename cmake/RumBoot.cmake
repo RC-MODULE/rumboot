@@ -6,8 +6,6 @@ find_program(PYTHON_EXECUTABLE
   HINTS /usr/local/bin
 )
 
-cmake_policy(SET CMP0114 NEW)
-
 if (NOT PYTHON_EXECUTABLE)
   message(FATAL_ERROR "Failed to find useable python3")
 else()
@@ -220,7 +218,6 @@ function(rumboot_add_external_project directory)
       ${_ext_opts}
       INSTALL_COMMAND   ""
     )
-    
 endfunction()
 
 
@@ -579,18 +576,15 @@ function(add_rumboot_target)
     string(REPLACE ":" ";" dep ${dep})
     list(GET dep 0 _project)
     list(GET dep 1 _target)
-
     ExternalProject_Get_Property(${_project} BINARY_DIR)
     add_custom_command(
       TARGET ${product}.all
-      COMMAND pwd && $(MAKE) ${_target}
+      COMMAND $(MAKE) ${_target}
       WORKING_DIRECTORY ${BINARY_DIR}
       COMMENT "(Re)building sub-project dependency ${_target}"
     )
-
     add_dependencies(${product}.all ${_project}-configure)
-
-    endforeach()
+  endforeach()
 
 
   list (FIND TARGET_FEATURES "STUB" _index)
