@@ -1546,10 +1546,12 @@ macro(na_testsuite_add_npe_tests CONF)
 
   ### MPE KERNEL STRIDE DILATION NA_TESTGROUP MPE_KRNL MPE_STRD MPE_DLTN
   if (
-    "${NA_TESTGROUP}" STREQUAL "MPE_KRNL_STRD_DLTN" OR
-    "${NA_TESTGROUP}" STREQUAL "MPE_KRNL" OR
-    "${NA_TESTGROUP}" STREQUAL "MPE_STRD" OR
-    "${NA_TESTGROUP}" STREQUAL "MPE_DLTN"
+    "${NA_TESTGROUP}" MATCHES "MPE_KRNL_STRD_DLTN" OR
+    "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD" OR
+
+    "${NA_TESTGROUP}" MATCHES "MPE_KRNL" OR
+    "${NA_TESTGROUP}" MATCHES "MPE_STRD" OR
+    "${NA_TESTGROUP}" MATCHES "MPE_DLTN"
   )
 
     set (krnl_min "1")
@@ -1559,13 +1561,15 @@ macro(na_testsuite_add_npe_tests CONF)
     set (dltn_min "1")
     set (dltn_max "8")
 
-    if ("${NA_TESTGROUP}" STREQUAL "MPE_KRNL_STRD_DLTN")
+    if ("${NA_TESTGROUP}" MATCHES "MPE_KRNL_STRD_DLTN" OR
+        "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD"
+    )
       set(prm_list krnl strd dltn)
-    elseif ("${NA_TESTGROUP}" STREQUAL "MPE_KRNL")
+    elseif ("${NA_TESTGROUP}" MATCHES "MPE_KRNL")
       set(prm_list "krnl")
-    elseif ("${NA_TESTGROUP}" STREQUAL "MPE_STRD")
+    elseif ("${NA_TESTGROUP}" MATCHES "MPE_STRD")
       set(prm_list "strd")
-    elseif ("${NA_TESTGROUP}" STREQUAL "MPE_DLTN")
+    elseif ("${NA_TESTGROUP}" MATCHES "MPE_DLTN")
       set(prm_list "dltn")
     endif()
 
@@ -1744,56 +1748,56 @@ macro(na_testsuite_add_npe_tests CONF)
       # ADD_NPE_COMPLEX_TEST(${CONF} resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE NO_TIGHT BITWISE) # LAYER0_MPE_BN_RELU_PPE
       ###################################################################
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY1")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY1" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 13400 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP1_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP1_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY2")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY2" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 10700 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP2_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP2_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY3")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY3" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 8000 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP3_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP3_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY4")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY4" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 35712 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP4_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP4_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY5")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY5" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 68112 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP5_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP5_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY6")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY6" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 138240 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP6_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP6_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY7")
+  if(NA_TESTGROUP STREQUAL "MPE_GEOMETRY7" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     foreach(iter_start RANGE 0 32300 100)
       math(EXPR iter_end "${iter_start}+99")
       ADD_NPE_MPE_VPE_TEST(${CONF} mpe_cfg_auto_GROUP7_${iter_start}_${iter_end} main_mpe_auto_tests_GROUP7_${iter_start}_${iter_end} MAKE_TIGHT BITWISE)
     endforeach()
   endif()
 
-  if(NA_TESTGROUP STREQUAL "MICRO_TESTS")
+  if(NA_TESTGROUP STREQUAL "MICRO_TESTS" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
   SET (MICRO_TESTS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/mpe_micro)
     add_rumboot_target(
         CONFIGURATION ${CONF}
@@ -1845,7 +1849,7 @@ macro(na_testsuite_add_npe_tests CONF)
     )
   endmacro()
 
-  if(NA_TESTGROUP STREQUAL "NKBVS")
+  if(NA_TESTGROUP STREQUAL "NKBVS" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     if(NOT DEFINED NKBVS_TEST_DIR)
       set(NKBVS_TEST_DIR /opt/lib_h31/LAVA_lib/nkbvs_tests_bins/conv2dplus)
     endif()
@@ -1875,7 +1879,7 @@ macro(na_testsuite_add_npe_tests CONF)
   endif()
 
 
-  if(NA_TESTGROUP STREQUAL "NKBVS_LONG")
+  if(NA_TESTGROUP STREQUAL "NKBVS_LONG" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     # Long time test
     # Transpose 2d
     ADD_NKBVS_TRANSPOSE_FROM_BINARY_TEST(${CONF} 2d_deconv_2 /home/a.yarovikov/projects/nkbvs/tranpose_conv2d/2st_2D_DeConvolution_configuration VPE_TraceMode_MPE 2 2 1 0 64 413 419)
@@ -2458,7 +2462,7 @@ macro(na_testsuite_add_ppe_tests CONF)
     ADD_PPE_RST_TESTS(${CONF} ppe_fp16_max_ml main_ppe_IN_FP16 NotShowPerf MEMtoPPE LIN ${fp16_max})
   endif() # NA_TESTGROUP PPE_LA
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_BASE")
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" MATCHES "PPE_BASE")
 
     ADD_PPE_TESTS(${CONF} ppe_i8_max_ml main_ppe_IN_INT8 NotShowPerf MEMtoPPE LIN ${i8_max})
     ADD_PPE_TESTS(${CONF} ppe_i16_max_ml main_ppe_IN_INT16 NotShowPerf MEMtoPPE LIN ${i16_max})
@@ -2474,15 +2478,15 @@ macro(na_testsuite_add_ppe_tests CONF)
 
   endif() # NA_TESTGROUP PPE_BASE
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "PPE_PY")
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" MATCHES "PPE_PY")
     ADD_PPE_PY_TESTS(${CONF})
   endif()
 
-  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" STREQUAL "VPE_PPE")
+  if(NOT DEFINED NA_TESTGROUP OR "${NA_TESTGROUP}" MATCHES "VPE_PPE")
     ADD_VPE_PPE_WKH_COMB(${CONF} vpe_ppe_wkh_var 0)
   endif() # NA_TESTGROUP VPE_PPE
 
-  if("${NA_TESTGROUP}" STREQUAL "PPE_RNDM")
+  if("${NA_TESTGROUP}" MATCHES "PPE_RNDM" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     set (hwc_min 1)
     set (hwc_max 512)
 
@@ -2503,7 +2507,7 @@ macro(na_testsuite_add_ppe_tests CONF)
 
   endif() # NA_TESTGROUP PPE_RNDM
 
-  if("${NA_TESTGROUP}" STREQUAL "PPE_KRNL")
+  if("${NA_TESTGROUP}" MATCHES "PPE_KRNL" OR "${NA_TESTGROUP}" STREQUAL "CIRCUIT_BOARD")
     set (hwc_min 1)
     set (hwc_max 512)
 
