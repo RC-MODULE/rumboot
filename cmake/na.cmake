@@ -1553,9 +1553,9 @@ macro(na_testsuite_add_npe_tests CONF)
   )
 
     set (krnl_min "1")
-    set (krnl_max "16")
+    set (krnl_max "15")
     set (strd_min "1")
-    set (strd_max "16")
+    set (strd_max "15")
     set (dltn_min "1")
     set (dltn_max "8")
 
