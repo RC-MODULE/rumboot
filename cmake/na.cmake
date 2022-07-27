@@ -2275,8 +2275,8 @@ macro(na_testsuite_add_vpe_cif_tests CONF) #Most Of VPE DMA Tests Invoke By Cont
     ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_9_1_op0_relu_fp_dma    main_vpe_9_1_op0_relu_fp_dma   )
     ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_0_op1_relu_int_dma  main_vpe_15_0_op1_relu_int_dma )
     ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_1_op1_relu_fp_dma   main_vpe_15_1_op1_relu_fp_dma  )
-    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_0_op1_relu_int_dma_cmd_dma  main_vpe_15_0_op1_relu_int_dma_cmd_dma )
-    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_1_op1_relu_fp_dma_cmd_dma  main_vpe_15_1_op1_relu_fp_dma_cmd_dma )
+#    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_0_op1_relu_int_dma_cmd_dma  main_vpe_15_0_op1_relu_int_dma_cmd_dma )
+#    ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_15_1_op1_relu_fp_dma_cmd_dma  main_vpe_15_1_op1_relu_fp_dma_cmd_dma )
    
    # Tests on VPE::NORM
     ADD_VPE_COUPLED_TEST_CIF(${CONF} vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
