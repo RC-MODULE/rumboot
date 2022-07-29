@@ -113,7 +113,7 @@ int main() {
   int iterations;
   uint8_t  axi_len;
   
-  rumboot_printf("Hellooooooo\n");
+  rumboot_printf("coupled_loop_npe_long.c: Hello!\n");
 
 #ifdef MPE_CFG_PERFORMANCE_DO
   nu_get_rather_fair_heap_map_perf_do(&heap_map);
