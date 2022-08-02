@@ -297,9 +297,22 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
     message(FATAL_ERROR "Undefined DataType ${sfx}")
   endif()
 
-  set (hwck_min_max "--h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 33 --c_max 33 --k_min 1 --k_max 1")
-
   set (set_it_nmb "--it_nmb ${NU_IT_NMB}")
+
+  if ("${sfx}" MATCHES "smll")
+    set (hwck_min_max "--h_min 1 --h_max 256 --w_min 1 --w_max 256 --c_min 1 --c_max 128 --k_min 1 --k_max 1")
+  elseif ("${sfx}" MATCHES "mddl")
+    set (hwck_min_max "--h_min 128 --h_max 1024 --w_min 128 --w_max 1024 --c_min 64 --c_max 256 --k_min 128 --k_max 256")
+  elseif ("${sfx}" MATCHES "grnd")
+    set (hwck_min_max "--h_min 1 --h_max 1024 --w_min 1 --w_max 1024 --c_min 1 --c_max 512 --k_min 1 --k_max 512")
+  elseif ("${sfx}" MATCHES "huge")
+    set (hwck_min_max "--h_min 1 --h_max 8191 --w_min 1 --w_max 8191 --c_min 1 --c_max 8191 --k_min 1 --k_max 8191")
+  else()
+    message(FATAL_ERROR "Undefined cube in volume ${sfx}")
+  endif()
+
+  message("Defined sfx ${sfx}")
+  message("Defined NA_TESTGROUP ${NA_TESTGROUP}")
 
   set (NA_RM_KEYS_SWP ${NA_RM_KEYS})
 
@@ -1573,7 +1586,7 @@ macro(na_testsuite_add_npe_tests CONF)
       set(prm_list "dltn")
     endif()
 
-    if (NOT DEFINED NA_IN_DATATYPE)
+    if (NOT DEFINED NA_IN_DATATYPE OR "${NA_IN_DATATYPE}" STREQUAL "ALL_DATATYPES")
       set (dt_list IN_INT8 IN_INT16 IN_FP16)
     elseif ("${NA_IN_DATATYPE}" STREQUAL "IN_INT8")
       set (dt_list "IN_INT8")
@@ -1585,10 +1598,22 @@ macro(na_testsuite_add_npe_tests CONF)
       message(FATAL_ERROR "Undefined NA_IN_DATATYPE: ${NA_IN_DATATYPE}")
     endif()
 
+    if (NOT DEFINED NA_CUBE_IN OR "${NA_CUBE_IN}" STREQUAL "SMLL")
+      set (cb_in "smll")
+    elseif ("${NA_CUBE_IN}" STREQUAL "MDDL")
+      set (cb_in "mddl")
+    elseif ("${NA_CUBE_IN}" STREQUAL "GRND")
+      set (cb_in "grnd")
+    elseif ("${NA_CUBE_IN}" STREQUAL "HUGE")
+      set (cb_in "huge")
+    else()
+      message(FATAL_ERROR "Undefined NA_CUBE_IN: ${NA_CUBE_IN}")
+    endif()
+
     foreach (prm IN ITEMS ${prm_list})
       foreach (in_dt IN ITEMS ${dt_list})
 
-        set (sfx "npe_mpe_${prm}_${in_dt}")
+        set (sfx "npe_mpe_${prm}_${in_dt}_${cb_in}")
 
         if (prm STREQUAL "krnl")
           set (prm_min "${krnl_min}")
