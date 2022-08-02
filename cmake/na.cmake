@@ -311,9 +311,6 @@ macro(ADD_MPE_PRM CONF sfx prm_min prm_max)
     message(FATAL_ERROR "Undefined cube in volume ${sfx}")
   endif()
 
-  message("Defined sfx ${sfx}")
-  message("Defined NA_TESTGROUP ${NA_TESTGROUP}")
-
   set (NA_RM_KEYS_SWP ${NA_RM_KEYS})
 
   foreach(Py RANGE ${prm_min} ${prm_max})
